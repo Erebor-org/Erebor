@@ -5,7 +5,7 @@
       @click.self="closeModal"
     >
       <!-- Modal Content -->
-      <div class="bg-[#fff5e6] border-4 border-[#b07d46] rounded-lg shadow-lg w-10/12 max-w-3xl p-4 relative overflow-y-auto max-h-[70vh]">
+      <div class="bg-[#fff5e6] border-4 border-[#b07d46] rounded-lg shadow-lg w-10/12 max-w-3xl p-4 relative">
         <!-- Close Button -->
         <button
           class="absolute top-3 right-3 text-[#b02e2e] hover:text-[#942828] font-bold text-lg"
