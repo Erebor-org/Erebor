@@ -1,0 +1,274 @@
+<template>
+    <div
+      class="min-h-screen w-full flex flex-col items-center justify-center bg-cover bg-center"
+      :style="{ backgroundImage: `url(${backgroundImage})` }"
+    >
+      <!-- Search Bar -->
+      <div class="bg-[#fff5e6] border-4 border-[#b07d46] rounded-lg shadow-lg w-11/12 max-w-4xl p-6 mb-6">
+        <h2 class="text-2xl font-bold text-[#b02e2e] mb-4">Liste des Membres</h2>
+        <input
+          type="text"
+          v-model="searchQuery"
+          placeholder="Rechercher par pseudo, recruteur ou rang"
+          class="w-full border-2 border-[#b07d46] bg-[#fffaf0] rounded-lg p-3 text-lg focus:outline-none focus:ring-2 focus:ring-[#f3d9b1]"
+        />
+      </div>
+  
+      <!-- Member Table -->
+      <div class="bg-[#fff5e6] border-4 border-[#b07d46] rounded-lg shadow-lg w-11/12 max-w-4xl">
+        <!-- Scrollable Wrapper -->
+        <div class="overflow-y-auto max-h-96">
+          <table class="w-full text-left border-collapse">
+            <thead>
+              <tr class="bg-[#b02e2e] text-[#f3d9b1] text-lg">
+                <th class="p-4">Classe</th>
+                <th class="p-4">Pseudo</th>
+                <th class="p-4">Recruteur</th>
+                <th class="p-4">Rang</th>
+                <th class="p-4">Date d'arrivée</th>
+                <th class="p-4"></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr
+                v-for="(member, index) in filteredMembers"
+                :key="index"
+                class="hover:bg-[#f3d9b1] hover:shadow-md transition-all group relative"
+  
+              >
+                <!-- Classe Icon -->
+                <td class="p-4">
+                  <img
+                    :src="`${iconFolder}/${member.classe}.avif`"
+                    :alt="member.classe"
+                    class="w-10 h-10 object-cover"
+                  />
+                </td>
+                <!-- Pseudo -->
+                <td class="p-4 text-[#b07d46] font-bold">{{ member.pseudo }}</td>
+                <!-- Recruteur -->
+                <td class="p-4 text-[#b07d46]">{{ member.recruteur }}</td>
+                <!-- Rang -->
+                <td class="p-4 text-[#b07d46]">{{ member.rang }}</td>
+                <!-- Date -->
+                <td class="p-4 text-[#b07d46]">{{ member.dateArrivee }}</td>
+                <!-- Options -->
+                <td class="p-4 text-right">
+                  <div
+                    class="hidden group-hover:block text-[#b02e2e] cursor-pointer"
+                    title="Options"
+                    @click="openModal(member)"
+                  >
+                    &#x22EE;
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+  
+      <!-- Modal -->
+      <div
+        v-if="showModal"
+        class="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50"
+        @click.self="closeModal"
+      >
+        <div class="bg-[#fff5e6] border-4 border-[#b07d46] rounded-lg p-6 w-1/3 relative">
+          <!-- Close Button -->
+          <button
+            class="absolute top-3 right-3 text-[#b02e2e] hover:text-[#942828] font-bold text-lg"
+            @click="closeModal"
+          >
+            &times;
+          </button>
+  
+          <h2 class="text-xl font-bold text-[#b02e2e] mb-4">Options</h2>
+          <p class="text-lg text-[#b07d46] mb-6">
+            Voulez-vous archiver le joueur <strong>{{ selectedMember.pseudo }}</strong> ?
+          </p>
+          <div class="flex justify-end space-x-4">
+            <button
+              @click="closeModal"
+              class="bg-[#b07d46] text-[#fff5e6] font-bold py-2 px-4 rounded-lg hover:bg-[#9c682e]"
+            >
+              Annuler
+            </button>
+            <button
+              @click="archiveMember"
+              class="bg-[#b02e2e] text-[#f3d9b1] font-bold py-2 px-4 rounded-lg hover:bg-[#942828]"
+            >
+              Archiver
+            </button>
+          </div>
+        </div>
+      </div>
+  
+      <!-- Top-right Notification -->
+      <div
+        v-if="showNotification"
+        class="fixed top-4 right-4 bg-[#b02e2e] text-[#f3d9b1] font-bold py-2 px-4 rounded-lg shadow-lg z-50"
+      >
+        Joueur archivé
+      </div>
+    </div>
+  </template>
+  
+  
+  <script>
+
+    import members_bg from '@/assets/members_bg.webp';    
+
+  export default {
+    data() {
+      return {
+        backgroundImage: members_bg, // Add your medieval-themed background image
+        iconFolder: "src/assets/icon_classe/", // Folder containing your class icons
+        searchQuery: "",
+        showModal: false,
+        selectedMember: null,
+        showNotification: false,
+        members: [
+          {
+            classe: "enutrof", // Icon file name, e.g., bard.png
+            pseudo: "Bard",
+            recruteur: "Kalamouss",
+            rang: "Vieux roi",
+            dateArrivee: "2021-10-15",
+            archived: false
+          },
+          {
+            classe: "forgelance",
+            pseudo: "Siisko",
+            recruteur: "Ontas",
+            rang: "Main du roi",
+            dateArrivee: "2022-02-12",
+            archived: false
+          },
+          {
+            classe: "sram",
+            pseudo: "Lae",
+            recruteur: "Nyu",
+            rang: "Conseiller",
+            dateArrivee: "2023-05-06",
+            archived: false
+          },
+          {
+            classe: "iop",
+            pseudo: "Shira",
+            recruteur: "Kalamouss",
+            rang: "Légende",
+            dateArrivee: "2020-07-30",
+            archived: false
+          },
+          {
+            classe: "cra",
+            pseudo: "Nyu",
+            recruteur: "Kalamouss",
+            rang: "Vétéran",
+            dateArrivee: "2020-07-30",
+            archived: false
+          },
+          {
+            classe: "eniripsa",
+            pseudo: "Ontas",
+            recruteur: "Kalamouss",
+            rang: "Vétéran",
+            dateArrivee: "2020-07-30",
+            archived: false
+          },
+          {
+            classe: "ouginak",
+            pseudo: "Shira",
+            recruteur: "Kalamouss",
+            rang: "Vétéran",
+            dateArrivee: "2020-07-30",
+            archived: false
+          },
+          {
+            classe: "pandawa",
+            pseudo: "Shira",
+            recruteur: "Kalamouss",
+            rang: "Vétéran",
+            dateArrivee: "2020-07-30",
+            archived: false
+          },
+          {
+            classe: "xelor",
+            pseudo: "Shira",
+            recruteur: "Kalamouss",
+            rang: "Vétéran",
+            dateArrivee: "2020-07-30",
+            archived: false
+          },
+          {
+            classe: "roublard",
+            pseudo: "Shira",
+            recruteur: "Kalamouss",
+            rang: "Vétéran",
+            dateArrivee: "2020-07-30",
+            archived: false
+          },
+          {
+            classe: "huppermage",
+            pseudo: "Shira",
+            recruteur: "Kalamouss",
+            rang: "Vétéran",
+            dateArrivee: "2020-07-30",
+            archived: false
+          },
+        ],
+      };
+    },
+    computed: {
+      filteredMembers() {
+        const query = this.searchQuery.toLowerCase();
+        return this.members.filter(
+          (member) =>
+          !member.archived &&
+            member.pseudo.toLowerCase().includes(query) ||
+            member.recruteur.toLowerCase().includes(query) ||
+            member.rang.toLowerCase().includes(query) ||
+            member.classe.toLowerCase().includes(query) 
+        );
+      },
+    },
+    methods: {
+    openModal(member) {
+      this.selectedMember = member;
+      this.showModal = true;
+    },
+    closeModal() {
+      this.showModal = false;
+    },
+    archiveMember() {
+      if (this.selectedMember) {
+      this.selectedMember.archived = true;
+      this.showModal = false;
+      this.showNotification = true;
+      // Automatically hide the notification after 3 seconds
+      setTimeout(() => {
+        this.showNotification = false;
+      }, 3000);
+      }
+      },
+  },
+  };
+  </script>
+  
+  <style scoped>
+  /* Table styling */
+  table {
+    border-spacing: 0;
+  }
+  
+  th,
+  td {
+    border-bottom: 2px solid #b07d46;
+  }
+  
+  /* Optional row highlight */
+  tbody tr:hover {
+    background-color: #f3d9b1;
+  }
+  </style>

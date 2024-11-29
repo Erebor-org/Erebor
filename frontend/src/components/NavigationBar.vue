@@ -1,0 +1,124 @@
+<script setup>
+import { RouterLink } from 'vue-router'
+</script>
+
+<template>
+  <div class="bg-black text-white grid">
+    <!-- Dofus Logo Positioned Independently -->
+    <div class="logo-container">
+      <img :src="dofus_logo" alt="Logo" class="dofus-logo"/>
+    </div>
+
+    <!-- Top Bar -->
+    <div class="flex items-center justify-between px-4 py-2">
+      <!-- Left Section -->
+      <div class="flex items-center space-x-4">
+        <img :src="erebor_logo" alt="Logo" class="w-10 h-10" />
+        <button class="text-sm uppercase underline-on-hover font-fantasy">Erebor</button>
+      </div>
+
+      <!-- Right Section -->
+      <div class="flex items-center space-x-4">
+        <button class="text-sm uppercase underline-on-hover font-fantasy">
+          <RouterLink to="/inscription">S'inscrire</RouterLink>
+        </button>
+        <img :src="profile_icon" alt="User Avatar" class="h-10 w-10 rounded-full" />
+      </div>
+    </div>
+
+    <!-- Green Line -->
+    <div class="bg-[#93a402] h-1"></div>
+
+    <!-- Navigation Bar -->
+    <div class="bg-black text-white relative z-10 font-nav">
+      <div class="container mx-auto flex items-center justify-between px-16 py-6">
+        <!-- Left Menu -->
+        <div class="flex items-center space-x-6">
+          <nav class="flex items-center space-x-4">
+            <button class="text-sm uppercase underline-on-hover">Annonce</button>
+            <button class="text-sm uppercase underline-on-hover">Ladders</button>
+            <button class="text-sm uppercase underline-on-hover">Events</button>
+          </nav>
+        </div>
+
+        <!-- Right Menu -->
+        <div class="flex items-center space-x-6">
+          <button class="text-sm uppercase underline-on-hover"><RouterLink to="/membres">Membres</RouterLink></button>
+          <button class="text-sm uppercase underline-on-hover"><RouterLink to="/import">Ajouter un membre</RouterLink></button>
+          <button class="text-sm uppercase underline-on-hover"><RouterLink to="/blacklist">Blacklist</RouterLink></button>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script>
+import erebor_logo from '@/assets/erebor_logo.png';
+import dofus_logo from '@/assets/logo_dofus_good_quality.webp';
+import profile_icon from '@/assets/profile_icon.png';
+export default {
+  name: "NavigationBar",
+  data() {
+    return {
+      erebor_logo,
+      dofus_logo,
+      profile_icon
+    };
+  },
+};
+</script>
+
+<style scoped>
+@import url('https://fonts.googleapis.com/css2?family=Uncial+Antiqua&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Oswald:wght@200..700&display=swap');
+
+
+.font-fantasy {
+  font-family: 'Uncial Antiqua', cursive;
+}
+.font-nav {
+  font-family: 'Oswald', cursive;
+}
+
+/* Position the logo container above the navbar */
+.logo-container {
+  position: absolute;
+  /*top: 60px; /* Adjust to desired height */
+  left: 55%;
+  transform: translateX(-50%);
+  z-index: 20; /* Ensure it is above other elements */
+}
+
+/* Add specific styles for the Dofus logo with reduced size */
+.dofus-logo {
+  width: 50%; /* Set to 50% of original size */
+  height: auto; /* Maintain aspect ratio */
+}
+
+/* Add a relative position and z-index to the navbar */
+.bg-black {
+  position: relative;
+  z-index:
+   10;
+}
+.underline-on-hover {
+  position: relative; /* Ensure the pseudo-element positions correctly */
+}
+.underline-on-hover::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: -2px; /* Adjust to set the underline position */
+  width: 100%;
+  height: 2px; /* Thickness of the underline */
+  background-color: #93a402;
+  transform: scaleX(0); /* Initially hidden */
+  transform-origin: left; /* Animation starts from the left */
+  transition: transform 0.3s ease-in-out; /* Smooth animation */
+  font-size: 16px;
+}
+
+.underline-on-hover:hover::after {
+  transform: scaleX(1); /* Fully visible underline on hover */
+}
+</style>
