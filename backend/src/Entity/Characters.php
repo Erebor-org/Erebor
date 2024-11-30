@@ -26,9 +26,6 @@ class Characters
     #[ORM\Column(type: 'string', length: 255)]
     private string $class;
 
-    #[ORM\Column(type: 'integer')]
-    private int $level;
-
     #[ORM\Column(type: 'boolean')]
     private bool $isArchived = false;
 
@@ -61,11 +58,6 @@ class Characters
         return $this->class;
     }
 
-    public function getLevel(): int
-    {
-        return $this->level;
-    }
-
 
     public function isArchived(): bool
     {
@@ -95,12 +87,6 @@ class Characters
     public function setClass(string $class): self
     {
         $this->class = $class;
-        return $this;
-    }
-
-    public function setLevel(int $level): self
-    {
-        $this->level = $level;
         return $this;
     }
 

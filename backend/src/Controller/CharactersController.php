@@ -31,7 +31,6 @@ public function getAllCharacters(CharactersRepository $repository): JsonResponse
             'id' => $character->getId(),
             'pseudo' => $character->getPseudo(),
             'class' => $character->getClass(),
-            'level' => $character->getLevel(),
             'createdAt' => $character->getRecruitedAt()?->format('Y-m-d'),
             'isArchived' => $character->isArchived(),
             'recruiter' => $character->getRecruiter() ? [
@@ -91,7 +90,6 @@ public function getAllCharacters(CharactersRepository $repository): JsonResponse
                 ->setPseudo($data['pseudo'])
                 ->setAnkamaPseudo($data['ankamaPseudo'])
                 ->setClass($data['class'])
-                ->setLevel($data['level'])
                 ->setRecruitedAt($recruitedAt)
                 ->setRank($rank)
                 ->setIsArchived($data['isArchived'] ?? false);
@@ -149,7 +147,6 @@ public function getAllCharacters(CharactersRepository $repository): JsonResponse
                 'id' => $character->getId(),
                 'pseudo' => $character->getPseudo(),
                 'class' => $character->getClass(),
-                'level' => $character->getLevel(),
                 'rank' => $character->getRank() ? [
                     'id' => $character->getRank()->getId(),
                     'name' => $character->getRank()->getName(),
@@ -199,7 +196,6 @@ public function getAllCharacters(CharactersRepository $repository): JsonResponse
                 ->setAnkamaPseudo($data['ankamaPseudo'] ?? $character->getAnkamaPseudo())
                 ->setRecruitedAt($recruitedAt) ?? $character->setRecruitedAt()
                 ->setClass($data['class'] ?? $character->getClass())
-                ->setLevel($data['level'] ?? $character->getLevel())
                 ->setIsArchived($data['isArchived'] ?? $character->isArchived());
 
         // Handle recruiter assignment

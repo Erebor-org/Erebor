@@ -40,7 +40,7 @@
           </thead>
           <tbody>
             <tr
-              v-for="(member, index) in filteredMembers"
+              v-for="(member, index) in members"
               :key="index"
               class="hover:bg-[#f3d9b1] hover:shadow-md transition-all group relative"
             >
