@@ -49,5 +49,15 @@ class RanksRepository extends ServiceEntityRepository
             ->getResult();
 
     }
+    public function findRankForDays(int $days): ?Ranks
+    {
+        return $this->createQueryBuilder('r')
+            ->where('r.requiredDays <= :days')
+            ->setParameter('days', $days)
+            ->orderBy('r.requiredDays', 'DESC')
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
         
 }

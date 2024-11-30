@@ -104,18 +104,24 @@ class Characters
         return $this;
     }
 
+    public function setIsArchived(bool $isArchived): self
+    {
+        $this->isArchived = $isArchived;
+        return $this;
+    }
+
 
     #[ORM\Column(type: 'datetime')]
     #[Assert\NotNull]
     #[Assert\LessThanOrEqual('today', message: 'The creation date cannot be in the future.')]
     private \DateTimeInterface $recruitedAt;
 
-    public function getrecruitedAt(): \DateTimeInterface
+    public function getRecruitedAt(): \DateTimeInterface
     {
         return $this->recruitedAt;
     }
 
-    public function setrecruitedAt(\DateTimeInterface $recruitedAt): self
+    public function setRecruitedAt(\DateTimeInterface $recruitedAt): self
     {
         $this->recruitedAt = $recruitedAt;
         return $this;

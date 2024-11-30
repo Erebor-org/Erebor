@@ -46,15 +46,21 @@ public function getAllCharacters(CharactersRepository $repository): JsonResponse
         ];
     }, $characters);
 
-    return $this->json($formattedCharacters);
+    return $this->json($formattedCharacters, 200, [], [
+        'groups' => 'characters_list',
+        'circular_reference_handler' => function ($object) {
+            return $object->getId();
+        }
+    ]);
 }
 
 
-    #[Route('/characters/', name: 'characters_create', methods: ['POST'])]
+    #[Route('/characters', name: 'characters_create', methods: ['POST'])]
     public function create(
         Request $request,
         EntityManagerInterface $em,
-        RanksRepository $ranksRepository
+        RanksRepository $ranksRepository,
+        CharactersRepository $charactersRepository
     ): JsonResponse {
         $data = json_decode($request->getContent(), true);
 
@@ -86,8 +92,8 @@ public function getAllCharacters(CharactersRepository $repository): JsonResponse
                 ->setAnkamaPseudo($data['ankamaPseudo'])
                 ->setClass($data['class'])
                 ->setLevel($data['level'])
-                ->setrecruitedAt($recruitedAt)
-                ->setRank($rank['id'])
+                ->setRecruitedAt($recruitedAt)
+                ->setRank($rank)
                 ->setIsArchived($data['isArchived'] ?? false);
         // Handle the Recruiter
         if (isset($data['recruiterId'])) {
@@ -101,7 +107,12 @@ public function getAllCharacters(CharactersRepository $repository): JsonResponse
         $em->persist($character);
         $em->flush();
 
-        return $this->json($character);
+        return $this->json($character, 200, [], [
+            'groups' => 'characters_list',
+            'circular_reference_handler' => function ($object) {
+                return $object->getId();
+            }
+        ]);
     }
 
 
@@ -147,7 +158,12 @@ public function getAllCharacters(CharactersRepository $repository): JsonResponse
             ];
         }, $characters);
 
-        return $this->json($formattedCharacters);
+        return $this->json($formattedCharacters, 200, [], [
+            'groups' => 'characters_list',
+            'circular_reference_handler' => function ($object) {
+                return $object->getId();
+            }
+        ]);
     }
     #[Route('/characters/{id}', name: 'characters_show', requirements: ['id' => '\d+'], methods: ['GET'])]
     public function show(RanksRepository $repository, int $id): JsonResponse
@@ -160,6 +176,8 @@ public function getAllCharacters(CharactersRepository $repository): JsonResponse
     
         return $this->json($character);
     }
+
+
     #[Route('/characters/{id}', name: 'characters_update', methods: ['PUT'])]
     public function update(
         Request $request,
@@ -179,6 +197,7 @@ public function getAllCharacters(CharactersRepository $repository): JsonResponse
         $character->setUserId($data['userId'] ?? $character->getUserId())
                 ->setPseudo($data['pseudo'] ?? $character->getPseudo())
                 ->setAnkamaPseudo($data['ankamaPseudo'] ?? $character->getAnkamaPseudo())
+                ->setRecruitedAt($recruitedAt) ?? $character->setRecruitedAt()
                 ->setClass($data['class'] ?? $character->getClass())
                 ->setLevel($data['level'] ?? $character->getLevel())
                 ->setIsArchived($data['isArchived'] ?? $character->isArchived());
@@ -203,8 +222,15 @@ public function getAllCharacters(CharactersRepository $repository): JsonResponse
         // Persist changes
         $em->flush();
 
-        return $this->json($character);
+        return $this->json($character, 200, [], [
+            'groups' => 'characters_list',
+            'circular_reference_handler' => function ($object) {
+                return $object->getId();
+            }
+        ]);
     }
+
+
     #[Route('/characters/{id}', name: 'characters_delete', methods: ['DELETE'])]
     public function delete(CharactersRepository $repository, EntityManagerInterface $em, int $id): JsonResponse
     {
@@ -214,14 +240,28 @@ public function getAllCharacters(CharactersRepository $repository): JsonResponse
         }
 
         $repository->remove($character, true);
-        return $this->json(['message' => 'Character deleted successfully']);
+        return $this->json(['message' => 'Character deleted successfully'], 200, [], [
+            'groups' => 'characters_list',
+            'circular_reference_handler' => function ($object) {
+                return $object->getId();
+            }
+        ]);
     }
+
+
     #[Route('/characters/with-recruiters', name: 'characters_with_recruiters', methods: ['GET'])]
     public function getCharactersWithRecruiters(CharactersRepository $repository): JsonResponse
     {
         $characters = $repository->findCharactersWithRecruiters();
-        return $this->json($characters);
+        return $this->json($characters, 200, [], [
+            'groups' => 'characters_list',
+            'circular_reference_handler' => function ($object) {
+                return $object->getId();
+            }
+        ]);
     }
+
+
     #[Route('/characters/lead', name: 'characters_with_lead', methods: ['GET'])]
     public function getCharactersWithLead(CharactersRepository $repository): JsonResponse
     {
@@ -232,6 +272,11 @@ public function getAllCharacters(CharactersRepository $repository): JsonResponse
             ->getQuery()
             ->getResult();
 
-        return $this->json($characters);
+        return $this->json($characters, 200, [], [
+            'groups' => 'characters_list',
+            'circular_reference_handler' => function ($object) {
+                return $object->getId();
+            }
+        ]);
     }
 }
