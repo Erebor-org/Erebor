@@ -114,20 +114,43 @@
             <label for="recruiter" class="block text-lg font-medium text-[#b07d46] mb-2">
               Sélectionner un recruteur:
             </label>
-            <div class="relative">
-              <select
-                id="recruiter"
-                v-model="character.recruiterId"
-                class="block w-full border-2 border-[#b07d46] bg-[#fffaf0] rounded-lg p-2 text-lg focus:outline-none focus:ring-2 focus:ring-[#f3d9b1] appearance-none"
-                required
+
+            <!-- If recruiter is selected -->
+            <div v-if="character.recruiterId" class="flex items-center gap-4">
+              <img :src="selectedRecruiterIcon" alt="Class Icon" class="w-15 h-15 rounded-full" />
+              <span class="text-lg font-large text-[#b07d46]">{{ selectedRecruiterName }}</span>
+              <button
+                type="button"
+                @click="clearSelectedRecruiter"
+                class="text-red-500 text-lg font-bold focus:outline-none"
               >
-                <option v-for="recruiter in recruiters" :key="recruiter.id" :value="recruiter.id">
-                  {{ recruiter.pseudo }}
-                </option>
-              </select>
+                &times;
+              </button>
+            </div>
+
+            <!-- If recruiter is not selected -->
+            <div v-else>
+              <input
+                type="text"
+                v-model="recruiterSearchQuery"
+                placeholder="Rechercher un recruteur..."
+                class="block w-full border-2 border-[#b07d46] bg-[#fffaf0] rounded-lg p-2 text-lg mb-2 focus:outline-none focus:ring-2 focus:ring-[#f3d9b1]"
+              />
+              <ul
+                class="max-h-20 overflow-y-auto bg-[#fffaf0] border-2 border-[#b07d46] rounded-lg p-2"
+              >
+                <li
+                  v-for="recruiter in filteredRecruiters"
+                  :key="recruiter.id"
+                  @click="selectRecruiter(recruiter)"
+                  class="flex items-center gap-4 p-2 cursor-pointer hover:bg-[#f3d9b1] rounded-lg"
+                >
+                  <img :src="classes[recruiter.class]" alt="Classe" class="w-8 h-8" />
+                  <span class="text-lg font-medium text-[#b07d46]">{{ recruiter.pseudo }}</span>
+                </li>
+              </ul>
             </div>
           </div>
-
           <div v-if="errorMessage" class="text-1xl font-bold text-[#b02e2e] mb-6">
             {{ errorMessage }}
           </div>
@@ -203,7 +226,8 @@
               placeholder="Rechercher un personnage..."
               class="block w-full border-2 border-[#b07d46] bg-[#fffaf0] rounded-lg p-2 text-lg mb-2 focus:outline-none focus:ring-2 focus:ring-[#f3d9b1]"
             />
-            <ul v-if="!muleCharacter.linkedCharacterId"
+            <ul
+              v-if="!muleCharacter.linkedCharacterId"
               class="max-h-20 overflow-y-auto bg-[#fffaf0] border-2 border-[#b07d46] rounded-lg p-2"
             >
               <li
@@ -273,6 +297,9 @@ export default {
         userId: null, // Optional user ID
       },
       recruiters: [],
+      recruiterSearchQuery: '', // Query for the recruiter search bar
+      selectedRecruiterName: '', // Name of the selected recruiter
+      selectedRecruiterIcon: '', // Icon of the selected recruiter
       muleCharacter: {
         pseudo: '',
         linkedCharacterId: null, // The selected not archived character's ID
@@ -433,7 +460,7 @@ export default {
       this.selectedCharacterName = character.pseudo;
       this.selectedCharacterIcon = this.classes[character.class];
       this.showCharacterSelection = false; // Hide the list after selection
-      this.searchQuery = ""; // Clear the search bar
+      this.searchQuery = ''; // Clear the search bar
     },
     toggleCharacterSelection() {
       this.showCharacterSelection = !this.showCharacterSelection;
@@ -446,7 +473,21 @@ export default {
       this.searchQuery = ''; // Clear the search query
       this.showCharacterSelection = true; // Reopen the selection list
     },
+    selectRecruiter(recruiter) {
+      console.log('Selected recruiter:', recruiter);
+      this.character.recruiterId = recruiter.id; // Set recruiter ID
+      this.selectedRecruiterName = recruiter.pseudo; // Display recruiter name
+      this.selectedRecruiterIcon = this.classes[recruiter.class]; // Display recruiter icon
+      this.recruiterSearchQuery = ''; // Clear the search bar
+    },
+
+    clearSelectedRecruiter() {
+      this.character.recruiterId = null; // Clear recruiter ID
+      this.selectedRecruiterName = ''; // Clear recruiter name
+      this.selectedRecruiterIcon = ''; // Clear recruiter icon
+    },
   },
+
   computed: {
     // Filter characters based on search query
     filteredNotArchivedCharacters() {
@@ -455,6 +496,13 @@ export default {
       return this.notArchivedCharacters.filter(character =>
         character.pseudo.toLowerCase().includes(query)
       );
+    },
+    filteredRecruiters() {
+      // Default to an empty array if `recruiters` is undefined
+      if (!this.recruiters) return [];
+      if (!this.recruiterSearchQuery) return this.recruiters;
+      const query = this.recruiterSearchQuery.toLowerCase();
+      return this.recruiters.filter(recruiter => recruiter.pseudo.toLowerCase().includes(query));
     },
   },
 
