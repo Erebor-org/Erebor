@@ -125,7 +125,7 @@
   
   
   <script>
-
+    import axios from 'axios';
     import members_bg from '@/assets/members_bg.webp';    
     import ImportMember from '@/components/ImportMember.vue';
 
@@ -138,6 +138,7 @@
         backgroundImage: members_bg, // Add your medieval-themed background image
         iconFolder: "src/assets/icon_classe/", // Folder containing your class icons
         searchQuery: "",
+        characters: [], // Holds the list of all characters
         showModal: false,
         showModalMember: false,
         selectedMember: null,
@@ -237,7 +238,7 @@
     computed: {
       filteredMembers() {
         const query = this.searchQuery.toLowerCase();
-        return this.members.filter(
+        return this.characters.filter(
           (member) =>
           !member.archived &&
             member.pseudo.toLowerCase().includes(query) ||
@@ -248,6 +249,16 @@
       },
     },
     methods: {
+
+    async fetchAllCharacters() {
+    try {
+      const response = await axios.get('http://localhost:8000/characters'); // Replace with your actual API endpoint
+        this.characters = response.data; // Assign the response to the characters array
+      } catch (error) {
+        console.error('Error fetching characters:', error.response?.data || error.message);
+        alert('An error occurred while fetching characters.');
+      }
+    },
     openModal(member) {
       this.selectedMember = member;
       this.showModal = true;
@@ -272,6 +283,9 @@
       }, 3000);
       }
       },
+      mounted() {
+    this.fetchAllCharacters(); // Fetch the characters when the component is mounted
+  },
   },
   };
   </script>

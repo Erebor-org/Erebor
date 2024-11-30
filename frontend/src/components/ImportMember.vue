@@ -19,11 +19,11 @@
           <button
             :class="[
               'flex-1 py-2 text-lg font-bold border-b-4',
-              activeTab === 'mainCharacter'
+              activeTab === 'character'
                 ? 'bg-[#b02e2e] text-[#f3d9b1] border-[#f3d9b1]'
                 : 'bg-[#f3d9b1] text-[#b07d46] border-[#b07d46]'
             ]"
-            @click="activeTab = 'mainCharacter'"
+            @click="activeTab = 'character'"
           >
             Personnage principal
           </button>
@@ -43,7 +43,8 @@
         <!-- Scrollable Content Area -->
         <div class="px-4">
           <!-- Main Character Form -->
-          <form v-if="activeTab === 'mainCharacter'" @submit.prevent="submitMainCharacter">
+          <form v-if="activeTab === 'character'" 
+          @submit.prevent="submitCharacter()">
             <h2 class="text-2xl font-bold text-[#b02e2e] mb-4">Personnage Principal</h2>
             <!-- Pseudo -->
             <div class="mb-4">
@@ -53,7 +54,20 @@
               <input
                 type="text"
                 id="mainPseudo"
-                v-model="mainCharacter.pseudo"
+                v-model="character.pseudo"
+                class="block w-full border-2 border-[#b07d46] bg-[#fffaf0] rounded-lg p-2 text-lg focus:outline-none focus:ring-2 focus:ring-[#f3d9b1]"
+                required
+              />
+            </div>
+            <!-- Pseudo -->
+            <div class="mb-4">
+              <label for="mainPseudo" class="block text-lg font-medium text-[#b07d46] mb-2">
+                Pseudo Ankama:
+              </label>
+              <input
+                type="text"
+                id="ankamaPseudo"
+                v-model="character.ankamaPseudo"
                 class="block w-full border-2 border-[#b07d46] bg-[#fffaf0] rounded-lg p-2 text-lg focus:outline-none focus:ring-2 focus:ring-[#f3d9b1]"
                 required
               />
@@ -67,11 +81,11 @@
                   :key="index"
                   :class="[
                     'cursor-pointer border-2 rounded-lg p-2',
-                    mainCharacter.class === index
+                    character.class === index
                       ? 'border-[#b02e2e] bg-[#f3d9b1]'
                       : 'border-[#b07d46] bg-[#fffaf0]'
                   ]"
-                  @click="mainCharacter.class = index, selectClass(index)"
+                  @click="character.class = index, selectClass(index)"
                 >
                   <img :src="icon" alt="Classe" class="w-full h-auto" />
                 </div>
@@ -84,7 +98,7 @@
             <input
               type="number"
               id="mainLevel"
-              v-model.number="mainCharacter.level"
+              v-model.number="character.level"
               min="1"
               max="200"
               class="block w-full border-2 border-[#b07d46] bg-[#fffaf0] rounded-lg p-2 text-lg focus:outline-none focus:ring-2 focus:ring-[#f3d9b1]"
@@ -98,8 +112,9 @@
             </label>
             <input
               type="date"
-              id="mainDate"
-              v-model="mainCharacter.date"
+              id="recruitedAt"
+              name="recruitedAt"
+              v-model="character.recruitedAt"
               class="block w-full border-2 border-[#b07d46] bg-[#fffaf0] rounded-lg p-2 text-lg focus:outline-none focus:ring-2 focus:ring-[#f3d9b1]"
               required
             />
@@ -113,7 +128,7 @@
             <div class="relative">
               <select
                 id="recruiter"
-                v-model="mainCharacter.recruiter"
+                v-model="character.recruiter"
                 class="block w-full border-2 border-[#b07d46] bg-[#fffaf0] rounded-lg p-2 text-lg focus:outline-none focus:ring-2 focus:ring-[#f3d9b1] appearance-none"
                 required
               >
@@ -131,8 +146,7 @@
             <button
               type="submit"
               class="w-full bg-[#b02e2e] text-[#f3d9b1] font-bold py-3 px-6 rounded-lg hover:bg-[#942828] focus:ring-4 focus:ring-[#f3d9b1]"
-              :disabled="!mainCharacter.class"
-              @click="closeModal"
+              :disabled="!character.class"
             >
               Importer un personnage principal
             </button>
@@ -204,6 +218,7 @@
   
   
   <script>
+  import axios from 'axios';
   import register_bg from '@/assets/register_bg.webp';
   
   export default {
@@ -216,6 +231,31 @@
     data() {
       return {
         register_bg,
+        errorMessage: "", // Message d'erreur à afficher
+        selectedClass: null, // Classe actuellement sélectionnée
+        activeTab: "character", // Onglet actif
+        users: ["User1", "User2", "User3"], // Liste des utilisateurs pour le menu déroulant
+        character: {
+          pseudo: '',
+          ankamaPseudo: '',
+          class: '',
+          level: 1,
+          recruitedAt: '',
+          isArchived: false,
+          userId: null, // Optional user ID
+          },
+        recreuiters: [
+          {}
+        ],
+        muleCharacter: {
+          pseudo: "",
+          linkedUser: "",
+          class: null,
+          level: 1,
+        },
+        blacklistList: [
+          "toto", "Bard", "Siisko", "Lae", "Shira"
+        ],
         classes: {
           sram : "/src/assets/icon_classe/sram.avif",
           forgelance : "/src/assets/icon_classe/forgelance.avif",
@@ -235,55 +275,59 @@
           xelor : "/src/assets/icon_classe/xelor.avif",
           zobal : "/src/assets/icon_classe/zobal.avif",
         },
-       
-        errorMessage: "", // Message d'erreur à afficher
-        selectedClass: null, // Classe actuellement sélectionnée
-        activeTab: "mainCharacter", // Onglet actif
-        users: ["User1", "User2", "User3"], // Liste des utilisateurs pour le menu déroulant
-        mainCharacter: {
-          pseudo: "",
-          recruiter: null, // Linked pseudo selected from the dropdown
-          class: null,
-          level: 1,
-          date: "",
-        },
-        players: [
-          { pseudo: "Bard", icon: "/src/assets/icon_classe/enutrof.avif" },
-          { pseudo: "Siisko", icon: "/src/assets/icon_classe/forgelance.avif" },
-          { pseudo: "Lae", icon: "/path/to/icons/lae.png" },
-          { pseudo: "Shira", icon: "/path/to/icons/shira.png" },
-        ],
-        muleCharacter: {
-          pseudo: "",
-          linkedUser: "",
-          class: null,
-          level: 1,
-        },
-        blacklistList: [
-          "toto", "Bard", "Siisko", "Lae", "Shira"
-        ]
       };
     },
     methods: {
       // Vérifier si le pseudo est valide
-      isPseudoValid(pseudo) {
-        return !this.blacklistList.includes(pseudo);
-      },
-      submitMainCharacter() {
+        isPseudoValid(pseudo) {
+          return !this.blacklistList.includes(pseudo);
+        },
+      
+
+      async submitCharacter() {
+        console.log("submit", this.character)
+         // Close modal after successful submission
+        this.closeModal();
         // Envoyer les données du personnage principal
-        if (!this.mainCharacter.class) {
+        const selectedDate = new Date(this.recruitedAt); // Get the selected date
+        const today = new Date(); // Get today's date
+
+        // Check if the selected date is in the future
+        if (selectedDate > today) {
+          alert('The creation date cannot be in the future.');
+          this.recruitedAt = ''; // Clear the invalid date
+          return;
+        }
+        if (!this.character.class) {
           this.errorMessage = "Veuillez sélectionner une classe avant de soumettre.";
           return;
         }
-        if (!this.isPseudoValid(this.mainCharacter.pseudo)) {
-          this.errorMessage = `"${this.mainCharacter.pseudo}" est blacklist d'Erebor.`;
+        if (!this.isPseudoValid(this.character.pseudo)) {
+          this.errorMessage = `"${this.character.pseudo}" est blacklist d'Erebor.`;
           return;
         }
-        const payload = { ...this.mainCharacter };
+        const payload = { ...this.character };
         console.log("Données Personnage Principal:", payload);
         console.log("players", this.players);
-        // Ajoutez ici une requête POST vers Symfony avec fetch ou axios
-      },
+        try {
+        // API POST request
+        const response = await axios.post('http://localhost:8000/characters/post', {
+          pseudo: this.character.pseudo,
+          ankamaPseudo: this.character.ankamaPseudo,
+          class: this.character.class,
+          level: this.character.level,
+          recruitedAt: this.character.recruitedAt,
+          isArchived: this.character.isArchived,
+          recruiterId: this.character.recruiterId,
+        });
+
+        alert('Character created successfully!');
+        console.log(response.data); // Handle success response
+      } catch (error) {
+        console.error('Error creating character:', error.response?.data || error.message);
+        alert('An error occurred while creating the character.');
+      }
+    },
       
       submitMuleCharacter() {
         if (!this.muleCharacter.class) {
@@ -307,7 +351,20 @@
       },
       closeModal() {
       this.$emit("close");
-    }
+    },
+    async fetchCharactersWithRecruiters() {
+      try {
+        const response = await axios.get('http://localhost:8000/characters/recruiter'); // Replace with your actual API endpoint
+        console.log("recruiters", response.data);
+        this.recruiters = response.data; // Assign the response to the characters array
+      } catch (error) {
+        console.error('Error fetching characters with recruiters:', error.response?.data || error.message);
+        alert('An error occurred while fetching characters with recruiters.');
+      }
+    },
+    },
+    mounted() {
+      this.fetchCharactersWithRecruiters(); // Fetch characters when the component is mounted
     },
   };
   </script>
@@ -327,4 +384,3 @@
     border-radius: 50%;
   }
   </style>
-  
