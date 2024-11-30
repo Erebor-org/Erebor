@@ -97,6 +97,20 @@
         </div>
 
         <div class="mb-4">
+          <label for="pseudo" class="block text-lg font-medium text-[#b07d46] mb-2">
+            Pseudo ankama du compte:
+          </label>
+          <input
+            type="text"
+            id="pseudo"
+            v-model="newBlacklist.ankamaPseudo"
+            class="block w-full border-2 border-[#b07d46] bg-[#fffaf0] rounded-lg p-3 text-lg focus:outline-none focus:ring-2 focus:ring-[#f3d9b1]"
+            placeholder="Entrez le pseudo"
+            required
+          />
+        </div>
+
+        <div class="mb-4">
           <label for="reason" class="block text-lg font-medium text-[#b07d46] mb-2">
             Raison du Blacklist:
           </label>
@@ -150,6 +164,7 @@ export default {
       newBlacklist: {
         pseudo: '',
         reason: '',
+        ankamaPseudo: ''
       },
       blacklist: [],
     };
