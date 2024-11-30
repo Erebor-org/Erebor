@@ -131,7 +131,7 @@ public function getAllCharacters(CharactersRepository $repository): JsonResponse
 
     
 
-    #[Route('/characters/with-recruiter-rank', name: 'characters_with_recruiter_rank', methods: ['GET'])]
+    #[Route('/characters/recruiters', name: 'characters_with_recruiter_rank', methods: ['GET'])]
     public function getCharactersWithRecruiterRank(CharactersRepository $repository): JsonResponse
     {
         // Query pour trouver tous les personnages avec un rank ayant recruiter = true

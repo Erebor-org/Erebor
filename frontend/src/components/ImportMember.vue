@@ -128,12 +128,12 @@
             <div class="relative">
               <select
                 id="recruiter"
-                v-model="character.recruiter"
+                v-model="character.recruiterId"
                 class="block w-full border-2 border-[#b07d46] bg-[#fffaf0] rounded-lg p-2 text-lg focus:outline-none focus:ring-2 focus:ring-[#f3d9b1] appearance-none"
                 required
               >
-                <option v-for="player in players" :key="player.pseudo" :value="player.pseudo">
-                  {{ player.pseudo }}
+                <option v-for="recruiter in recruiters" :key="recruiter.id" :value="recruiter.id">
+                  {{ recruiter.pseudo }}
                 </option>
               </select>
             </div>
@@ -241,12 +241,11 @@
           class: '',
           level: 1,
           recruitedAt: '',
+          recruiterId: null,
           isArchived: false,
           userId: null, // Optional user ID
           },
-        recreuiters: [
-          {}
-        ],
+        recruiters: [],
         muleCharacter: {
           pseudo: "",
           linkedUser: "",
@@ -282,52 +281,80 @@
         isPseudoValid(pseudo) {
           return !this.blacklistList.includes(pseudo);
         },
-      
+        resetForm() {
+        // Réinitialiser les champs du formulaire principal
+        this.character = {
+          pseudo: '',
+          ankamaPseudo: '',
+          class: '',
+          level: 1,
+          recruitedAt: '',
+          recruiterId: '',
+          isArchived: false,
+          userId: null,
+        };
 
-      async submitCharacter() {
-        console.log("submit", this.character)
-         // Close modal after successful submission
-        this.closeModal();
-        // Envoyer les données du personnage principal
-        const selectedDate = new Date(this.recruitedAt); // Get the selected date
-        const today = new Date(); // Get today's date
+        // Réinitialiser les champs du formulaire mule (si nécessaire)
+        this.muleCharacter = {
+          pseudo: '',
+          linkedUser: '',
+          class: null,
+          level: 1,
+        };
 
-        // Check if the selected date is in the future
-        if (selectedDate > today) {
-          alert('The creation date cannot be in the future.');
-          this.recruitedAt = ''; // Clear the invalid date
-          return;
-        }
-        if (!this.character.class) {
-          this.errorMessage = "Veuillez sélectionner une classe avant de soumettre.";
-          return;
-        }
-        if (!this.isPseudoValid(this.character.pseudo)) {
-          this.errorMessage = `"${this.character.pseudo}" est blacklist d'Erebor.`;
-          return;
-        }
-        const payload = { ...this.character };
-        console.log("Données Personnage Principal:", payload);
-        console.log("players", this.players);
-        try {
-        // API POST request
-        const response = await axios.post('http://localhost:8000/characters/post', {
-          pseudo: this.character.pseudo,
-          ankamaPseudo: this.character.ankamaPseudo,
-          class: this.character.class,
-          level: this.character.level,
-          recruitedAt: this.character.recruitedAt,
-          isArchived: this.character.isArchived,
-          recruiterId: this.character.recruiterId,
-        });
+        // Réinitialiser les messages d'erreur
+        this.errorMessage = '';
+      },
 
-        alert('Character created successfully!');
-        console.log(response.data); // Handle success response
-      } catch (error) {
-        console.error('Error creating character:', error.response?.data || error.message);
-        alert('An error occurred while creating the character.');
-      }
-    },
+        async submitCharacter() {
+          console.log("submit", this.character)
+          console.log('Selected recruiterId:', this.character.recruiterId)
+
+          // Close modal after successful submission
+          this.closeModal();
+          // Envoyer les données du personnage principal
+          const selectedDate = new Date(this.recruitedAt); // Get the selected date
+          const today = new Date(); // Get today's date
+
+          // Check if the selected date is in the future
+          if (selectedDate > today) {
+            alert('The creation date cannot be in the future.');
+            this.recruitedAt = ''; // Clear the invalid date
+            return;
+          }
+          if (!this.character.class) {
+            this.errorMessage = "Veuillez sélectionner une classe avant de soumettre.";
+            return;
+          }
+          if (!this.isPseudoValid(this.character.pseudo)) {
+            this.errorMessage = `"${this.character.pseudo}" est blacklist d'Erebor.`;
+            return;
+          }
+          const payload = { ...this.character };
+          console.log("Données Personnage Principal:", payload);
+          try {
+          // API POST request
+          const response = await axios.post('http://localhost:8000/characters', {
+            pseudo: this.character.pseudo,
+            ankamaPseudo: this.character.ankamaPseudo,
+            class: this.character.class,
+            level: this.character.level,
+            recruitedAt: this.character.recruitedAt,
+            isArchived: this.character.isArchived,
+            recruiterId: this.character.recruiterId,
+          });
+
+          alert('Character created successfully!');
+          console.log(response.data);
+
+          // Réinitialiser le formulaire après succès
+          this.resetForm();
+          this.closeModal(); // Optionnel : Fermer la modal si nécessaire
+        } catch (error) {
+          console.error('Error creating character:', error.response?.data || error.message);
+          alert('An error occurred while creating the character.');
+        }
+      },
       
       submitMuleCharacter() {
         if (!this.muleCharacter.class) {
@@ -352,9 +379,9 @@
       closeModal() {
       this.$emit("close");
     },
-    async fetchCharactersWithRecruiters() {
+    async fetchRecruiters() {
       try {
-        const response = await axios.get('http://localhost:8000/characters/recruiter'); // Replace with your actual API endpoint
+        const response = await axios.get('http://localhost:8000/characters/recruiters'); // Replace with your actual API endpoint
         console.log("recruiters", response.data);
         this.recruiters = response.data; // Assign the response to the characters array
       } catch (error) {
@@ -364,8 +391,22 @@
     },
     },
     mounted() {
-      this.fetchCharactersWithRecruiters(); // Fetch characters when the component is mounted
+      this.fetchRecruiters(); // Fetch characters when the component is mounted
     },
+    watch: {
+      activeTab(newTab) {
+        if (newTab === 'character') {
+          this.resetForm();
+        } else if (newTab === 'muleCharacter') {
+          this.muleCharacter = {
+            pseudo: '',
+            linkedUser: '',
+            class: null,
+            level: 1,
+          };
+        }
+      },
+    }
   };
   </script>
   
