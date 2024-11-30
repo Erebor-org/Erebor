@@ -15,30 +15,39 @@ class CharactersController extends AbstractController
 {
 
     #[Route('/characters/', name: 'characters_list', methods: ['GET'])]
-    public function getAllCharacters(CharactersRepository $repository): JsonResponse
-    {
-        $characters = $repository->findAll();
+public function getAllCharacters(CharactersRepository $repository): JsonResponse
+{
+    // Fetch characters ordered by rank.id
+    $characters = $repository->createQueryBuilder('c')
+        ->join('c.rank', 'r') // Join the rank table
+        ->orderBy('r.id', 'ASC') // Order by rank.id ascending
+        ->addOrderBy('c.id', 'ASC') // Optionally order by character.id for consistent results within ranks
+        ->getQuery()
+        ->getResult();
 
-        // Optionally, format the response to include recruiter details if needed
-        $formattedCharacters = array_map(function ($character) {
-            return [
-                'id' => $character->getId(),
-                'pseudo' => $character->getPseudo(),
-                'class' => $character->getClass(),
-                'level' => $character->getLevel(),
-                'createdAt' => $character->getrecruitedAt()->format('Y-m-d'),
-                'isArchived' => $character->isArchived(),
-                'recruiter' => $character->getRecruiter() ? [
-                    'id' => $character->getRecruiter()->getId(),
-                    'pseudo' => $character->getRecruiter()->getPseudo(),
-                    'class' => $character->getRecruiter()->getClass(),
-                ] : null,
-                'rank' => $character->getRank()
-            ];
-        }, $characters);
+    // Format the response to include recruiter and rank details
+    $formattedCharacters = array_map(function ($character) {
+        return [
+            'id' => $character->getId(),
+            'pseudo' => $character->getPseudo(),
+            'class' => $character->getClass(),
+            'level' => $character->getLevel(),
+            'createdAt' => $character->getRecruitedAt()?->format('Y-m-d'),
+            'isArchived' => $character->isArchived(),
+            'recruiter' => $character->getRecruiter() ? [
+                'id' => $character->getRecruiter()->getId(),
+                'pseudo' => $character->getRecruiter()->getPseudo(),
+                'class' => $character->getRecruiter()->getClass(),
+            ] : null,
+            'rank' => $character->getRank() ? [
+                'id' => $character->getRank()->getId(),
+                'name' => $character->getRank()->getName(),
+            ] : null,
+        ];
+    }, $characters);
 
-        return $this->json($formattedCharacters);
-    }
+    return $this->json($formattedCharacters);
+}
 
 
     #[Route('/characters/', name: 'characters_create', methods: ['POST'])]
@@ -119,6 +128,7 @@ class CharactersController extends AbstractController
             ->join('c.rank', 'r') // Faire une jointure avec la table Rank
             ->where('r.recruiter = :recruiter') // Condition : recruiter = true
             ->setParameter('recruiter', true)
+            ->orderBy('c.id', 'ASC') // Tri par ID de personnage en ordre croissant
             ->getQuery()
             ->getResult();
 
