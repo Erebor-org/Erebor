@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\Characters;
 use App\Repository\CharactersRepository;
+use App\Repository\RanksRepository; // Ensure this is correctly imported
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -13,7 +14,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 class CharactersController extends AbstractController
 {
 
-    #[Route('/characters/get', name: 'characters_list', methods: ['GET'])]
+    #[Route('/characters/', name: 'characters_list', methods: ['GET'])]
     public function getAllCharacters(CharactersRepository $repository): JsonResponse
     {
         $characters = $repository->findAll();
@@ -25,13 +26,14 @@ class CharactersController extends AbstractController
                 'pseudo' => $character->getPseudo(),
                 'class' => $character->getClass(),
                 'level' => $character->getLevel(),
-                'createdAt' => $character->getCreatedAt()->format('Y-m-d'),
+                'createdAt' => $character->getrecruitedAt()->format('Y-m-d'),
                 'isArchived' => $character->isArchived(),
                 'recruiter' => $character->getRecruiter() ? [
                     'id' => $character->getRecruiter()->getId(),
                     'pseudo' => $character->getRecruiter()->getPseudo(),
                     'class' => $character->getRecruiter()->getClass(),
                 ] : null,
+                'rank' => $character->getRank()
             ];
         }, $characters);
 
@@ -39,7 +41,7 @@ class CharactersController extends AbstractController
     }
 
 
-    #[Route('/characters/post', name: 'characters_create', methods: ['POST'])]
+    #[Route('/characters/', name: 'characters_create', methods: ['POST'])]
     public function create(
         Request $request,
         EntityManagerInterface $em,
@@ -94,67 +96,105 @@ class CharactersController extends AbstractController
     }
 
 
-    #[Route('/characters/{id}', name: 'characters_show', methods: ['GET'])]
-    public function show(CharactersRepository $repository, int $id): JsonResponse
-        {
-            $character = $repository->find($id);
-            if (!$character) {
-                return $this->json(['error' => 'Character not found'], 404);
-            }
-            return $this->json($character);
-        }
-        #[Route('/characters/all', name: 'characters_get_all', methods: ['GET'])]
-        public function getAll(CharactersRepository $repository): JsonResponse
-        {
-            $characters = $repository->findBy([], ['recruitedAt' => 'DESC']); // Tri par date de création descendante
-            return $this->json($characters);
-        }
-        #[Route('/characters/{id}', name: 'characters_update', methods: ['PUT'])]
-        public function update(
-            Request $request,
-            CharactersRepository $repository,
-            EntityManagerInterface $em,
-            int $id
-        ): JsonResponse {
-            // Find the character to update
-            $character = $repository->find($id);
-            if (!$character) {
-                return $this->json(['error' => 'Character not found'], 404);
-            }
 
-            $data = json_decode($request->getContent(), true);
 
-            // Update basic fields
-            $character->setUserId($data['userId'] ?? $character->getUserId())
-                    ->setPseudo($data['pseudo'] ?? $character->getPseudo())
-                    ->setAnkamaPseudo($data['ankamaPseudo'] ?? $character->getAnkamaPseudo())
-                    ->setClass($data['class'] ?? $character->getClass())
-                    ->setLevel($data['level'] ?? $character->getLevel())
-                    ->setIsArchived($data['isArchived'] ?? $character->isArchived());
 
-            // Handle recruiter assignment
-            if (isset($data['recruiterId'])) {
-                $recruiter = $repository->find($data['recruiterId']);
-                if (!$recruiter) {
-                    return $this->json(['error' => 'Recruiter not found'], 404);
-                }
-
-                // Prevent self-assignment as recruiter
-                if ($recruiter->getId() === $character->getId()) {
-                    return $this->json(['error' => 'A character cannot be their own recruiter'], 400);
-                }
-
-                $character->setRecruiter($recruiter);
-            } else {
-                $character->setRecruiter(null); // Remove recruiter if not provided
-            }
-
-            // Persist changes
-            $em->flush();
-
-            return $this->json($character);
+    #[Route('/characters/all', name: 'characters_get_all', methods: ['GET'])]
+    public function getAll(CharactersRepository $repository): JsonResponse
+    {
+        $characters = $repository->findBy([], ['recruitedAt' => 'DESC']); // Tri par date de création descendante
+        return $this->json($characters);
     }
 
+
+    
+
+    
+
+    #[Route('/characters/with-recruiter-rank', name: 'characters_with_recruiter_rank', methods: ['GET'])]
+    public function getCharactersWithRecruiterRank(CharactersRepository $repository): JsonResponse
+    {
+        // Query pour trouver tous les personnages avec un rank ayant recruiter = true
+        $characters = $repository->createQueryBuilder('c')
+            ->join('c.rank', 'r') // Faire une jointure avec la table Rank
+            ->where('r.recruiter = :recruiter') // Condition : recruiter = true
+            ->setParameter('recruiter', true)
+            ->getQuery()
+            ->getResult();
+
+        // Format des données à retourner
+        $formattedCharacters = array_map(function ($character) {
+            return [
+                'id' => $character->getId(),
+                'pseudo' => $character->getPseudo(),
+                'class' => $character->getClass(),
+                'level' => $character->getLevel(),
+                'rank' => $character->getRank() ? [
+                    'id' => $character->getRank()->getId(),
+                    'name' => $character->getRank()->getName(),
+                    'recruiter' => $character->getRank()->getRecruiter(),
+                ] : null,
+            ];
+        }, $characters);
+
+        return $this->json($formattedCharacters);
+    }
+    #[Route('/characters/{id}', name: 'characters_show', requirements: ['id' => '\d+'], methods: ['GET'])]
+    public function show(RanksRepository $repository, int $id): JsonResponse
+    {
+        $character = $repository->find($id);
+    
+        if (!$character) {
+            return $this->json(['error' => 'Character not found'], 404);
+        }
+    
+        return $this->json($character);
+    }
+    #[Route('/characters/{id}', name: 'characters_update', methods: ['PUT'])]
+    public function update(
+        Request $request,
+        CharactersRepository $repository,
+        EntityManagerInterface $em,
+        int $id
+    ): JsonResponse {
+        // Find the character to update
+        $character = $repository->find($id);
+        if (!$character) {
+            return $this->json(['error' => 'Character not found'], 404);
+        }
+
+        $data = json_decode($request->getContent(), true);
+
+        // Update basic fields
+        $character->setUserId($data['userId'] ?? $character->getUserId())
+                ->setPseudo($data['pseudo'] ?? $character->getPseudo())
+                ->setAnkamaPseudo($data['ankamaPseudo'] ?? $character->getAnkamaPseudo())
+                ->setClass($data['class'] ?? $character->getClass())
+                ->setLevel($data['level'] ?? $character->getLevel())
+                ->setIsArchived($data['isArchived'] ?? $character->isArchived());
+
+        // Handle recruiter assignment
+        if (isset($data['recruiterId'])) {
+            $recruiter = $repository->find($data['recruiterId']);
+            if (!$recruiter) {
+                return $this->json(['error' => 'Recruiter not found'], 404);
+            }
+
+            // Prevent self-assignment as recruiter
+            if ($recruiter->getId() === $character->getId()) {
+                return $this->json(['error' => 'A character cannot be their own recruiter'], 400);
+            }
+
+            $character->setRecruiter($recruiter);
+        } else {
+            $character->setRecruiter(null); // Remove recruiter if not provided
+        }
+
+        // Persist changes
+        $em->flush();
+
+        return $this->json($character);
+    }
     #[Route('/characters/{id}', name: 'characters_delete', methods: ['DELETE'])]
     public function delete(CharactersRepository $repository, EntityManagerInterface $em, int $id): JsonResponse
     {
@@ -183,35 +223,5 @@ class CharactersController extends AbstractController
             ->getResult();
 
         return $this->json($characters);
-    }
-
-    #[Route('/characters/recruiter', name: 'characters_recruiter', methods: ['GET'])]
-    public function getCharactersWithRankRange(CharactersRepository $repository): JsonResponse
-    {
-        // Query to fetch characters with rank ID between 1 and 4
-        $characters = $repository->createQueryBuilder('c')
-            ->join('c.rank', 'r') // Assuming the rank relationship is defined as 'rank' in Characters entity
-            ->where('r.id BETWEEN :minRank AND :maxRank')
-            ->setParameter('minRank', 1)
-            ->setParameter('maxRank', 4)
-            ->getQuery()
-            ->getResult();
-
-        // Format the response if needed
-        $formattedCharacters = array_map(function ($character) {
-            return [
-                'id' => $character->getId(),
-                'pseudo' => $character->getPseudo(),
-                'class' => $character->getClass(),
-                'level' => $character->getLevel(),
-                'createdAt' => $character->getCreatedAt()->format('Y-m-d'),
-                'rank' => $character->getRank() ? [
-                    'id' => $character->getRank()->getId(),
-                    'name' => $character->getRank()->getName(),
-                ] : null,
-            ];
-        }, $characters);
-
-        return $this->json($formattedCharacters);
     }
 }

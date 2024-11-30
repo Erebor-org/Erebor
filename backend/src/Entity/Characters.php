@@ -29,6 +29,82 @@ class Characters
     #[ORM\Column(type: 'integer')]
     private int $level;
 
+    #[ORM\Column(type: 'boolean')]
+    private bool $isArchived = false;
+
+    
+
+    // Getters
+
+    public function getId(): ?int
+    {
+        return $this->id;
+    }
+
+    public function getUserId(): ?int
+    {
+        return $this->userId;
+    }
+
+    public function getPseudo(): string
+    {
+        return $this->pseudo;
+    }
+
+    public function getAnkamaPseudo(): string
+    {
+        return $this->ankamaPseudo;
+    }
+
+    public function getClass(): string
+    {
+        return $this->class;
+    }
+
+    public function getLevel(): int
+    {
+        return $this->level;
+    }
+
+
+    public function isArchived(): bool
+    {
+        return $this->isArchived;
+    }
+
+    // Setters
+
+    public function setUserId(?int $userId): self
+    {
+        $this->userId = $userId;
+        return $this;
+    }
+
+    public function setPseudo(string $pseudo): self
+    {
+        $this->pseudo = $pseudo;
+        return $this;
+    }
+
+    public function setAnkamaPseudo(string $ankamaPseudo): self
+    {
+        $this->ankamaPseudo = $ankamaPseudo;
+        return $this;
+    }
+
+    public function setClass(string $class): self
+    {
+        $this->class = $class;
+        return $this;
+    }
+
+    public function setLevel(int $level): self
+    {
+        $this->level = $level;
+        return $this;
+    }
+
+
     #[ORM\Column(type: 'datetime')]
     #[Assert\NotNull]
     #[Assert\LessThanOrEqual('today', message: 'The creation date cannot be in the future.')]
@@ -45,8 +121,7 @@ class Characters
         return $this;
     }
 
-    #[ORM\Column(type: 'boolean')]
-    private bool $isArchived = false;
+
 
     #[ORM\ManyToOne(targetEntity: Ranks::class)]
     #[ORM\JoinColumn(nullable: false)]

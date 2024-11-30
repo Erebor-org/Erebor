@@ -12,21 +12,15 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
 class RanksController extends AbstractController
 {
-    #[Route('/ranks', name: 'ranks_list', methods: ['GET'])]
-    public function index(RanksRepository $repository): JsonResponse
-    {
-        $ranks = $repository->findAll();
-        return $this->json($ranks);
-    }
 
-    #[Route('/ranks/all', name: 'ranks_get_all', methods: ['GET'])]
+    #[Route('/ranks', name: 'ranks_get_all', methods: ['GET'])]
     public function getAll(RanksRepository $repository): JsonResponse
     {
         $ranks = $repository->findBy([], ['id' => 'ASC']); // Tri par ID croissant
         return $this->json($ranks);
     }
 
-    #[Route('/ranks/post', name: 'ranks_create', methods: ['POST'])]
+    #[Route('/ranks/', name: 'ranks_create', methods: ['POST'])]
     public function create(Request $request, EntityManagerInterface $em): JsonResponse
     {
         $data = json_decode($request->getContent(), true);
