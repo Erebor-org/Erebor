@@ -162,6 +162,40 @@ public function getAllCharacters(CharactersRepository $repository): JsonResponse
             }
         ]);
     }
+
+    #[Route('/characters/{id}/archive', name: 'characters_update_isArchived', methods: ['PUT'])]
+    public function updateIsArchived(
+        Request $request,
+        CharactersRepository $repository,
+        EntityManagerInterface $em,
+        int $id
+    ): JsonResponse {
+        // Fetch the character by ID
+        $character = $repository->find($id);
+        if (!$character) {
+            return $this->json(['error' => 'Character not found'], 404);
+        }
+    
+        // Parse the JSON body and validate
+        $data = json_decode($request->getContent(), true);
+        if (!isset($data['isArchived']) || !is_bool($data['isArchived'])) {
+            return $this->json(['error' => 'The "isArchived" field is required and must be a boolean.'], 400);
+        }
+    
+        // Update the isArchived field
+        $character->setIsArchived($data['isArchived']);
+        $em->flush();
+    
+        return $this->json([
+            'message' => 'Character archive status updated successfully.',
+            'character' => [
+                'id' => $character->getId(),
+                'pseudo' => $character->getPseudo(),
+                'isArchived' => $character->isArchived(),
+            ],
+        ], 200);
+    }
+
     #[Route('/characters/{id}', name: 'characters_show', requirements: ['id' => '\d+'], methods: ['GET'])]
     public function show(RanksRepository $repository, int $id): JsonResponse
     {

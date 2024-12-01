@@ -109,7 +109,7 @@
             Annuler
           </button>
           <button
-            @click="archiveMember"
+            @click="archiveCharacter(selectedMember.id)"
             class="bg-[#b02e2e] text-[#f3d9b1] font-bold py-2 px-4 rounded-lg hover:bg-[#942828]"
           >
             Archiver
@@ -167,6 +167,29 @@ export default {
         alert('An error occurred while fetching not archived characters.');
       }
     },
+    async archiveCharacter(characterId) {
+    try {
+      const response = await axios.put(`http://localhost:8000/characters/${characterId}/archive`, {
+        isArchived: true,
+      });
+      console.log('Character archived successfully:', response.data);
+
+
+        // Remove the character from the list
+        this.charactersNotArchived = this.charactersNotArchived.filter(
+          (char) => char.id !== characterId
+        );
+        this.showModal = false;
+        this.showNotification = true;
+        // Automatically hide the notification after 3 seconds
+        setTimeout(() => {
+          this.showNotification = false;
+        }, 3000);
+    } catch (error) {
+      console.error('Error archiving character:', error.response?.data || error.message);
+      alert('An error occurred while archiving the character.');
+    }
+  },
     openModal(member) {
       this.selectedMember = member;
       this.showModal = true;
@@ -179,17 +202,6 @@ export default {
     },
     closeModalMember() {
       this.showModalMember = false;
-    },
-    archiveMember() {
-      if (this.selectedMember) {
-        this.selectedMember.archived = true;
-        this.showModal = false;
-        this.showNotification = true;
-        // Automatically hide the notification after 3 seconds
-        setTimeout(() => {
-          this.showNotification = false;
-        }, 3000);
-      }
     },
     mounted() {
       this.fetchAllCharacters();
