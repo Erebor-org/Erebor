@@ -280,6 +280,10 @@ export default {
       type: Boolean,
       required: true,
     },
+    fetchNotArchivedCharacters: {
+      type: Function,
+      required: true,
+    },
   },
   data() {
     return {
@@ -330,6 +334,7 @@ export default {
         xelor: '/src/assets/icon_classe/xelor.avif',
         zobal: '/src/assets/icon_classe/zobal.avif',
         huppermage: '/src/assets/icon_classe/huppermage.avif',
+        ouginak: '/src/assets/icon_classe/ouginak.avif',
       },
     };
   },
@@ -436,23 +441,11 @@ export default {
         alert('An error occurred while fetching characters with recruiters.');
       }
     },
-    async fetchNotArchivedCharacters() {
+    async loadNotArchivedCharacters() {
       try {
-        // Make the API call to fetch all characters
-        const response = await axios.get('http://localhost:8000/characters');
-
-        // Filter characters where isArchived is false
-        const notArchivedCharacters = response.data.filter(character => !character.isArchived);
-        console.log('Not archived characters:', notArchivedCharacters);
-
-        // Assign the filtered characters to a local property (if needed)
-        this.notArchivedCharacters = notArchivedCharacters; // or another property
+        this.notArchivedCharacters = await this.fetchNotArchivedCharacters();
       } catch (error) {
-        console.error(
-          'Error fetching not archived characters:',
-          error.response?.data || error.message
-        );
-        alert('An error occurred while fetching not archived characters.');
+        console.error('Error loading not archived characters:', error.message);
       }
     },
     selectNotArchivedCharacter(character) {
@@ -508,7 +501,7 @@ export default {
 
   mounted() {
     this.fetchRecruiters(); // Fetch characters when the component is mounted
-    this.fetchNotArchivedCharacters();
+    this.loadNotArchivedCharacters();
   },
   watch: {
     activeTab(newTab) {

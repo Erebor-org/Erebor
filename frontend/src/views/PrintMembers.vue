@@ -4,7 +4,9 @@
     :style="{ backgroundImage: `url(${backgroundImage})` }"
   >
     <!-- Main Block -->
-    <div class="bg-[#fff5e6] border-4 border-[#b07d46] rounded-lg shadow-lg w-11/12 max-w-4xl p-6 mb-6">
+    <div
+      class="bg-[#fff5e6] border-4 border-[#b07d46] rounded-lg shadow-lg w-11/12 max-w-4xl p-6 mb-6"
+    >
       <!-- Title and Button -->
       <div class="flex justify-between items-center mb-4">
         <h2 class="text-2xl font-bold text-[#b02e2e]">Liste des Membres</h2>
@@ -14,7 +16,11 @@
         >
           Ajouter un Personnage
         </button>
-        <ImportMember :showModalMember="showModalMember" @close="showModalMember = false" />
+        <ImportMember
+          :showModalMember="showModalMember"
+          :fetchNotArchivedCharacters="fetchNotArchivedCharacters"
+          @close="showModalMember = false"
+        />
       </div>
 
       <!-- Search Bar -->
@@ -40,26 +46,26 @@
           </thead>
           <tbody>
             <tr
-              v-for="(member, index) in members"
+              v-for="(member, index) in charactersNotArchived"
               :key="index"
               class="hover:bg-[#f3d9b1] hover:shadow-md transition-all group relative"
             >
               <!-- Classe Icon -->
               <td class="p-4">
                 <img
-                  :src="`${iconFolder}/${member.classe}.avif`"
-                  :alt="member.classe"
+                  :src="`${iconFolder}/${member.class}.avif`"
+                  :alt="member.class"
                   class="w-10 h-10 object-cover"
                 />
               </td>
               <!-- Pseudo -->
               <td class="p-4 text-[#b07d46] font-bold">{{ member.pseudo }}</td>
               <!-- Recruteur -->
-              <td class="p-4 text-[#b07d46]">{{ member.recruteur }}</td>
+              <td class="p-4 text-[#b07d46]">{{ member.recruiter.pseudo }}</td>
               <!-- Rang -->
-              <td class="p-4 text-[#b07d46]">{{ member.rang }}</td>
+              <td class="p-4 text-[#b07d46]">{{ member.rank.name }}</td>
               <!-- Date -->
-              <td class="p-4 text-[#b07d46]">{{ member.dateArrivee }}</td>
+              <td class="p-4 text-[#b07d46]">{{ member.createdAt }}</td>
               <!-- Options -->
               <td class="p-4 text-right">
                 <div
@@ -118,145 +124,47 @@
       class="fixed top-4 right-4 bg-[#b02e2e] text-[#f3d9b1] font-bold py-2 px-4 rounded-lg shadow-lg z-50"
     >
       Joueur archivé
-    </div>    
+    </div>
   </div>
 </template>
 
-  
-  
-  <script>
-    import axios from 'axios';
-    import members_bg from '@/assets/members_bg.webp';    
-    import ImportMember from '@/components/ImportMember.vue';
+<script>
+import axios from 'axios';
+import members_bg from '@/assets/members_bg.webp';
+import ImportMember from '@/components/ImportMember.vue';
 
-  export default {
-    components: {
-      ImportMember
-    },
-    data() {
-      return {
-        backgroundImage: members_bg, // Add your medieval-themed background image
-        iconFolder: "src/assets/icon_classe/", // Folder containing your class icons
-        searchQuery: "",
-        characters: [], // Holds the list of all characters
-        showModal: false,
-        showModalMember: false,
-        selectedMember: null,
-        showNotification: false,
-        members: [
-          {
-            classe: "enutrof", // Icon file name, e.g., bard.png
-            pseudo: "Bard",
-            recruteur: "Kalamouss",
-            rang: "Vieux roi",
-            dateArrivee: "2021-10-15",
-            archived: false
-          },
-          {
-            classe: "forgelance",
-            pseudo: "Siisko",
-            recruteur: "Ontas",
-            rang: "Main du roi",
-            dateArrivee: "2022-02-12",
-            archived: false
-          },
-          {
-            classe: "sram",
-            pseudo: "Lae",
-            recruteur: "Nyu",
-            rang: "Conseiller",
-            dateArrivee: "2023-05-06",
-            archived: false
-          },
-          {
-            classe: "iop",
-            pseudo: "Shira",
-            recruteur: "Kalamouss",
-            rang: "Légende",
-            dateArrivee: "2020-07-30",
-            archived: false
-          },
-          {
-            classe: "cra",
-            pseudo: "Nyu",
-            recruteur: "Kalamouss",
-            rang: "Vétéran",
-            dateArrivee: "2020-07-30",
-            archived: false
-          },
-          {
-            classe: "eniripsa",
-            pseudo: "Ontas",
-            recruteur: "Kalamouss",
-            rang: "Vétéran",
-            dateArrivee: "2020-07-30",
-            archived: false
-          },
-          {
-            classe: "ouginak",
-            pseudo: "Shira",
-            recruteur: "Kalamouss",
-            rang: "Vétéran",
-            dateArrivee: "2020-07-30",
-            archived: false
-          },
-          {
-            classe: "pandawa",
-            pseudo: "Shira",
-            recruteur: "Kalamouss",
-            rang: "Vétéran",
-            dateArrivee: "2020-07-30",
-            archived: false
-          },
-          {
-            classe: "xelor",
-            pseudo: "Shira",
-            recruteur: "Kalamouss",
-            rang: "Vétéran",
-            dateArrivee: "2020-07-30",
-            archived: false
-          },
-          {
-            classe: "roublard",
-            pseudo: "Shira",
-            recruteur: "Kalamouss",
-            rang: "Vétéran",
-            dateArrivee: "2020-07-30",
-            archived: false
-          },
-          {
-            classe: "huppermage",
-            pseudo: "Shira",
-            recruteur: "Kalamouss",
-            rang: "Vétéran",
-            dateArrivee: "2020-07-30",
-            archived: false
-          },
-        ],
-      };
-    },
-    computed: {
-      filteredMembers() {
-        const query = this.searchQuery.toLowerCase();
-        return this.characters.filter(
-          (member) =>
-          !member.archived &&
-            member.pseudo.toLowerCase().includes(query) ||
-            member.recruteur.toLowerCase().includes(query) ||
-            member.rang.toLowerCase().includes(query) ||
-            member.classe.toLowerCase().includes(query) 
-        );
-      },
-    },
-    methods: {
-
-    async fetchAllCharacters() {
-    try {
-      const response = await axios.get('http://localhost:8000/characters'); // Replace with your actual API endpoint
-        this.characters = response.data; // Assign the response to the characters array
+export default {
+  components: {
+    ImportMember,
+  },
+  data() {
+    return {
+      backgroundImage: members_bg, // Add your medieval-themed background image
+      iconFolder: 'src/assets/icon_classe/', // Folder containing your class icons
+      searchQuery: '',
+      charactersNotArchived: [], // Holds the list of all characters
+      showModal: false,
+      showModalMember: false,
+      selectedMember: null,
+      showNotification: false,
+    };
+  },
+  computed: {
+  },
+  methods: {
+    async fetchNotArchivedCharacters() {
+      try {
+        const response = await axios.get('http://localhost:8000/characters');
+        const notArchivedCharacters = response.data.filter(character => !character.isArchived);
+        this.charactersNotArchived = response.data.filter(character => !character.isArchived);
+        console.log('Not archived characters:', this.charactersNotArchived);
+        return notArchivedCharacters;
       } catch (error) {
-        console.error('Error fetching characters:', error.response?.data || error.message);
-        alert('An error occurred while fetching characters.');
+        console.error(
+          'Error fetching not archived characters:',
+          error.response?.data || error.message
+        );
+        alert('An error occurred while fetching not archived characters.');
       }
     },
     openModal(member) {
@@ -274,35 +182,35 @@
     },
     archiveMember() {
       if (this.selectedMember) {
-      this.selectedMember.archived = true;
-      this.showModal = false;
-      this.showNotification = true;
-      // Automatically hide the notification after 3 seconds
-      setTimeout(() => {
-        this.showNotification = false;
-      }, 3000);
+        this.selectedMember.archived = true;
+        this.showModal = false;
+        this.showNotification = true;
+        // Automatically hide the notification after 3 seconds
+        setTimeout(() => {
+          this.showNotification = false;
+        }, 3000);
       }
-      },
-      mounted() {
-    this.fetchAllCharacters(); // Fetch the characters when the component is mounted
+    },
+    mounted() {
+      this.fetchAllCharacters();
+    },
   },
-  },
-  };
-  </script>
-  
-  <style scoped>
-  /* Table styling */
-  table {
-    border-spacing: 0;
-  }
-  
-  th,
-  td {
-    border-bottom: 2px solid #b07d46;
-  }
-  
-  /* Optional row highlight */
-  tbody tr:hover {
-    background-color: #f3d9b1;
-  }
-  </style>
+};
+</script>
+
+<style scoped>
+/* Table styling */
+table {
+  border-spacing: 0;
+}
+
+th,
+td {
+  border-bottom: 2px solid #b07d46;
+}
+
+/* Optional row highlight */
+tbody tr:hover {
+  background-color: #f3d9b1;
+}
+</style>
