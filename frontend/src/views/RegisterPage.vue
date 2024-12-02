@@ -1,6 +1,6 @@
 <template>
 
-  <div class="min-h-screen w-full grid bg-gradient-to-b flex items-center justify-center relative h-screen bg-cover bg-center" :style="{ backgroundImage: `url(${register_bg})` }">
+  <div class="w-full grid bg-gradient-to-b flex items-center justify-center relative h-screen bg-cover bg-center" :style="{ backgroundImage: `url(${register_bg})` }">
 
     <!-- Form Container -->
     <div

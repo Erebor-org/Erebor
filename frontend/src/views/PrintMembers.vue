@@ -1,7 +1,7 @@
 <template>
   <div
-    class="min-h-screen w-full flex flex-col items-center justify-center bg-cover bg-center"
-    :style="{ backgroundImage: `url(${backgroundImage})` }"
+    class="w-full flex flex-col items-center justify-center bg-cover bg-center"
+    :style="{ backgroundImage: `url(${backgroundImage})`}"
   >
     <!-- Main Block -->
     <div

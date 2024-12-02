@@ -1,6 +1,6 @@
 <template>
   <div
-    class="min-h-screen w-full flex flex-col items-center justify-start py-10 bg-cover bg-center"
+    class="w-full flex flex-col items-center justify-start py-10 bg-cover bg-center"
     :style="{ backgroundImage: `url(${backgroundImage})` }"
   >
 

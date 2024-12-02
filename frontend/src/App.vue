@@ -4,19 +4,14 @@ import NavigationBar from './components/NavigationBar.vue'
 </script>
 
 <template>
-  <div>
-    <header>
-  
-
-      <div class="grid">
-
+  <div class="h-screen">
+    <header class="w-full bg-black">
         <nav>
         <NavigationBar />
         </nav>
-      </div>
     </header>
 
-    <RouterView />
+    <RouterView class="h-[calc(100vh-128px)] overflow-auto"/>
   </div>
 </template>
 

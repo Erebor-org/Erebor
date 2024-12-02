@@ -3,7 +3,7 @@ import { RouterLink } from 'vue-router'
 </script>
 
 <template>
-  <div class="bg-black text-white grid">
+  <div class="text-white grid">
     <!-- Dofus Logo Positioned Independently -->
     <div class="logo-container">
       <img :src="dofus_logo" alt="Logo" class="dofus-logo"/>
@@ -93,13 +93,6 @@ export default {
 .dofus-logo {
   width: 50%; /* Set to 50% of original size */
   height: auto; /* Maintain aspect ratio */
-}
-
-/* Add a relative position and z-index to the navbar */
-.bg-black {
-  position: relative;
-  z-index:
-   10;
 }
 .underline-on-hover {
   position: relative; /* Ensure the pseudo-element positions correctly */

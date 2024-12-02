@@ -1,6 +1,6 @@
 <template>
   <div
-    class="min-h-screen w-full bg-black relative bg-opacity-90"
+    class="w-full bg-black relative bg-opacity-90"
   >
     <!-- Add top margin to maintain spacing consistency -->
     <div class="flex items-center justify-center">
