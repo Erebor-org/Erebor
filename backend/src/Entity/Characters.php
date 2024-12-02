@@ -29,7 +29,37 @@ class Characters
     #[ORM\Column(type: 'boolean')]
     private bool $isArchived = false;
 
-    
+    #[ORM\OneToMany(mappedBy: 'mainCharacter', targetEntity: Mule::class, cascade: ['persist', 'remove'])]
+    private $mules;
+
+    // Getter and Setter for mules
+
+    public function getMules(): Collection
+    {
+        return $this->mules;
+    }
+
+    public function addMule(Mule $mule): self
+    {
+        if (!$this->mules->contains($mule)) {
+            $this->mules[] = $mule;
+            $mule->setMainCharacter($this);
+        }
+
+        return $this;
+    }
+
+    public function removeMule(Mule $mule): self
+    {
+        if ($this->mules->removeElement($mule)) {
+            // Set the owning side to null (unless already changed)
+            if ($mule->getMainCharacter() === $this) {
+                $mule->setMainCharacter(null);
+            }
+        }
+
+        return $this;
+    }
 
     // Getters
 

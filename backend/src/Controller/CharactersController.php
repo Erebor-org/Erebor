@@ -163,6 +163,14 @@ public function getAllCharacters(CharactersRepository $repository): JsonResponse
         ]);
     }
 
+    #[Route('/characters/{id}/mules', name: 'character_mules', methods: ['GET'])]
+    public function getCharacterMules(Characters $character): JsonResponse
+    {
+        $mules = $character->getMules()->toArray();
+    
+        return $this->json($mules);
+    }
+    
     #[Route('/characters/{id}/archive', name: 'characters_update_isArchived', methods: ['PUT'])]
     public function updateIsArchived(
         Request $request,

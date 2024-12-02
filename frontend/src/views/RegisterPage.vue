@@ -33,6 +33,7 @@
 
         <!-- Mot de Passe -->
         <div class="relative">
+          Attention à ne pas mettre vos mots de passes en jeu
           <label for="password" class="block text-red-800 font-semibold">Mot de Passe</label>
           <input
             v-model="form.password"

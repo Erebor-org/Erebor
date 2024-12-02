@@ -44,7 +44,6 @@ import { RouterLink } from 'vue-router'
         <!-- Right Menu -->
         <div class="flex items-center space-x-6">
           <button class="text-sm uppercase underline-on-hover"><RouterLink to="/membres">Membres</RouterLink></button>
-          <button class="text-sm uppercase underline-on-hover"><RouterLink to="/import">Ajouter un membre</RouterLink></button>
           <button class="text-sm uppercase underline-on-hover"><RouterLink to="/blacklist">Blacklist</RouterLink></button>
         </div>
       </div>

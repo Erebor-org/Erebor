@@ -365,7 +365,7 @@ export default {
       // Réinitialiser les messages d'erreur
       this.errorMessage = '';
     },
-
+  
     async submitCharacter() {
       console.log('submit', this.character);
       console.log('Selected recruiterId:', this.character.recruiterId);
