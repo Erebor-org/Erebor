@@ -1,7 +1,7 @@
 <template>
   <div
     class="w-full flex flex-col items-center justify-center bg-cover bg-center"
-    :style="{ backgroundImage: `url(${backgroundImage})`}"
+    :style="{ backgroundImage: `url(${backgroundImage})` }"
   >
     <!-- Main Block -->
     <div
@@ -46,7 +46,7 @@
           </thead>
           <tbody>
             <tr
-              v-for="(member, index) in charactersNotArchived"
+              v-for="(member, index) in filteredMembers"
               :key="index"
               class="hover:bg-[#f3d9b1] hover:shadow-md transition-all group relative"
             >
@@ -149,8 +149,6 @@ export default {
       showNotification: false,
     };
   },
-  computed: {
-  },
   methods: {
     async fetchNotArchivedCharacters() {
       try {
@@ -168,16 +166,18 @@ export default {
       }
     },
     async archiveCharacter(characterId) {
-    try {
-      const response = await axios.put(`http://localhost:8000/characters/${characterId}/archive`, {
-        isArchived: true,
-      });
-      console.log('Character archived successfully:', response.data);
-
+      try {
+        const response = await axios.put(
+          `http://localhost:8000/characters/${characterId}/archive`,
+          {
+            isArchived: true,
+          }
+        );
+        console.log('Character archived successfully:', response.data);
 
         // Remove the character from the list
         this.charactersNotArchived = this.charactersNotArchived.filter(
-          (char) => char.id !== characterId
+          char => char.id !== characterId
         );
         this.showModal = false;
         this.showNotification = true;
@@ -185,11 +185,11 @@ export default {
         setTimeout(() => {
           this.showNotification = false;
         }, 3000);
-    } catch (error) {
-      console.error('Error archiving character:', error.response?.data || error.message);
-      alert('An error occurred while archiving the character.');
-    }
-  },
+      } catch (error) {
+        console.error('Error archiving character:', error.response?.data || error.message);
+        alert('An error occurred while archiving the character.');
+      }
+    },
     openModal(member) {
       this.selectedMember = member;
       this.showModal = true;
@@ -205,6 +205,25 @@ export default {
     },
     mounted() {
       this.fetchAllCharacters();
+    },
+  },
+  computed: {
+    filteredMembers() {
+      const query = this.searchQuery.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+      console.log('query', this.searchQuery);
+      return this.charactersNotArchived.filter(member => {
+        const pseudo = member.pseudo.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+        const recruiterPseudo = member.recruiter.pseudo.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+        const rankName = member.rank.name.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+        const memberClass = member.class.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+        console.log('rankName', rankName);
+        return (
+          (!member.archived && pseudo.includes(query)) ||
+          recruiterPseudo.includes(query) ||
+          rankName.includes(query) ||
+          memberClass.includes(query)
+        );
+      });
     },
   },
 };
