@@ -6,7 +6,8 @@
   >
     <!-- Modal Content -->
     <div
-      class="bg-[#fff5e6] border-4 border-[#b07d46] rounded-lg shadow-lg w-10/12 max-w-3xl p-4 relative"
+      style="max-width: 600px; width: 100%"
+      class="bg-[#fff5e6] border-4 border-[#b07d46] rounded-lg shadow-lg p-4 relative w-full max-w-3xl xl:max-w-2xl lg:max-w-lg md:max-w-md sm:max-w-sm"
     >
       <!-- Close Button -->
       <button
@@ -203,11 +204,11 @@
                 :key="index"
                 :class="[
                   'cursor-pointer border-2 rounded-lg p-2',
-                  muleCharacter.class === icon
+                  muleCharacter.class === index
                     ? 'border-[#b02e2e] bg-[#f3d9b1]'
                     : 'border-[#b07d46] bg-[#fffaf0]',
                 ]"
-                @click="muleCharacter.class = icon"
+                @click="((muleCharacter.class = index), selectClass(index))"
               >
                 <img :src="icon" alt="Classe" class="w-full h-auto" />
               </div>
@@ -256,7 +257,9 @@
               </button>
             </div>
           </div>
-
+          <div v-if="errorMessageMule" class="text-1xl font-bold text-[#b02e2e] mb-6">
+            {{ errorMessageMule }}
+          </div>
           <!-- Submit -->
           <button
             type="submit"
@@ -289,7 +292,9 @@ export default {
     return {
       register_bg,
       errorMessage: '', // Message d'erreur à afficher
+      errorMessageMule: '',
       selectedClass: null, // Classe actuellement sélectionnée
+      selectedClassMule: null,
       activeTab: 'character', // Onglet actif
       character: {
         pseudo: '',
@@ -365,7 +370,7 @@ export default {
       // Réinitialiser les messages d'erreur
       this.errorMessage = '';
     },
-  
+
     async submitCharacter() {
       console.log('submit', this.character);
       console.log('Selected recruiterId:', this.character.recruiterId);
@@ -405,25 +410,55 @@ export default {
       }
     },
 
-    submitMuleCharacter() {
+    async submitMuleCharacter() {
+      // Validation de base
+      console.log("mule", this.muleCharacter);
       if (!this.muleCharacter.class) {
-        this.errorMessage = 'Veuillez sélectionner une classe avant de soumettre.';
+        this.errorMessageMule = 'Veuillez sélectionner une classe avant de soumettre.';
         return;
       }
       if (!this.isPseudoValid(this.muleCharacter.pseudo)) {
-        this.errorMessage = `"${this.muleCharacter.pseudo}" est blacklist d'Erebor.`;
+        this.errorMessageMule = `"${this.muleCharacter.pseudo}" est blacklist d'Erebor.`;
         return;
       }
-      // Envoyer les données du personnage mule
-      const payload = { ...this.muleCharacter };
-      console.log('Données Personnage Mule:', payload);
-      // Ajoutez ici une requête POST vers Symfony avec fetch ou axios
+      if (!this.muleCharacter.linkedCharacterId) {
+        this.errorMessageMule = 'Veuillez sélectionner un personnage principal.';
+        return;
+      }
+
+      // Appel à la méthode pour poster la mule
+      try {
+        const response = await axios.post('http://localhost:8000/mules', {
+          pseudo: this.muleCharacter.pseudo,
+          ankamaPseudo: this.muleCharacter.ankamaPseudo,
+          class: this.muleCharacter.class,
+          mainCharacterId: this.muleCharacter.linkedCharacterId,
+        });
+
+        console.log('Mule character created successfully:', response.data);
+
+        // Réinitialiser le formulaire après succès
+        this.muleCharacter = {
+          pseudo: '',
+          ankamaPseudo: '',
+          class: null,
+          linkedCharacterId: null,
+        };
+        this.selectedCharacterName = '';
+        this.selectedCharacterIcon = '';
+        alert('Mule ajoutée avec succès !');
+        return response.data; // Retour des données en cas de succès
+      } catch (error) {
+        console.error('Error creating mule character:', error.response?.data || error.message);
+        alert('An error occurred while creating the mule character.');
+        throw error; // Propagation de l'erreur pour une gestion supplémentaire
+      }
     },
     selectClass(icon) {
       this.selectedClass = icon;
     },
     selectClassMule(icon) {
-      this.selectedClass = icon;
+      this.selectedClassMule = icon;
     },
     closeModal() {
       this.$emit('close');

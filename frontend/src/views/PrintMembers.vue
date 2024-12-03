@@ -204,26 +204,19 @@ export default {
       this.showModalMember = false;
     },
     mounted() {
-      this.fetchAllCharacters();
+      this.fetchNotArchivedCharacters();
     },
   },
   computed: {
     filteredMembers() {
-      const query = this.searchQuery.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-      console.log('query', this.searchQuery);
-      return this.charactersNotArchived.filter(member => {
-        const pseudo = member.pseudo.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-        const recruiterPseudo = member.recruiter.pseudo.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-        const rankName = member.rank.name.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-        const memberClass = member.class.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-        console.log('rankName', rankName);
-        return (
-          (!member.archived && pseudo.includes(query)) ||
-          recruiterPseudo.includes(query) ||
-          rankName.includes(query) ||
-          memberClass.includes(query)
-        );
-      });
+      const query = this.searchQuery.toLowerCase();
+      return this.charactersNotArchived.filter(
+        (member) =>
+          member.pseudo.toLowerCase().includes(query) ||
+          member.recruiter.pseudo.toLowerCase().includes(query) ||
+          member.class.toLowerCase().includes(query) ||
+          member.rank.name.toLowerCase().includes(query)
+      );
     },
   },
 };
