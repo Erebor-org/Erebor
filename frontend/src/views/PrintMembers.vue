@@ -3,6 +3,10 @@
     class="w-full flex flex-col items-center justify-center bg-cover bg-center"
     :style="{ backgroundImage: `url(${backgroundImage})` }"
   >
+    <div>
+      <Notification ref="notificationRef" />
+      <!-- Rest of your component -->
+    </div>
     <!-- Main Block -->
     <div
       class="bg-[#fff5e6] border-4 border-[#b07d46] rounded-lg shadow-lg w-11/12 max-w-6xl p-6 mb-6"
@@ -50,28 +54,27 @@
               class="hover:bg-[#f3d9b1] hover:shadow-md transition-all group relative"
             >
               <!-- Editable Classe Icon -->
-              <!-- Editable Classe Icon -->
               <td class="p-4 relative">
                 <div class="relative inline-block">
-                  <img
-                    :src="`${iconFolder}/${member.class}.avif`"
-                    :alt="member.class"
-                    class="w-10 h-10 object-cover cursor-pointer"
-                    @click="toggleClassDropdown(member.id)"
-                  />
-                  <!-- Dropdown for selecting a new class -->
+                  <button @click="toggleClassDropdown(member.id)">
+                    <img
+                      :src="`${iconFolder}/${member.class}.avif`"
+                      alt="Character Class"
+                      class="w-10 h-10 cursor-pointer"
+                    />
+                  </button>
                   <div
-                    v-if="classDropdownVisible === member.id"
-                    class="absolute top-12 left-0 z-10 bg-[#fff5e6] border border-[#b07d46] rounded-lg shadow-lg p-2 w-64"
+                    v-if="classDropdownVisible[member.id]"
+                    class="absolute top-12 left-0 z-10 bg-[#fff5e6] border border-[#b07d46] rounded-lg shadow-lg p-2 w-80"
                   >
-                    <div class="grid grid-cols-4 gap-2 max-h-40 overflow-y-auto">
+                    <div lass="grid grid-cols-4 gap-2 max-h-40 overflow-y-auto">
                       <div
-                        v-for="(classIcon, className) in classes"
+                        v-for="(icon, className) in classes"
                         :key="className"
                         class="flex flex-col items-center gap-1 cursor-pointer hover:bg-[#f3d9b1] p-2 rounded-lg"
                         @click="updateCharacterClass(member.id, className)"
                       >
-                        <img :src="classIcon" :alt="className" class="w-10 h-10" />
+                        <img :src="icon" :alt="className" class="w-12 h-12" />
                         <span class="text-sm text-[#b07d46]">{{ className }}</span>
                       </div>
                     </div>
@@ -185,10 +188,14 @@
 import axios from 'axios';
 import members_bg from '@/assets/members_bg.webp';
 import ImportMember from '@/components/ImportMember.vue';
+import Notification from '@/components/NotificationCenter.vue';
+
+import { reactive } from 'vue';
 
 export default {
   components: {
     ImportMember,
+    Notification
   },
   data() {
     return {
@@ -204,7 +211,7 @@ export default {
       showMulesModal: false,
       currentCharacter: null,
       currentCharacterMules: [],
-      classDropdownVisible: null, // Tracks which dropdown is open
+      classDropdownVisible: reactive({}), // Tracks which dropdown is open
       classes: {
         sram: '/src/assets/icon_classe/sram.avif',
         forgelance: '/src/assets/icon_classe/forgelance.avif',
@@ -335,7 +342,35 @@ export default {
       console.log('Editing mule:', mule);
     },
     toggleClassDropdown(characterId) {
-      this.classDropdownVisible = this.classDropdownVisible === characterId ? null : characterId;
+      if (!this.classDropdownVisible[characterId]) {
+        // Open this dropdown, close all others
+        Object.keys(this.classDropdownVisible).forEach(key => {
+          this.classDropdownVisible[key] = false;
+        });
+        this.classDropdownVisible[characterId] = true;
+      } else {
+        // Close the dropdown
+        this.classDropdownVisible[characterId] = false;
+      }
+    },
+    closeAllDropdowns() {
+      Object.keys(this.classDropdownVisible).forEach(key => {
+        this.classDropdownVisible[key] = false;
+      });
+    },
+    handleClickOutside(event) {
+      const dropdownElements = document.querySelectorAll('.relative.inline-block');
+      let clickedInside = false;
+
+      dropdownElements.forEach(dropdown => {
+        if (dropdown.contains(event.target)) {
+          clickedInside = true;
+        }
+      });
+
+      if (!clickedInside) {
+        this.closeAllDropdowns();
+      }
     },
     async updateCharacterClass(characterId, newClass) {
       try {
@@ -347,11 +382,12 @@ export default {
         if (character) {
           character.class = newClass;
         }
-        this.classDropdownVisible = null; // Close the dropdown
-        alert('Class updated successfully!');
+        this.closeAllDropdowns();
+        this.$refs.notificationRef.showNotification('Class updated successfully!');
       } catch (error) {
-        console.error('Error updating character class:', error.message);
-        alert('Failed to update class.');
+        console.error('Error updating character class:', error.message); 
+        this.$refs.notificationRef.showNotification('Failed to update class.');
+
       }
     },
   },
@@ -359,9 +395,13 @@ export default {
     try {
       await this.fetchNotArchivedCharacters();
       await this.fetchAllMules(); // Fetch all mules once when the component mounts
+      document.addEventListener('click', this.handleClickOutside);
     } catch (error) {
       console.error('Error during component initialization:', error);
     }
+  },
+  beforeUnmount() {
+    document.removeEventListener('click', this.handleClickOutside);
   },
   computed: {
     filteredMembers() {
