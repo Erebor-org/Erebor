@@ -145,4 +145,19 @@ class MuleController extends AbstractController
 
         return $this->json(['message' => 'Mule deleted successfully']);
     }
+
+    #[Route('/mules/{id}/archive', name: 'mule_archive', methods: ['PUT'])]
+    public function archive(MuleRepository $repository, EntityManagerInterface $em, int $id): JsonResponse
+    {
+        $mule = $repository->find($id);
+
+        if (!$mule) {
+            return $this->json(['error' => 'Mule not found'], 404);
+        }
+
+        $mule->setIsArchived(true);
+        $em->flush();
+
+        return $this->json(['message' => 'Mule archived successfully']);
+    }
 }

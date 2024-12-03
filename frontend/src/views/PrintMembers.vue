@@ -5,7 +5,7 @@
   >
     <!-- Main Block -->
     <div
-      class="bg-[#fff5e6] border-4 border-[#b07d46] rounded-lg shadow-lg w-11/12 max-w-4xl p-6 mb-6"
+      class="bg-[#fff5e6] border-4 border-[#b07d46] rounded-lg shadow-lg w-11/12 max-w-6xl p-6 mb-6"
     >
       <!-- Title and Button -->
       <div class="flex justify-between items-center mb-4">
@@ -27,24 +27,24 @@
       <input
         type="text"
         v-model="searchQuery"
-        placeholder="Rechercher par pseudo, recruteur ou rang"
+        placeholder="Rechercher par pseudo, recruteur, rang ou mule"
         class="w-full border-2 border-[#b07d46] bg-[#fffaf0] rounded-lg p-3 text-lg focus:outline-none focus:ring-2 focus:ring-[#f3d9b1] mb-4"
       />
 
       <!-- Member Table -->
       <div class="overflow-y-auto max-h-96">
-        <table class="w-full text-left border-collapse">
+        <table class="w-full text-center border-collapse">
           <thead>
             <tr class="bg-[#b02e2e] text-[#f3d9b1] text-lg">
               <th class="p-4">Classe</th>
               <th class="p-4">Pseudo</th>
               <th class="p-4">Recruteur</th>
               <th class="p-4">Rang</th>
-              <th class="p-4">Date d'arrivée</th>
-              <th class="p-4">Mules</th>
+              <th class="p-4">Team</th>
             </tr>
           </thead>
           <tbody>
+            <!-- Characters Rows -->
             <tr
               v-for="(member, index) in filteredMembers"
               :key="member.id || index"
@@ -64,16 +64,16 @@
               <td class="p-4 text-[#b07d46]">{{ member?.recruiter?.pseudo || 'No Recruiter' }}</td>
               <!-- Rang -->
               <td class="p-4 text-[#b07d46]">{{ member?.rank?.name || 'No Rank' }}</td>
-              <!-- Date -->
-              <td class="p-4 text-[#b07d46]">{{ member?.createdAt || 'No Date' }}</td>
-              <!-- View Mules -->
+              <!-- Mules Count -->
               <td class="p-4">
-                <button
-                  class="bg-[#b02e2e] text-[#f3d9b1] font-bold py-2 px-4 rounded-lg hover:bg-[#942828] focus:ring-4 focus:ring-[#f3d9b1]"
+                <span
+                  v-if="filteredMulesByCharacter(member.id).length > 0"
+                  class="text-[#b02e2e] font-bold cursor-pointer hover:underline"
                   @click="showMules(member.id)"
                 >
-                  Voir les mules
-                </button>
+                  B{{ filteredMulesByCharacter(member.id).length +1 }}
+                </span>
+                <span v-else class="text-gray-400">Aucun</span>
               </td>
             </tr>
           </tbody>
@@ -84,10 +84,10 @@
     <!-- Mules Modal -->
     <div
       v-if="showMulesModal"
-      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+      class="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50"
       @click.self="closeMulesModal"
     >
-      <div class="bg-[#fff5e6] border-4 border-[#b07d46] rounded-lg shadow-lg p-6 w-1/2">
+      <div class="bg-[#fff5e6] border-4 border-[#b07d46] rounded-lg p-6 w-11/12 max-w-4xl relative">
         <!-- Close Button -->
         <button
           class="absolute top-3 right-3 text-[#b02e2e] hover:text-[#942828] font-bold text-lg"
@@ -95,29 +95,52 @@
         >
           &times;
         </button>
-        <h2 class="text-xl font-bold text-[#b02e2e] mb-4">Mules pour {{ currentCharacter?.pseudo }}</h2>
-        <div v-if="currentCharacterMules.length > 0">
-          <ul>
-            <li
-              v-for="(mule, index) in currentCharacterMules"
-              :key="mule.id || index"
-              class="flex items-center gap-4 mb-2"
-            >
-              <img
-                :src="`${iconFolder}/${mule.class}.avif`"
-                :alt="mule.class"
-                class="w-8 h-8"
-              />
-              <div>
-                <p class="text-lg font-medium text-[#b07d46]">{{ mule.pseudo }}</p>
-                <p class="text-sm text-[#b07d46]">
-                  <strong>Ankama Pseudo:</strong> {{ mule.ankamaPseudo || 'Unknown' }}
-                </p>
-              </div>
-            </li>
-          </ul>
+
+        <!-- Modal Title -->
+        <h2 class="text-2xl font-bold text-[#b02e2e] mb-4">
+          Liste des Mules pour {{ currentCharacter.pseudo || 'Personnage inconnu' }}
+        </h2>
+
+        <!-- Mule Table -->
+        <div class="overflow-y-auto max-h-96">
+          <table class="w-full text-center border-collapse">
+            <thead>
+              <tr class="bg-[#b02e2e] text-[#f3d9b1] text-lg">
+                <th class="p-4">Classe</th>
+                <th class="p-4">Pseudo</th>
+                <th class="p-4">Ankama Pseudo</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr
+                v-for="(mule, index) in filteredMulesByCharacter(currentCharacter.id)"
+                :key="mule.id || index"
+                class="hover:bg-[#f3d9b1] hover:shadow-md transition-all group relative text-center"
+              >
+                <!-- Classe Icon -->
+                <td class="p-4 flex justify-center items-center">
+                  <img
+                    :src="`${iconFolder}/${mule.class}.avif`"
+                    :alt="mule.class"
+                    class="w-10 h-10 object-cover"
+                  />
+                </td>
+                <!-- Pseudo -->
+                <td class="p-4 text-[#b07d46] font-bold">{{ mule.pseudo || 'Unknown' }}</td>
+                <!-- Ankama Pseudo -->
+                <td class="p-4 flex justify-between items-center">
+                  <span class="text-[#b07d46]">{{ mule.ankamaPseudo || 'No Ankama Pseudo' }}</span>
+                  <button
+                    class="bg-[#b02e2e] text-[#f3d9b1] font-bold py-2 px-4 rounded-lg hover:bg-[#942828] focus:ring-4 focus:ring-[#f3d9b1] hidden group-hover:block ml-4"
+                    @click="archiveMule(mule.id)"
+                  >
+                    Archiver
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
-        <div v-else class="text-[#b07d46]">Aucun mule trouvé pour ce personnage.</div>
       </div>
     </div>
   </div>
@@ -191,6 +214,25 @@ export default {
         alert('An error occurred while archiving the character.');
       }
     },
+    async archiveMule(muleId) {
+      try {
+        const response = await axios.put(`http://localhost:8000/mules/${muleId}/archive`, {
+          isArchived: true,
+        });
+        console.log('Mule archived successfully:', response.data);
+
+        // Remove the mule from the list in the modal
+        this.notArchivedMules[this.currentCharacter.id] = this.notArchivedMules[
+          this.currentCharacter.id
+        ].filter(mule => mule.id !== muleId);
+
+        // Optional: Show a notification or confirmation
+        alert('Mule archivé avec succès.');
+      } catch (error) {
+        console.error('Error archiving mule:', error.response?.data || error.message);
+        alert("Une erreur est survenue lors de l'archivage de la mule.");
+      }
+    },
     async fetchAllMules() {
       try {
         const response = await axios.get('http://localhost:8000/mules');
@@ -243,15 +285,27 @@ export default {
   computed: {
     filteredMembers() {
       const query = this.searchQuery.toLowerCase();
-      const normalize = str => str?.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-      if (!this.charactersNotArchived) return []; // Ensure it defaults to an empty array
-      return this.charactersNotArchived.filter(
-        member =>
-          normalize(member.pseudo).toLowerCase().includes(normalize(query)) ||
-          normalize(member.recruiter?.pseudo).toLowerCase().includes(normalize(query)) ||
-          normalize(member.class).toLowerCase().includes(normalize(query)) ||
-          normalize(member.rank?.name).toLowerCase().includes(normalize(query))
-      );
+
+      return this.charactersNotArchived.filter(member => {
+        // Normalize strings for search matching
+        const normalize = str =>
+          str
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .toLowerCase();
+
+        // Match character pseudo, recruiter pseudo, rank, or mules' pseudo
+        const memberPseudoMatch = normalize(member.pseudo).includes(query);
+        const recruiterPseudoMatch = normalize(member.recruiter?.pseudo || '').includes(query);
+        const rankMatch = normalize(member.rank?.name || '').includes(query);
+
+        // Check mules for pseudo matches
+        const mulesMatch = this.filteredMulesByCharacter(member.id).some(mule =>
+          normalize(mule.pseudo).includes(query)
+        );
+
+        return memberPseudoMatch || recruiterPseudoMatch || rankMatch || mulesMatch;
+      });
     },
   },
 };
@@ -263,13 +317,22 @@ table {
   border-spacing: 0;
 }
 
-th,
+/*th,
 td {
   border-bottom: 2px solid #b07d46;
-}
+}*/
 
 /* Optional row highlight */
 tbody tr:hover {
   background-color: #f3d9b1;
+}
+
+/* Add this to your CSS file if not using TailwindCSS */
+.group:hover .group-hover\:block {
+  display: block;
+}
+
+.group-hover\:block {
+  display: none;
 }
 </style>
