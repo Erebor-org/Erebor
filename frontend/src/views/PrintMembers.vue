@@ -67,7 +67,7 @@
                     v-if="classDropdownVisible[member.id]"
                     class="absolute top-12 left-0 z-10 bg-[#fff5e6] border border-[#b07d46] rounded-lg shadow-lg p-2 w-80"
                   >
-                    <div lass="grid grid-cols-4 gap-2 max-h-40 overflow-y-auto">
+                    <div class="grid grid-cols-4 gap-2 max-h-40 overflow-y-auto">
                       <div
                         v-for="(icon, className) in classes"
                         :key="className"
