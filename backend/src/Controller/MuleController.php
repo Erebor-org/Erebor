@@ -18,15 +18,51 @@ class MuleController extends AbstractController
     public function index(MuleRepository $repository): JsonResponse
     {
         $mules = $repository->findAll();
-        $formattedMules = array_map(fn($mule) => [
+
+        $formattedMules = array_map(function ($mule) {
+            $mainCharacter = $mule->getMainCharacter();
+            return [
+                'id' => $mule->getId(),
+                'mainCharacter' => [
+                    'id' => $mainCharacter->getId(),
+                    'pseudo' => $mainCharacter->getPseudo(),
+                    'ankamaPseudo' => $mainCharacter->getAnkamaPseudo(),
+                    'class' => $mainCharacter->getClass(),
+                    'isArchived' => $mainCharacter->isArchived(),
+                ],
+                'pseudo' => $mule->getPseudo(),
+                'ankamaPseudo' => $mule->getAnkamaPseudo(),
+                'class' => $mule->getClass(),
+                'isArchived' => $mule->isArchived(),
+            ];
+        }, $mules);
+
+        return $this->json($formattedMules);
+    }
+
+    #[Route('/mules/{id}', name: 'mules_show', methods: ['GET'])]
+    public function show(MuleRepository $repository, int $id): JsonResponse
+    {
+        $mule = $repository->find($id);
+
+        if (!$mule) {
+            return $this->json(['error' => 'Mule not found'], 404);
+        }
+
+        return $this->json([
             'id' => $mule->getId(),
-            'mainCharacter' => $mule->getMainCharacter()->getPseudo(),
+            'mainCharacter' => [
+                'id' => $mule->getMainCharacter()->getId(),
+                'pseudo' => $mule->getMainCharacter()->getPseudo(),
+                'ankamaPseudo' => $mule->getMainCharacter()->getAnkamaPseudo(),
+                'class' => $mule->getMainCharacter()->getClass(),
+                'isArchived' => $mule->getMainCharacter()->isArchived(),
+            ],
             'pseudo' => $mule->getPseudo(),
             'ankamaPseudo' => $mule->getAnkamaPseudo(),
             'class' => $mule->getClass(),
-        ], $mules);
-
-        return $this->json($formattedMules);
+            'isArchived' => $mule->isArchived(),
+        ]);
     }
 
     #[Route('/mules', name: 'mule_create', methods: ['POST'])]
@@ -60,24 +96,6 @@ class MuleController extends AbstractController
         $em->flush();
 
         return $this->json(['message' => 'Mule created successfully'], 201);
-    }
-
-    #[Route('/mules/{id}', name: 'mules_show', methods: ['GET'])]
-    public function show(MuleRepository $repository, int $id): JsonResponse
-    {
-        $mule = $repository->find($id);
-
-        if (!$mule) {
-            return $this->json(['error' => 'Mule not found'], 404);
-        }
-
-        return $this->json([
-            'id' => $mule->getId(),
-            'mainCharacter' => $mule->getMainCharacter()->getPseudo(),
-            'pseudo' => $mule->getPseudo(),
-            'ankamaPseudo' => $mule->getAnkamaPseudo(),
-            'class' => $mule->getClass(),
-        ]);
     }
 
     #[Route('/mules/{id}', name: 'mules_update', methods: ['PUT'])]
