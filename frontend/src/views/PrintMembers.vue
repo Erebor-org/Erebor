@@ -49,7 +49,7 @@
           </thead>
           <tbody>
             <tr
-              v-for="({ member }, index) in filteredMembers"
+              v-for="({ member, id }, index) in filteredMembers"
               :key="member.id || index"
               class="hover:bg-[#f3d9b1] hover:shadow-md transition-all group relative"
             >
@@ -90,13 +90,37 @@
               <td class="p-4 text-[#b07d46]">{{ member?.rank?.name || 'No Rank' }}</td>
               <!-- View Mules -->
               <td class="p-4">
-                <span
-                  v-if="filteredMulesByCharacter(member.id).length > 0"
-                  class="cursor-pointer text-[#b02e2e] font-bold"
-                  @click="showMules(member.id)"
-                >
-                  B{{ filteredMulesByCharacter(member.id).length }}
-                </span>
+                <button class="text-[#b02e2e] font-bold underline" @click="toggleExpand(id)">
+                  {{ expandedRows[id] ? 'Cacher' : 'Voir' }}
+                </button>
+              </td>
+            </tr>
+            <!-- Expanded Row -->
+            <tr v-if="expandedRows[currentCharacterId]" class="bg-[#fffaf0]">
+              <td colspan="5" class="p-4">
+                <div v-if="currentCharacterMules.length > 0">
+                  <table class="w-full text-center">
+                    <tbody>
+                      <tr
+                        v-for="( mule , muleIndex) in currentCharacterMules"
+                        :key="mule.id || muleIndex"
+                      >
+                        <td class="p-2">
+                          <img
+                            :src="`${iconFolder}/${mule.class}.avif`"
+                            :alt="mule.class"
+                            class="w-8 h-8 mx-auto"
+                          />
+                        </td>
+                        <td class="p-2 text-[#b07d46] font-bold">{{ mule.pseudo }}</td>
+                        <td class="p-2 text-[#b07d46]">{{ mule.ankamaPseudo }}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+                <div v-else>
+                  <p class="text-[#b07d46] italic">Pas de mules disponibles.</p>
+                </div>
               </td>
             </tr>
           </tbody>
@@ -104,83 +128,6 @@
       </div>
     </div>
 
-    <!-- Mules Modal -->
-    <div
-      v-if="showMulesModal"
-      class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50"
-      @click.self="closeMulesModal"
-    >
-      <div
-        class="bg-[#fff5e6] border-4 border-[#b07d46] rounded-lg shadow-lg p-6 w-4/5 max-w-2xl flex flex-col items-center justify-center space-y-6"
-      >
-        <!-- Modal Header -->
-        <h2 class="text-2xl font-bold text-[#b02e2e] mb-4">Liste des Mules</h2>
-
-        <!-- Mule List Table -->
-        <div class="w-full overflow-y-auto max-h-96">
-          <table class="w-full text-center border-collapse">
-            <thead>
-              <tr class="bg-[#b02e2e] text-[#f3d9b1] text-lg">
-                <th class="p-4">Classe</th>
-                <th class="p-4">Pseudo</th>
-                <th class="p-4">Pseudo Ankama</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr
-                v-for="(mule, index) in filteredMulesByCharacter(currentCharacter.id)"
-                :key="mule.id || index"
-                class="hover:bg-[#f3d9b1] hover:shadow-md transition-all group relative"
-              >
-                <!-- Classe Icon -->
-                <td class="p-4">
-                  <img
-                    :src="`${iconFolder}/${mule.class}.avif`"
-                    :alt="mule.class"
-                    class="w-10 h-10 object-cover mx-auto"
-                  />
-                </td>
-                <!-- Pseudo -->
-                <td class="p-4 text-[#b07d46] font-bold">{{ mule.pseudo || 'Unknown' }}</td>
-                <!-- Main Character -->
-                <td class="p-4 text-[#b07d46] relative">
-                  {{ mule.ankamaPseudo || 'Unknown' }}
-                  <!-- Buttons -->
-                  <div
-                    class="absolute top-0 right-0 flex items-center space-x-2 opacity-0 group-hover:opacity-100 transition-opacity"
-                  >
-                    <!-- Archive Button -->
-                    <button
-                      class="flex items-center justify-center p-2 rounded-full bg-[#fff5e6] border-2 border-[#b02e2e] text-[#b02e2e] hover:bg-[#b02e2e] hover:text-[#f3d9b1] transition"
-                      @click="archiveMule(mule.id)"
-                      title="Archiver"
-                    >
-                      <i class="fas fa-archive"></i>
-                    </button>
-                    <!-- Edit Button -->
-                    <button
-                      class="flex items-center justify-center p-2 rounded-full bg-[#fff5e6] border-2 border-[#b02e2e] text-[#b02e2e] hover:bg-[#b02e2e] hover:text-[#f3d9b1] transition"
-                      @click="editMule(mule)"
-                      title="Éditer"
-                    >
-                      <i class="fas fa-edit"></i>
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-
-        <!-- Close Button -->
-        <button
-          class="px-4 py-2 bg-[#b02e2e] text-[#f3d9b1] font-bold rounded-lg hover:bg-[#942828] focus:ring-4 focus:ring-[#f3d9b1]"
-          @click="closeMulesModal"
-        >
-          Fermer
-        </button>
-      </div>
-    </div>
   </div>
 </template>
 
@@ -210,8 +157,10 @@ export default {
       notArchivedMules: {}, // Stores all mules fetched at once, grouped by character ID
       showMulesModal: false,
       currentCharacter: null,
+      currentCharacterId: null,
       currentCharacterMules: [],
       classDropdownVisible: reactive({}), // Tracks which dropdown is open
+      expandedRows: reactive({}), // Tracks which dropdown is open
       classes: {
         sram: '/src/assets/icon_classe/sram.avif',
         forgelance: '/src/assets/icon_classe/forgelance.avif',
@@ -236,6 +185,20 @@ export default {
     };
   },
   methods: {
+    toggleExpand(memberId) {
+      console.log('toggle', memberId);
+      this.currentCharacterId = memberId;
+      this.currentCharacterMules = this.filteredMulesByCharacter(memberId);
+      console.log("this.currentCharacterMules", this.currentCharacterMules);
+      if (this.expandedRows[memberId]) {
+        delete this.expandedRows[memberId]; // Remove the key if it's already expanded
+      } else {
+        this.expandedRows[memberId] = true; // Add the key to expandedRows
+      }
+      
+      console.log("expandedRows", this.expandedRows);
+    },
+
     async fetchNotArchivedCharacters() {
       try {
         const response = await axios.get('http://localhost:8000/characters');
@@ -312,6 +275,7 @@ export default {
       }
     },
     filteredMulesByCharacter(characterId) {
+      console.log("filteredMulesByCharacter", this.notArchivedMules);
       return this.notArchivedMules[characterId] || [];
     },
     showMules(characterId) {
