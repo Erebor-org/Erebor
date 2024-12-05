@@ -83,7 +83,7 @@ export default {
 .logo-container {
   position: absolute;
   /*top: 60px; /* Adjust to desired height */
-  left: 55%;
+  left: 57%;
   transform: translateX(-50%);
   z-index: 20; /* Ensure it is above other elements */
 }

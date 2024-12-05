@@ -384,23 +384,23 @@ export default {
         this.$refs.notificationRef.showNotification('Failed to update class.');
       }
     },
-  },
-  async updateMuleClass(muleId, newClass) {
-    try {
-      await axios.put(`http://localhost:8000/mules/${muleId}/update-class`, {
-        class: newClass,
-      });
-      // Update the mule's class locally for instant feedback
-      const mule = this.currentCharacterMules.find(m => m.id === muleId);
-      if (mule) {
-        mule.class = newClass;
+    async updateMuleClass(muleId, newClass) {
+      try {
+        await axios.put(`http://localhost:8000/mules/${muleId}/update-class`, {
+          class: newClass,
+        });
+        // Update the mule's class locally for instant feedback
+        const mule = this.currentCharacterMules.find(m => m.id === muleId);
+        if (mule) {
+          mule.class = newClass;
+        }
+        this.closeAllDropdowns();
+        this.$refs.notificationRef.showNotification('Mule class updated successfully!');
+      } catch (error) {
+        console.error('Error updating mule class:', error.message);
+        this.$refs.notificationRef.showNotification('Failed to update mule class.');
       }
-      this.closeAllDropdowns();
-      this.$refs.notificationRef.showNotification('Mule class updated successfully!');
-    } catch (error) {
-      console.error('Error updating mule class:', error.message);
-      this.$refs.notificationRef.showNotification('Failed to update mule class.');
-    }
+    },
   },
   async mounted() {
     try {
