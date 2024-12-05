@@ -49,7 +49,7 @@
           </thead>
           <tbody>
             <tr
-              v-for="(member, index) in filteredMembers"
+              v-for="({ member }, index) in filteredMembers"
               :key="member.id || index"
               class="hover:bg-[#f3d9b1] hover:shadow-md transition-all group relative"
             >
@@ -195,7 +195,7 @@ import { reactive } from 'vue';
 export default {
   components: {
     ImportMember,
-    Notification
+    Notification,
   },
   data() {
     return {
@@ -385,9 +385,8 @@ export default {
         this.closeAllDropdowns();
         this.$refs.notificationRef.showNotification('Class updated successfully!');
       } catch (error) {
-        console.error('Error updating character class:', error.message); 
+        console.error('Error updating character class:', error.message);
         this.$refs.notificationRef.showNotification('Failed to update class.');
-
       }
     },
   },
@@ -406,27 +405,31 @@ export default {
   computed: {
     filteredMembers() {
       const query = this.searchQuery.toLowerCase();
+      return this.charactersNotArchived
+        .filter(member => {
+          // Normalize strings for search matching
+          const normalize = str =>
+            str
+              .normalize('NFD')
+              .replace(/[\u0300-\u036f]/g, '')
+              .toLowerCase();
 
-      return this.charactersNotArchived.filter(member => {
-        // Normalize strings for search matching
-        const normalize = str =>
-          str
-            .normalize('NFD')
-            .replace(/[\u0300-\u036f]/g, '')
-            .toLowerCase();
+          // Match character pseudo, recruiter pseudo, rank, or mules' pseudo
+          const memberPseudoMatch = normalize(member.pseudo).includes(query);
+          const recruiterPseudoMatch = normalize(member.recruiter?.pseudo || '').includes(query);
+          const rankMatch = normalize(member.rank?.name || '').includes(query);
 
-        // Match character pseudo, recruiter pseudo, rank, or mules' pseudo
-        const memberPseudoMatch = normalize(member.pseudo).includes(query);
-        const recruiterPseudoMatch = normalize(member.recruiter?.pseudo || '').includes(query);
-        const rankMatch = normalize(member.rank?.name || '').includes(query);
+          // Check mules for pseudo matches
+          const mulesMatch = this.filteredMulesByCharacter(member.id).some(mule =>
+            normalize(mule.pseudo).includes(query)
+          );
 
-        // Check mules for pseudo matches
-        const mulesMatch = this.filteredMulesByCharacter(member.id).some(mule =>
-          normalize(mule.pseudo).includes(query)
-        );
-
-        return memberPseudoMatch || recruiterPseudoMatch || rankMatch || mulesMatch;
-      });
+          return memberPseudoMatch || recruiterPseudoMatch || rankMatch || mulesMatch;
+        })
+        .map(member => ({
+          member,
+          id: member.id,
+        }));
     },
   },
 };
