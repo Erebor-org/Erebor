@@ -34,24 +34,27 @@
         placeholder="Rechercher par pseudo, recruteur, rang ou mule"
         class="w-full border-2 border-[#b07d46] bg-[#fffaf0] rounded-lg p-3 text-lg focus:outline-none focus:ring-2 focus:ring-[#f3d9b1] mb-4"
       />
-
-      <!-- Member Table -->
+      <!-- Member table -->
       <div class="overflow-y-auto max-h-96">
         <table class="w-full text-center border-collapse">
-          <thead>
-            <tr class="bg-[#b02e2e] text-[#f3d9b1] text-lg">
+          <!-- Make the header sticky -->
+          <thead class="sticky top-0 bg-[#b02e2e] z-10">
+            <tr class="text-[#f3d9b1] text-lg">
               <th class="p-4">Classe</th>
               <th class="p-4">Pseudo</th>
               <th class="p-4">Recruteur</th>
               <th class="p-4">Rang</th>
               <th class="p-4">Mules</th>
+              <th class="p-4">Actions</th>
             </tr>
           </thead>
           <tbody>
-            <template v-for="({ member, id }, index) in filteredMembers" :key="id || index">
+            <template v-for="({ member, id }, index) in filteredMembers" :key="member.id || index">
               <!-- Main Row -->
-              <tr class="hover:bg-[#f3d9b1] hover:shadow-md transition-all group relative">
-                <!-- Editable Classe Icon -->
+              <tr
+                class="transition-all group relative hover:bg-[#f3d9b1]"
+                @click="toggleExpand(id)"
+              >
                 <td class="p-4 relative">
                   <div class="relative inline-block">
                     <button @click="toggleClassDropdown(member.id)">
@@ -82,54 +85,85 @@
 
                 <!-- Pseudo -->
                 <td class="p-4 text-[#b07d46] font-bold">{{ member?.pseudo || 'Unknown' }}</td>
-                <!-- Recruteur -->
                 <td class="p-4 text-[#b07d46]">
                   {{ member?.recruiter?.pseudo || 'No Recruiter' }}
                 </td>
-                <!-- Rang -->
                 <td class="p-4 text-[#b07d46]">{{ member?.rank?.name || 'No Rank' }}</td>
-                <!-- View Mules -->
                 <td class="p-4">
-                  <button v-if="filteredMulesByCharacter(id).length > 0" class="text-[#b02e2e] font-bold underline" @click="toggleExpand(id)">
-                    {{ expandedRows[id] ? 'Cacher' : filteredMulesByCharacter(id).length + ' mules' }}
+                  <button
+                    v-if="filteredMulesByCharacter(id).length > 0"
+                    class="text-[#b02e2e] font-bold underline"
+                  >
+                    {{ filteredMulesByCharacter(id).length + ' mules' }}
                   </button>
+                </td>
+                <td class="p-4">
+                  <div
+                    class="hidden group-hover:block text-[#b02e2e] cursor-pointer"
+                    title="Options"
+                    @click="openModal(member)"
+                  >
+                    &#x22EE;
+                  </div>
                 </td>
               </tr>
 
               <!-- Expanded Row -->
               <tr v-if="expandedRows[id]" class="bg-[#ffecd2]">
                 <td colspan="5" class="p-4">
-                  <div v-if="filteredMulesByCharacter(id).length > 0">
-                    <table class="w-full text-center border-collapse">
-                      <thead>
-                        <tr class="bg-[#b07d46] text-[#fff5e6]">
-                          <th class="p-2">Classe</th>
-                          <th class="p-2">Pseudo</th>
-                          <th class="p-2">Pseudo Ankama</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        <tr
-                          v-for="(mule, muleIndex) in filteredMulesByCharacter(id)"
-                          :key="mule.id || muleIndex"
-                          :class="[muleIndex % 2 === 0 ? 'bg-[#fff5e6]' : 'bg-[#fde1c8]']"
-                          class="hover:bg-[#f3d9b1] border-b border-[#b07d46]"
-                        >
-                          <td class="p-2">
-                            <img
-                              :src="`${iconFolder}/${mule.class}.avif`"
-                              :alt="mule.class"
-                              class="w-8 h-8 mx-auto"
-                            />
-                          </td>
-                          <td class="p-2 text-[#b07d46] font-bold">{{ mule.pseudo }}</td>
-                          <td class="p-2 text-[#b07d46]">{{ mule.ankamaPseudo }}</td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  </div>
-                  <div v-else>
-                    <p class="text-[#b07d46] italic">Pas de mules disponibles.</p>
+                  <div class="w-10/12 mx-auto">
+                    <div v-if="filteredMulesByCharacter(id).length > 0">
+                      <table class="w-full text-center border-collapse">
+                        <thead>
+                          <tr class="bg-[#b07d46] text-[#fff5e6]">
+                            <th class="p-2">Classe</th>
+                            <th class="p-2">Pseudo</th>
+                            <th class="p-2">Pseudo Ankama</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr
+                            v-for="(mule, muleIndex) in filteredMulesByCharacter(id)"
+                            :key="mule.id || muleIndex"
+                            :class="[muleIndex % 2 === 0 ? 'bg-[#fff5e6]' : 'bg-[#fde1c8]']"
+                            class="hover:bg-[#f3d9b1]"
+                          >
+                            <td class="p-2 relative">
+                              <div class="relative inline-block">
+                                <button @click="toggleClassDropdown(mule.id)">
+                                  <img
+                                    :src="`${iconFolder}/${mule.class}.avif`"
+                                    alt="Mule Class"
+                                    class="w-8 h-8 cursor-pointer mx-auto"
+                                  />
+                                </button>
+                                <div
+                                  v-if="classDropdownVisible[mule.id]"
+                                  class="absolute top-12 left-0 z-10 bg-[#fff5e6] border border-[#b07d46] rounded-lg shadow-lg p-2 w-80"
+                                >
+                                  <div class="grid grid-cols-4 gap-2 max-h-40 overflow-y-auto">
+                                    <div
+                                      v-for="(icon, className) in classes"
+                                      :key="className"
+                                      class="flex flex-col items-center gap-1 cursor-pointer hover:bg-[#f3d9b1] p-2 rounded-lg"
+                                      @click="updateMuleClass(mule.id, className)"
+                                    >
+                                      <img :src="icon" :alt="className" class="w-12 h-12" />
+                                      <span class="text-sm text-[#b07d46]">{{ className }}</span>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            </td>
+                            <td class="p-2 text-[#b07d46] font-bold">{{ mule.pseudo }}</td>
+                            <td class="p-2 text-[#b07d46]">{{ mule.ankamaPseudo }}</td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                    <div v-else>
+                      <p class="text-[#b07d46] italic">Pas de mules disponibles.</p>
+                    </div>
                   </div>
                 </td>
               </tr>
@@ -196,27 +230,20 @@ export default {
   },
   methods: {
     toggleExpand(memberId) {
-      console.log('toggle', memberId);
       this.currentCharacterId = memberId;
       this.currentCharacterMules = this.filteredMulesByCharacter(memberId);
-      console.log('this.currentCharacterMules', this.currentCharacterMules);
       if (this.expandedRows[memberId]) {
         delete this.expandedRows[memberId]; // Remove the key if it's already expanded
       } else {
         this.expandedRows[memberId] = true; // Add the key to expandedRows
       }
-
-      console.log('expandedRows', this.expandedRows);
     },
 
     async fetchNotArchivedCharacters() {
       try {
         const response = await axios.get('http://localhost:8000/characters');
-
-        console.log('Characters Response:', response.data); // Debug log
         const notArchivedCharacters = response.data.filter(character => !character.isArchived);
         this.charactersNotArchived = response.data.filter(character => !character.isArchived);
-        console.log('Not archived characters:', this.charactersNotArchived);
         return notArchivedCharacters;
       } catch (error) {
         console.error(
@@ -228,13 +255,9 @@ export default {
     },
     async archiveCharacter(characterId) {
       try {
-        const response = await axios.put(
-          `http://localhost:8000/characters/${characterId}/archive`,
-          {
-            isArchived: true,
-          }
-        );
-        console.log('Character archived successfully:', response.data);
+        await axios.put(`http://localhost:8000/characters/${characterId}/archive`, {
+          isArchived: true,
+        });
 
         // Remove the character from the list
         this.charactersNotArchived = this.charactersNotArchived.filter(
@@ -253,10 +276,9 @@ export default {
     },
     async archiveMule(muleId) {
       try {
-        const response = await axios.put(`http://localhost:8000/mules/${muleId}/archive`, {
+        await axios.put(`http://localhost:8000/mules/${muleId}/archive`, {
           isArchived: true,
         });
-        console.log('Mule archived successfully:', response.data);
 
         // Remove the mule from the list in the modal
         this.notArchivedMules[this.currentCharacter.id] = this.notArchivedMules[
@@ -285,7 +307,6 @@ export default {
       }
     },
     filteredMulesByCharacter(characterId) {
-      console.log('filteredMulesByCharacter', this.notArchivedMules);
       return this.notArchivedMules[characterId] || [];
     },
     showMules(characterId) {
@@ -364,6 +385,23 @@ export default {
       }
     },
   },
+  async updateMuleClass(muleId, newClass) {
+    try {
+      await axios.put(`http://localhost:8000/mules/${muleId}/update-class`, {
+        class: newClass,
+      });
+      // Update the mule's class locally for instant feedback
+      const mule = this.currentCharacterMules.find(m => m.id === muleId);
+      if (mule) {
+        mule.class = newClass;
+      }
+      this.closeAllDropdowns();
+      this.$refs.notificationRef.showNotification('Mule class updated successfully!');
+    } catch (error) {
+      console.error('Error updating mule class:', error.message);
+      this.$refs.notificationRef.showNotification('Failed to update mule class.');
+    }
+  },
   async mounted() {
     try {
       await this.fetchNotArchivedCharacters();
@@ -420,10 +458,10 @@ td {
   border-bottom: 2px solid #b07d46;
 }*/
 
-/* Optional row highlight */
+/* Optional row highlight
 tbody tr:hover {
   background-color: #f3d9b1;
-}
+} */
 
 /* Add this to your CSS file if not using TailwindCSS */
 .group:hover .group-hover\:block {

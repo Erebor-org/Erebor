@@ -160,4 +160,29 @@ class MuleController extends AbstractController
 
         return $this->json(['message' => 'Mule archived successfully']);
     }
+
+    #[Route('/mules/{id}/update-class', name: 'mule_update_class', methods: ['PUT'])]
+    public function updateClass(
+        Request $request,
+        MuleRepository $repository,
+        EntityManagerInterface $em,
+        int $id
+    ): JsonResponse {
+        $mule = $repository->find($id);
+
+        if (!$mule) {
+            return $this->json(['error' => 'Mule not found'], 404);
+        }
+
+        $data = json_decode($request->getContent(), true);
+
+        if (!isset($data['class'])) {
+            return $this->json(['error' => 'Class is required'], 400);
+        }
+
+        $mule->setClass($data['class']);
+        $em->flush();
+
+        return $this->json(['message' => 'Mule class updated successfully']);
+    }
 }
