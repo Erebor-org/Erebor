@@ -48,86 +48,96 @@
             </tr>
           </thead>
           <tbody>
-            <tr
-              v-for="({ member, id }, index) in filteredMembers"
-              :key="member.id || index"
-              class="hover:bg-[#f3d9b1] hover:shadow-md transition-all group relative"
-            >
-              <!-- Editable Classe Icon -->
-              <td class="p-4 relative">
-                <div class="relative inline-block">
-                  <button @click="toggleClassDropdown(member.id)">
-                    <img
-                      :src="`${iconFolder}/${member.class}.avif`"
-                      alt="Character Class"
-                      class="w-10 h-10 cursor-pointer"
-                    />
-                  </button>
-                  <div
-                    v-if="classDropdownVisible[member.id]"
-                    class="absolute top-12 left-0 z-10 bg-[#fff5e6] border border-[#b07d46] rounded-lg shadow-lg p-2 w-80"
-                  >
-                    <div class="grid grid-cols-4 gap-2 max-h-40 overflow-y-auto">
-                      <div
-                        v-for="(icon, className) in classes"
-                        :key="className"
-                        class="flex flex-col items-center gap-1 cursor-pointer hover:bg-[#f3d9b1] p-2 rounded-lg"
-                        @click="updateCharacterClass(member.id, className)"
-                      >
-                        <img :src="icon" :alt="className" class="w-12 h-12" />
-                        <span class="text-sm text-[#b07d46]">{{ className }}</span>
+            <template v-for="({ member, id }, index) in filteredMembers" :key="id || index">
+              <!-- Main Row -->
+              <tr class="hover:bg-[#f3d9b1] hover:shadow-md transition-all group relative">
+                <!-- Editable Classe Icon -->
+                <td class="p-4 relative">
+                  <div class="relative inline-block">
+                    <button @click="toggleClassDropdown(member.id)">
+                      <img
+                        :src="`${iconFolder}/${member.class}.avif`"
+                        alt="Character Class"
+                        class="w-10 h-10 cursor-pointer"
+                      />
+                    </button>
+                    <div
+                      v-if="classDropdownVisible[member.id]"
+                      class="absolute top-12 left-0 z-10 bg-[#fff5e6] border border-[#b07d46] rounded-lg shadow-lg p-2 w-80"
+                    >
+                      <div class="grid grid-cols-4 gap-2 max-h-40 overflow-y-auto">
+                        <div
+                          v-for="(icon, className) in classes"
+                          :key="className"
+                          class="flex flex-col items-center gap-1 cursor-pointer hover:bg-[#f3d9b1] p-2 rounded-lg"
+                          @click="updateCharacterClass(member.id, className)"
+                        >
+                          <img :src="icon" :alt="className" class="w-12 h-12" />
+                          <span class="text-sm text-[#b07d46]">{{ className }}</span>
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              </td>
+                </td>
 
-              <!-- Pseudo -->
-              <td class="p-4 text-[#b07d46] font-bold">{{ member?.pseudo || 'Unknown' }}</td>
-              <!-- Recruteur -->
-              <td class="p-4 text-[#b07d46]">{{ member?.recruiter?.pseudo || 'No Recruiter' }}</td>
-              <!-- Rang -->
-              <td class="p-4 text-[#b07d46]">{{ member?.rank?.name || 'No Rank' }}</td>
-              <!-- View Mules -->
-              <td class="p-4">
-                <button class="text-[#b02e2e] font-bold underline" @click="toggleExpand(id)">
-                  {{ expandedRows[id] ? 'Cacher' : 'Voir' }}
-                </button>
-              </td>
-            </tr>
-            <!-- Expanded Row -->
-            <tr v-if="expandedRows[currentCharacterId]" class="bg-[#fffaf0]">
-              <td colspan="5" class="p-4">
-                <div v-if="currentCharacterMules.length > 0">
-                  <table class="w-full text-center">
-                    <tbody>
-                      <tr
-                        v-for="( mule , muleIndex) in currentCharacterMules"
-                        :key="mule.id || muleIndex"
-                      >
-                        <td class="p-2">
-                          <img
-                            :src="`${iconFolder}/${mule.class}.avif`"
-                            :alt="mule.class"
-                            class="w-8 h-8 mx-auto"
-                          />
-                        </td>
-                        <td class="p-2 text-[#b07d46] font-bold">{{ mule.pseudo }}</td>
-                        <td class="p-2 text-[#b07d46]">{{ mule.ankamaPseudo }}</td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-                <div v-else>
-                  <p class="text-[#b07d46] italic">Pas de mules disponibles.</p>
-                </div>
-              </td>
-            </tr>
+                <!-- Pseudo -->
+                <td class="p-4 text-[#b07d46] font-bold">{{ member?.pseudo || 'Unknown' }}</td>
+                <!-- Recruteur -->
+                <td class="p-4 text-[#b07d46]">
+                  {{ member?.recruiter?.pseudo || 'No Recruiter' }}
+                </td>
+                <!-- Rang -->
+                <td class="p-4 text-[#b07d46]">{{ member?.rank?.name || 'No Rank' }}</td>
+                <!-- View Mules -->
+                <td class="p-4">
+                  <button v-if="filteredMulesByCharacter(id).length > 0" class="text-[#b02e2e] font-bold underline" @click="toggleExpand(id)">
+                    {{ expandedRows[id] ? 'Cacher' : filteredMulesByCharacter(id).length + ' mules' }}
+                  </button>
+                </td>
+              </tr>
+
+              <!-- Expanded Row -->
+              <tr v-if="expandedRows[id]" class="bg-[#ffecd2]">
+                <td colspan="5" class="p-4">
+                  <div v-if="filteredMulesByCharacter(id).length > 0">
+                    <table class="w-full text-center border-collapse">
+                      <thead>
+                        <tr class="bg-[#b07d46] text-[#fff5e6]">
+                          <th class="p-2">Classe</th>
+                          <th class="p-2">Pseudo</th>
+                          <th class="p-2">Pseudo Ankama</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr
+                          v-for="(mule, muleIndex) in filteredMulesByCharacter(id)"
+                          :key="mule.id || muleIndex"
+                          :class="[muleIndex % 2 === 0 ? 'bg-[#fff5e6]' : 'bg-[#fde1c8]']"
+                          class="hover:bg-[#f3d9b1] border-b border-[#b07d46]"
+                        >
+                          <td class="p-2">
+                            <img
+                              :src="`${iconFolder}/${mule.class}.avif`"
+                              :alt="mule.class"
+                              class="w-8 h-8 mx-auto"
+                            />
+                          </td>
+                          <td class="p-2 text-[#b07d46] font-bold">{{ mule.pseudo }}</td>
+                          <td class="p-2 text-[#b07d46]">{{ mule.ankamaPseudo }}</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                  <div v-else>
+                    <p class="text-[#b07d46] italic">Pas de mules disponibles.</p>
+                  </div>
+                </td>
+              </tr>
+            </template>
           </tbody>
         </table>
       </div>
     </div>
-
   </div>
 </template>
 
@@ -189,14 +199,14 @@ export default {
       console.log('toggle', memberId);
       this.currentCharacterId = memberId;
       this.currentCharacterMules = this.filteredMulesByCharacter(memberId);
-      console.log("this.currentCharacterMules", this.currentCharacterMules);
+      console.log('this.currentCharacterMules', this.currentCharacterMules);
       if (this.expandedRows[memberId]) {
         delete this.expandedRows[memberId]; // Remove the key if it's already expanded
       } else {
         this.expandedRows[memberId] = true; // Add the key to expandedRows
       }
-      
-      console.log("expandedRows", this.expandedRows);
+
+      console.log('expandedRows', this.expandedRows);
     },
 
     async fetchNotArchivedCharacters() {
@@ -275,7 +285,7 @@ export default {
       }
     },
     filteredMulesByCharacter(characterId) {
-      console.log("filteredMulesByCharacter", this.notArchivedMules);
+      console.log('filteredMulesByCharacter', this.notArchivedMules);
       return this.notArchivedMules[characterId] || [];
     },
     showMules(characterId) {
