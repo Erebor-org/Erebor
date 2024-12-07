@@ -88,14 +88,21 @@
                   >
                     <input
                       v-model="editPseudo"
-                      class="border-2 border-[#b07d46] rounded-lg p-2 w-full"
+                      class="border-2 border-[#b07d46] rounded-lg p-2 w-full focus:ring-2 focus:ring-[#f3d9b1]"
                       @blur="savePseudo(member, 'character')"
                       @keydown.enter.prevent="savePseudo(member, 'character')"
                       ref="editInput"
                     />
                   </div>
-                  <div v-else @click="startEditingPseudo(member.id, member.pseudo, 'character')">
+                  <div
+                    v-else
+                    class="flex items-center gap-2 cursor-pointer hover:text-[#942828] hover:underline"
+                    @click="startEditingPseudo(member.id, member.pseudo, 'character')"
+                  >
                     {{ member.pseudo || 'Unknown' }}
+                    <span class="text-sm text-[#b07d46]">
+                      <i class="fas fa-pencil-alt"></i>
+                    </span>
                   </div>
                 </td>
                 <td class="p-4 text-[#b07d46]">
@@ -173,14 +180,21 @@
                               >
                                 <input
                                   v-model="editPseudo"
-                                  class="border-2 border-[#b07d46] rounded-lg p-2 w-full"
+                                  class="border-2 border-[#b07d46] rounded-lg p-2 w-full focus:ring-2 focus:ring-[#f3d9b1]"
                                   @blur="savePseudo(mule, 'mule')"
                                   @keydown.enter.prevent="savePseudo(mule, 'mule')"
                                   ref="editInput"
                                 />
                               </div>
-                              <div v-else @click="startEditingPseudo(mule.id, mule.pseudo, 'mule')">
+                              <div
+                                v-else
+                                class="flex items-center gap-2 cursor-pointer hover:text-[#942828] hover:underline"
+                                @click="startEditingPseudo(mule.id, mule.pseudo, 'mule')"
+                              >
                                 {{ mule.pseudo }}
+                                <span class="text-sm text-[#b07d46]">
+                                  <i class="fas fa-pencil-alt"></i>
+                                </span>
                               </div>
                             </td>
                             <td class="p-2 text-[#b07d46]">{{ mule.ankamaPseudo }}</td>
