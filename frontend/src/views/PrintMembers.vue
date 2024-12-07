@@ -54,7 +54,7 @@
               <tr class="transition-all group relative hover:bg-[#f3d9b1]">
                 <td class="p-4 relative">
                   <div class="relative inline-block">
-                    <button @click="toggleClassDropdown(member.id)">
+                    <button @click="toggleClassDropdown(member.id, 'character')">
                       <img
                         :src="`${iconFolder}/${member.class}.avif`"
                         alt="Character Class"
@@ -62,7 +62,7 @@
                       />
                     </button>
                     <div
-                      v-if="classDropdownVisible[member.id]"
+                      v-if="classDropdownVisible[`character-${member.id}`]"
                       class="absolute top-12 left-0 z-10 bg-[#fff5e6] border border-[#b07d46] rounded-lg shadow-lg p-2 w-80"
                     >
                       <div class="grid grid-cols-4 gap-2 max-h-40 overflow-y-auto">
@@ -82,19 +82,19 @@
 
                 <!-- Pseudo -->
                 <td class="p-4 text-[#b07d46] font-bold relative">
-                  <div v-if="editingPseudo === member.id" @click.stop>
+                  <div
+                    v-if="editingPseudo.type === 'character' && editingPseudo.id === member.id"
+                    @click.stop
+                  >
                     <input
                       v-model="editPseudo"
                       class="border-2 border-[#b07d46] rounded-lg p-2 w-full"
                       @blur="savePseudo(member, 'character')"
-                      @keydown.enter.prevent="
-                        console.log(editPseudo);
-                        savePseudo(member, 'character');
-                      "
+                      @keydown.enter.prevent="savePseudo(member, 'character')"
                       ref="editInput"
                     />
                   </div>
-                  <div v-else @click="startEditingPseudo(member.id, member.pseudo)">
+                  <div v-else @click="startEditingPseudo(member.id, member.pseudo, 'character')">
                     {{ member.pseudo || 'Unknown' }}
                   </div>
                 </td>
@@ -141,7 +141,7 @@
                           >
                             <td class="p-2 relative">
                               <div class="relative inline-block">
-                                <button @click="toggleClassDropdown(mule.id)">
+                                <button @click="toggleClassDropdown(mule.id, 'mule')">
                                   <img
                                     :src="`${iconFolder}/${mule.class}.avif`"
                                     alt="Mule Class"
@@ -149,7 +149,7 @@
                                   />
                                 </button>
                                 <div
-                                  v-if="classDropdownVisible[mule.id]"
+                                  v-if="classDropdownVisible[`mule-${mule.id}`]"
                                   class="absolute top-12 left-0 z-10 bg-[#fff5e6] border border-[#b07d46] rounded-lg shadow-lg p-2 w-80"
                                 >
                                   <div class="grid grid-cols-4 gap-2 max-h-40 overflow-y-auto">
@@ -167,15 +167,19 @@
                               </div>
                             </td>
                             <td class="p-2 text-[#b07d46] font-bold relative">
-                              <div v-if="editingPseudo === mule.id" @click.stop>
+                              <div
+                                v-if="editingPseudo.type === 'mule' && editingPseudo.id === mule.id"
+                                @click.stop
+                              >
                                 <input
                                   v-model="editPseudo"
                                   class="border-2 border-[#b07d46] rounded-lg p-2 w-full"
                                   @blur="savePseudo(mule, 'mule')"
                                   @keydown.enter.prevent="savePseudo(mule, 'mule')"
+                                  ref="editInput"
                                 />
                               </div>
-                              <div v-else @click="startEditingPseudo(mule.id, mule.pseudo)">
+                              <div v-else @click="startEditingPseudo(mule.id, mule.pseudo, 'mule')">
                                 {{ mule.pseudo }}
                               </div>
                             </td>
@@ -300,7 +304,7 @@ export default {
       showModalMule: false,
       showModalMember: false,
       selectedMember: null,
-      editingPseudo: null, // Stores the ID of the currently edited character/mule
+      editingPseudo: { type: null, id: null }, // Stores the ID of the currently edited character/mule
       editPseudo: '',
       selectedMule: null,
       showNotification: false,
@@ -425,9 +429,13 @@ export default {
         console.error('Error fetching mules:', error);
       }
     },
-    startEditingPseudo(id, currentPseudo) {
-      this.editingPseudo = id;
-      this.editPseudo = currentPseudo || ''; // Reset or set to the current pseudo
+    startEditingPseudo(id, currentPseudo, type) {
+      if (type === 'character') {
+        this.editingPseudo = { type: 'character', id };
+      } else if (type === 'mule') {
+        this.editingPseudo = { type: 'mule', id };
+      }
+      this.editPseudo = currentPseudo || ''; // Set to the current pseudo or empty if undefined
       this.$nextTick(() => {
         const input = this.$refs.editInput;
         if (input) input.focus(); // Focus the input field
@@ -436,7 +444,7 @@ export default {
     async savePseudo(entity, type) {
       console.log('entity', entity);
       console.log('type', type);
-      console.log("editPseudo", this.editPseudo)
+      console.log('editPseudo', this.editPseudo);
       if (this.editPseudo.trim() === '') {
         alert('Le pseudo ne peut pas être vide.');
         return;
@@ -454,7 +462,7 @@ export default {
           });
           entity.pseudo = this.editPseudo; // Update locally
         }
-        this.editingPseudo = null; // Exit edit mode
+        this.editingPseudo = { type: null, id: null };
         this.editPseudo = ''; // Clear the temporary pseudo
         this.$refs.notificationRef.showNotification('Pseudo mis à jour avec succès !');
       } catch (error) {
@@ -492,17 +500,14 @@ export default {
       // Handle editing logic, such as opening a modal with mule details
       console.log('Editing mule:', mule);
     },
-    toggleClassDropdown(characterId) {
-      if (!this.classDropdownVisible[characterId]) {
-        // Open this dropdown, close all others
-        Object.keys(this.classDropdownVisible).forEach(key => {
-          this.classDropdownVisible[key] = false;
-        });
-        this.classDropdownVisible[characterId] = true;
-      } else {
-        // Close the dropdown
-        this.classDropdownVisible[characterId] = false;
-      }
+    toggleClassDropdown(id, type) {
+      const key = `${type}-${id}`;
+      // Close all other dropdowns
+      Object.keys(this.classDropdownVisible).forEach(k => {
+        this.classDropdownVisible[k] = false;
+      });
+      // Toggle the current dropdown
+      this.classDropdownVisible[key] = !this.classDropdownVisible[key];
     },
     closeAllDropdowns() {
       Object.keys(this.classDropdownVisible).forEach(key => {
@@ -528,16 +533,21 @@ export default {
         await axios.put(`http://localhost:8000/characters/${characterId}/update-class`, {
           class: newClass,
         });
-        // Update the character's class locally for instant feedback
-        const character = this.filteredMembers.find(member => member.id === characterId);
+
+        // Update the character's class locally
+        const character = this.charactersNotArchived.find(member => member.id === characterId);
         if (character) {
           character.class = newClass;
         }
+
+        // Close all dropdowns
         this.closeAllDropdowns();
-        this.$refs.notificationRef.showNotification('Class updated successfully!');
+
+        // Show success notification
+        this.$refs.notificationRef.showNotification('Classe mise à jour avec succès !');
       } catch (error) {
-        console.error('Error updating character class:', error.message);
-        this.$refs.notificationRef.showNotification('Failed to update class.');
+        console.error('Erreur lors de la mise à jour de la classe:', error.message);
+        this.$refs.notificationRef.showNotification('Échec de la mise à jour de la classe.');
       }
     },
     async updateMuleClass(muleId, newClass) {
