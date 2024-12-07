@@ -336,4 +336,23 @@ public function getAllCharacters(CharactersRepository $repository): JsonResponse
 
         return $this->json(['message' => 'Class updated successfully'], 200);
     }
+    #[Route('/characters/{id}/update-pseudo', name: 'update_character_pseudo', methods: ['PUT'])]
+    public function updatePseudo(Request $request, CharactersRepository $repository, EntityManagerInterface $em, int $id): JsonResponse
+    {
+        $character = $repository->find($id);
+
+        if (!$character) {
+            return $this->json(['error' => 'Character not found'], 404);
+        }
+
+        $data = json_decode($request->getContent(), true);
+        if (!isset($data['pseudo'])) {
+            return $this->json(['error' => 'Missing class field'], 400);
+        }
+
+        $character->setPseudo($data['pseudo']);
+        $em->flush();
+
+        return $this->json(['message' => 'Pseudo updated successfully'], 200);
+    }
 }

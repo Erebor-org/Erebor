@@ -146,7 +146,7 @@ class MuleController extends AbstractController
         return $this->json(['message' => 'Mule deleted successfully']);
     }
 
-    #[Route('/mules/{id}/archive', name: 'mule_archive', methods: ['PUT'])]
+    #[Route('/mule/archive/{id}', name: 'mule_archive', methods: ['PUT'])]
     public function archive(MuleRepository $repository, EntityManagerInterface $em, int $id): JsonResponse
     {
         $mule = $repository->find($id);
@@ -185,4 +185,25 @@ class MuleController extends AbstractController
 
         return $this->json(['message' => 'Mule class updated successfully']);
     }
+
+    #[Route('/mules/{id}/update-pseudo', name: 'update_mule_pseudo', methods: ['PUT'])]
+    public function updatePseudo(Request $request, MuleRepository $repository, EntityManagerInterface $em, int $id): JsonResponse
+    {
+        $mule = $repository->find($id);
+
+        if (!$mule) {
+            return $this->json(['error' => 'Mule not found'], 404);
+        }
+
+        $data = json_decode($request->getContent(), true);
+        if (!isset($data['pseudo'])) {
+            return $this->json(['error' => 'Missing class field'], 400);
+        }
+
+        $mule->setPseudo($data['pseudo']);
+        $em->flush();
+
+        return $this->json(['message' => 'Pseudo updated successfully'], 200);
+    }
+
 }

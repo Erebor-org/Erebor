@@ -81,7 +81,23 @@
                 </td>
 
                 <!-- Pseudo -->
-                <td class="p-4 text-[#b07d46] font-bold">{{ member?.pseudo || 'Unknown' }}</td>
+                <td class="p-4 text-[#b07d46] font-bold relative">
+                  <div v-if="editingPseudo === member.id" @click.stop>
+                    <input
+                      v-model="editPseudo"
+                      class="border-2 border-[#b07d46] rounded-lg p-2 w-full"
+                      @blur="savePseudo(member, 'character')"
+                      @keydown.enter.prevent="
+                        console.log(editPseudo);
+                        savePseudo(member, 'character');
+                      "
+                      ref="editInput"
+                    />
+                  </div>
+                  <div v-else @click="startEditingPseudo(member.id, member.pseudo)">
+                    {{ member.pseudo || 'Unknown' }}
+                  </div>
+                </td>
                 <td class="p-4 text-[#b07d46]">
                   {{ member?.recruiter?.pseudo || 'No Recruiter' }}
                 </td>
@@ -95,12 +111,8 @@
                     {{ filteredMulesByCharacter(id).length + ' mules' }}
                   </button>
                 </td>
-                <td class="p-4">
-                  <div
-                    class="hidden group-hover:block text-[#b02e2e] cursor-pointer"
-                    title="Options"
-                    @click="openModal(member)"
-                  >
+                <td class="p-4 text-[#b07d46]">
+                  <div class="cursor-pointer" title="Options" @click="openModal(member)">
                     &#x22EE;
                   </div>
                 </td>
@@ -117,6 +129,7 @@
                             <th class="p-2">Classe</th>
                             <th class="p-2">Pseudo</th>
                             <th class="p-2">Pseudo Ankama</th>
+                            <th class="p-2">Action</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -153,8 +166,29 @@
                                 </div>
                               </div>
                             </td>
-                            <td class="p-2 text-[#b07d46] font-bold">{{ mule.pseudo }}</td>
+                            <td class="p-2 text-[#b07d46] font-bold relative">
+                              <div v-if="editingPseudo === mule.id" @click.stop>
+                                <input
+                                  v-model="editPseudo"
+                                  class="border-2 border-[#b07d46] rounded-lg p-2 w-full"
+                                  @blur="savePseudo(mule, 'mule')"
+                                  @keydown.enter.prevent="savePseudo(mule, 'mule')"
+                                />
+                              </div>
+                              <div v-else @click="startEditingPseudo(mule.id, mule.pseudo)">
+                                {{ mule.pseudo }}
+                              </div>
+                            </td>
                             <td class="p-2 text-[#b07d46]">{{ mule.ankamaPseudo }}</td>
+                            <td class="p-4 text-[#b07d46]">
+                              <div
+                                class="cursor-pointer"
+                                title="Options"
+                                @click="openMuleModal(mule)"
+                              >
+                                &#x22EE;
+                              </div>
+                            </td>
                           </tr>
                         </tbody>
                       </table>
@@ -170,7 +204,7 @@
         </table>
       </div>
     </div>
-    <!-- Modal archive -->
+    <!-- Modal archive character -->
     <div
       v-if="showModal"
       class="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50"
@@ -205,6 +239,41 @@
         </div>
       </div>
     </div>
+    <!-- Modal archive character -->
+    <div
+      v-if="showModalMule"
+      class="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50"
+      @click.self="closeMuleModal"
+    >
+      <div class="bg-[#fff5e6] border-4 border-[#b07d46] rounded-lg p-6 w-1/3 relative">
+        <!-- Close Button -->
+        <button
+          class="absolute top-3 right-3 text-[#b02e2e] hover:text-[#942828] font-bold text-lg"
+          @click="closeMuleModal"
+        >
+          &times;
+        </button>
+
+        <h2 class="text-xl font-bold text-[#b02e2e] mb-4">Options</h2>
+        <p class="text-lg text-[#b07d46] mb-6">
+          Voulez-vous archiver le joueur <strong>{{ selectedMule.pseudo }}</strong> ?
+        </p>
+        <div class="flex justify-end space-x-4">
+          <button
+            @click="closeMuleModal"
+            class="bg-[#b07d46] text-[#fff5e6] font-bold py-2 px-4 rounded-lg hover:bg-[#9c682e]"
+          >
+            Annuler
+          </button>
+          <button
+            @click="archiveMule(selectedMule.id)"
+            class="bg-[#b02e2e] text-[#f3d9b1] font-bold py-2 px-4 rounded-lg hover:bg-[#942828]"
+          >
+            Archiver
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -228,8 +297,12 @@ export default {
       searchQuery: '',
       charactersNotArchived: [], // Holds the list of all characters
       showModal: false,
+      showModalMule: false,
       showModalMember: false,
       selectedMember: null,
+      editingPseudo: null, // Stores the ID of the currently edited character/mule
+      editPseudo: '',
+      selectedMule: null,
       showNotification: false,
       notArchivedMules: {}, // Stores all mules fetched at once, grouped by character ID
       showMulesModal: false,
@@ -298,6 +371,10 @@ export default {
         );
         this.showModal = false;
         this.showNotification = true;
+        this.$refs.notificationRef.showNotification(
+          `${this.selectedMember.pseudo} a bien été archivé`
+        );
+
         // Automatically hide the notification after 3 seconds
         setTimeout(() => {
           this.showNotification = false;
@@ -309,20 +386,29 @@ export default {
     },
     async archiveMule(muleId) {
       try {
-        await axios.put(`http://localhost:8000/mules/${muleId}/archive`, {
+        // Ensure `selectedMule` is valid
+        if (!this.selectedMule || !this.selectedMule.id) {
+          console.error('Selected mule is null or missing an ID.');
+          alert('Aucun mule sélectionné ou identifiant manquant.');
+          return;
+        }
+
+        // Archive the mule in the backend
+        await axios.put(`http://localhost:8000/mule/archive/${muleId}`, {
           isArchived: true,
         });
+        // Remove the mule locally
+        this.notArchivedMules[muleId] = this.notArchivedMules[muleId].filter(
+          mule => mule.id !== muleId
+        );
 
-        // Remove the mule from the list in the modal
-        this.notArchivedMules[this.currentCharacter.id] = this.notArchivedMules[
-          this.currentCharacter.id
-        ].filter(mule => mule.id !== muleId);
-
-        // Optional: Show a notification or confirmation
-        alert('Mule archivé avec succès.');
+        // Close the modal and show a notification
+        this.closeMuleModal();
+        this.$refs.notificationRef.showNotification(
+          `${this.selectedMule.pseudo} a bien été archivé`
+        );
       } catch (error) {
         console.error('Error archiving mule:', error.response?.data || error.message);
-        alert("Une erreur est survenue lors de l'archivage de la mule.");
       }
     },
     async fetchAllMules() {
@@ -339,6 +425,46 @@ export default {
         console.error('Error fetching mules:', error);
       }
     },
+    startEditingPseudo(id, currentPseudo) {
+      this.editingPseudo = id;
+      this.editPseudo = currentPseudo || ''; // Reset or set to the current pseudo
+      this.$nextTick(() => {
+        const input = this.$refs.editInput;
+        if (input) input.focus(); // Focus the input field
+      });
+    },
+    async savePseudo(entity, type) {
+      console.log('entity', entity);
+      console.log('type', type);
+      console.log("editPseudo", this.editPseudo)
+      if (this.editPseudo.trim() === '') {
+        alert('Le pseudo ne peut pas être vide.');
+        return;
+      }
+
+      try {
+        if (type === 'character') {
+          await axios.put(`http://localhost:8000/characters/${entity.id}/update-pseudo`, {
+            pseudo: this.editPseudo,
+          });
+          entity.pseudo = this.editPseudo; // Update locally
+        } else if (type === 'mule') {
+          await axios.put(`http://localhost:8000/mules/${entity.id}/update-pseudo`, {
+            pseudo: this.editPseudo,
+          });
+          entity.pseudo = this.editPseudo; // Update locally
+        }
+        this.editingPseudo = null; // Exit edit mode
+        this.editPseudo = ''; // Clear the temporary pseudo
+        this.$refs.notificationRef.showNotification('Pseudo mis à jour avec succès !');
+      } catch (error) {
+        console.error(
+          'Erreur lors de la mise à jour du pseudo:',
+          error.response?.data || error.message
+        );
+        alert('Une erreur est survenue lors de la mise à jour du pseudo.');
+      }
+    },
     filteredMulesByCharacter(characterId) {
       return this.notArchivedMules[characterId] || [];
     },
@@ -347,11 +473,6 @@ export default {
       this.currentCharacterMules = this.filteredMulesByCharacter(characterId);
       this.showMulesModal = true;
     },
-    closeMulesModal() {
-      this.showMulesModal = false;
-      this.currentCharacter = null;
-      this.currentCharacterMules = [];
-    },
     openModal(member) {
       this.selectedMember = member;
       this.showModal = true;
@@ -359,11 +480,13 @@ export default {
     closeModal() {
       this.showModal = false;
     },
-    openModalMember() {
-      this.showModalMember = true;
+    openMuleModal(mule) {
+      this.selectedMule = mule;
+      this.showModalMule = true;
     },
-    closeModalMember() {
-      this.showModalMember = false;
+    closeMuleModal() {
+      this.selectedMule = null;
+      this.showModalMule = false;
     },
     editMule(mule) {
       // Handle editing logic, such as opening a modal with mule details
