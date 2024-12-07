@@ -314,6 +314,7 @@ export default {
         linkedCharacterId: null, // The selected not archived character's ID
         class: null,
       },
+      showNotification: false,
       notArchivedCharacters: [], // List of not archived characters
       searchQuery: '', // Query for the search bar
       selectedCharacterName: '',
@@ -397,10 +398,8 @@ export default {
           isArchived: this.character.isArchived,
           recruiterId: this.character.recruiterId,
         });
-
-        alert('Character created successfully!');
-        console.log(response.data);
-
+        // Emit the event to inform the parent about the new character
+        this.$emit('characterAdded', response.data);
         // Réinitialiser le formulaire après succès
         this.resetForm();
         this.closeModal(); // Optionnel : Fermer la modal si nécessaire
@@ -412,7 +411,7 @@ export default {
 
     async submitMuleCharacter() {
       // Validation de base
-      console.log("mule", this.muleCharacter);
+      console.log('mule', this.muleCharacter);
       if (!this.muleCharacter.class) {
         this.errorMessageMule = 'Veuillez sélectionner une classe avant de soumettre.';
         return;
@@ -446,7 +445,10 @@ export default {
         };
         this.selectedCharacterName = '';
         this.selectedCharacterIcon = '';
-        alert('Mule ajoutée avec succès !');
+        this.$emit('muleAdded', response.data);
+
+        this.resetForm();
+        this.closeModal(); // Optionnel : Fermer la modal si nécessaire
         return response.data; // Retour des données en cas de succès
       } catch (error) {
         console.error('Error creating mule character:', error.response?.data || error.message);

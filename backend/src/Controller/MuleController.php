@@ -205,5 +205,4 @@ class MuleController extends AbstractController
 
         return $this->json(['message' => 'Pseudo updated successfully'], 200);
     }
-
 }

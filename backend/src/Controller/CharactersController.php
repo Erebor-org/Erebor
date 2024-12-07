@@ -355,4 +355,21 @@ public function getAllCharacters(CharactersRepository $repository): JsonResponse
 
         return $this->json(['message' => 'Pseudo updated successfully'], 200);
     }
+    #[Route('/characters/{id}/unarchive', name: 'character_unarchive', methods: ['PUT'])]
+    public function unarchive(CharactersRepository $repository, EntityManagerInterface $em, int $id): JsonResponse
+    {
+        // Find the mule by ID
+        $character = $repository->find($id);
+
+        // Handle case where mule is not found
+        if (!$character) {
+            return $this->json(['error' => 'Mule not found'], 404);
+        }
+
+        // Set isArchived to false
+        $character->setIsArchived(false);
+        $em->flush();
+
+        return $this->json(['message' => 'Mule unarchived successfully']);
+    }
 }
