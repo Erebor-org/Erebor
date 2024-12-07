@@ -51,10 +51,7 @@
           <tbody>
             <template v-for="({ member, id }, index) in filteredMembers" :key="member.id || index">
               <!-- Main Row -->
-              <tr
-                class="transition-all group relative hover:bg-[#f3d9b1]"
-                @click="toggleExpand(id)"
-              >
+              <tr class="transition-all group relative hover:bg-[#f3d9b1]">
                 <td class="p-4 relative">
                   <div class="relative inline-block">
                     <button @click="toggleClassDropdown(member.id)">
@@ -92,6 +89,7 @@
                 <td class="p-4">
                   <button
                     v-if="filteredMulesByCharacter(id).length > 0"
+                    @click="toggleExpand(id)"
                     class="text-[#b02e2e] font-bold underline"
                   >
                     {{ filteredMulesByCharacter(id).length + ' mules' }}
@@ -170,6 +168,41 @@
             </template>
           </tbody>
         </table>
+      </div>
+    </div>
+    <!-- Modal archive -->
+    <div
+      v-if="showModal"
+      class="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50"
+      @click.self="closeModal"
+    >
+      <div class="bg-[#fff5e6] border-4 border-[#b07d46] rounded-lg p-6 w-1/3 relative">
+        <!-- Close Button -->
+        <button
+          class="absolute top-3 right-3 text-[#b02e2e] hover:text-[#942828] font-bold text-lg"
+          @click="closeModal"
+        >
+          &times;
+        </button>
+
+        <h2 class="text-xl font-bold text-[#b02e2e] mb-4">Options</h2>
+        <p class="text-lg text-[#b07d46] mb-6">
+          Voulez-vous archiver le joueur <strong>{{ selectedMember.pseudo }}</strong> ?
+        </p>
+        <div class="flex justify-end space-x-4">
+          <button
+            @click="closeModal"
+            class="bg-[#b07d46] text-[#fff5e6] font-bold py-2 px-4 rounded-lg hover:bg-[#9c682e]"
+          >
+            Annuler
+          </button>
+          <button
+            @click="archiveCharacter(selectedMember.id)"
+            class="bg-[#b02e2e] text-[#f3d9b1] font-bold py-2 px-4 rounded-lg hover:bg-[#942828]"
+          >
+            Archiver
+          </button>
+        </div>
       </div>
     </div>
   </div>
