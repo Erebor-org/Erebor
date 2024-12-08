@@ -33,6 +33,7 @@
       <thead>
         <tr class="bg-[#b02e2e] text-[#f3d9b1] text-lg">
           <th class="p-4">Pseudo</th>
+          <th class="p-4">Ankama pseudo</th>
           <th class="p-4">Raison</th>
           <th class="p-4 text-right">Actions</th>
         </tr>
@@ -55,7 +56,7 @@
           </td>
         </tr>
         <tr v-if="filteredBlacklist.length === 0">
-          <td colspan="3" class="p-4 text-center text-[#b07d46] font-bold">
+          <td colspan="4" class="p-4 text-center text-[#b07d46] font-bold">
             Aucun personnage trouvé.
           </td>
         </tr>
