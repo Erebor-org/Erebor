@@ -3,68 +3,68 @@
     class="w-full flex flex-col items-center justify-start py-10 bg-cover bg-center"
     :style="{ backgroundImage: `url(${backgroundImage})` }"
   >
-
-<!-- Search Bar and Table Block -->
-<div class="bg-[#fff5e6] border-4 border-[#b07d46] rounded-lg shadow-lg w-11/12 max-w-4xl p-6 mb-6 mt-10">
-  <!-- Header with Title and Button -->
-  <div class="flex justify-between items-center mb-4">
-    <h2 class="text-2xl font-bold text-[#b02e2e]">Blacklist de la Guilde</h2>
-    <button
-      @click="showModal = true"
-      class="bg-[#b02e2e] text-[#f3d9b1] font-bold py-2 px-4 rounded-lg hover:bg-[#942828] focus:ring-4 focus:ring-[#f3d9b1]"
+    <!-- Search Bar and Table Block -->
+    <div
+      class="bg-[#fff5e6] border-4 border-[#b07d46] rounded-lg shadow-lg w-11/12 max-w-4xl p-6 mb-6 mt-10"
     >
-      Ajouter un Personnage
-    </button>
-  </div>
-
-  <!-- Search Bar -->
-  <div class="mb-4">
-    <input
-      type="text"
-      v-model="searchQuery"
-      placeholder="Rechercher un pseudo"
-      class="w-full border-2 border-[#b07d46] bg-[#fffaf0] rounded-lg p-3 text-lg focus:outline-none focus:ring-2 focus:ring-[#f3d9b1]"
-    />
-  </div>
-
-  <!-- Blacklist Table -->
-  <div class="overflow-y-auto max-h-[70vh]">
-    <table class="w-full text-left border-collapse">
-      <thead>
-        <tr class="bg-[#b02e2e] text-[#f3d9b1] text-lg">
-          <th class="p-4">Pseudo</th>
-          <th class="p-4">Ankama pseudo</th>
-          <th class="p-4">Raison</th>
-          <th class="p-4 text-right">Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr
-          v-for="(entry, index) in filteredBlacklist"
-          :key="index"
-          class="hover:bg-[#f3d9b1] hover:shadow-md transition-all"
+      <!-- Header with Title and Button -->
+      <div class="flex justify-between items-center mb-4">
+        <h2 class="text-2xl font-bold text-[#b02e2e]">Blacklist de la Guilde</h2>
+        <button
+          @click="showModal = true"
+          class="bg-[#b02e2e] text-[#f3d9b1] font-bold py-2 px-4 rounded-lg hover:bg-[#942828] focus:ring-4 focus:ring-[#f3d9b1]"
         >
-          <td class="p-4 text-[#b07d46] font-bold">{{ entry.pseudo }}</td>
-          <td class="p-4 text-[#b07d46]">{{ entry.reason }}</td>
-          <td class="p-4 text-right">
-            <button
-              @click="removeFromBlacklist(index)"
-              class="bg-[#b02e2e] text-[#f3d9b1] font-bold py-2 px-4 rounded-lg hover:bg-[#942828]"
-            >
-              Supprimer
-            </button>
-          </td>
-        </tr>
-        <tr v-if="filteredBlacklist.length === 0">
-          <td colspan="4" class="p-4 text-center text-[#b07d46] font-bold">
-            Aucun personnage trouvé.
-          </td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-</div>
+          Ajouter un Personnage
+        </button>
+      </div>
 
+      <!-- Search Bar -->
+      <div class="mb-4">
+        <input
+          type="text"
+          v-model="searchQuery"
+          placeholder="Rechercher un pseudo"
+          class="w-full border-2 border-[#b07d46] bg-[#fffaf0] rounded-lg p-3 text-lg focus:outline-none focus:ring-2 focus:ring-[#f3d9b1]"
+        />
+      </div>
+
+      <!-- Blacklist Table -->
+      <div class="overflow-y-auto max-h-[70vh]">
+        <table class="w-full text-left border-collapse">
+          <thead>
+            <tr class="bg-[#b02e2e] text-[#f3d9b1] text-lg">
+              <th class="p-4">Pseudo</th>
+              <th class="p-4">Ankama pseudo</th>
+              <th class="p-4">Raison</th>
+              <th class="p-4 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr
+              v-for="(entry, index) in filteredBlacklist"
+              :key="index"
+              class="hover:bg-[#f3d9b1] hover:shadow-md transition-all"
+            >
+              <td class="p-4 text-[#b07d46] font-bold">{{ entry.pseudo }}</td>
+              <td class="p-4 text-[#b07d46]">{{ entry.reason }}</td>
+              <td class="p-4 text-right">
+                <button
+                  @click="removeFromBlacklist(index)"
+                  class="bg-[#b02e2e] text-[#f3d9b1] font-bold py-2 px-4 rounded-lg hover:bg-[#942828]"
+                >
+                  Supprimer
+                </button>
+              </td>
+            </tr>
+            <tr v-if="filteredBlacklist.length === 0">
+              <td colspan="4" class="p-4 text-center text-[#b07d46] font-bold">
+                Aucun personnage trouvé.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
 
     <!-- Add Character Modal -->
     <div
@@ -72,7 +72,9 @@
       class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
       @click.self="closeModal"
     >
-      <div class="bg-[#fff5e6] border-4 border-[#b07d46] rounded-lg shadow-lg w-11/12 max-w-lg p-8 relative">
+      <div
+        class="bg-[#fff5e6] border-4 border-[#b07d46] rounded-lg shadow-lg w-11/12 max-w-lg p-8 relative"
+      >
         <!-- Close Button -->
         <button
           class="absolute top-4 right-4 text-[#b02e2e] font-bold text-xl hover:text-[#942828]"
@@ -127,7 +129,7 @@
 
         <!-- Add Button -->
         <button
-          @click="addToBlacklist"
+          @click="submitBlacklistMember(newBlacklist)"
           class="w-full bg-[#b02e2e] text-[#f3d9b1] font-bold py-3 px-6 rounded-lg hover:bg-[#942828] focus:ring-4 focus:ring-[#f3d9b1]"
         >
           Ajouter à la Blacklist
@@ -153,6 +155,7 @@
 
 <script>
 import register_bg from '@/assets/register_bg.webp';
+import axios from 'axios';
 
 export default {
   data() {
@@ -165,24 +168,22 @@ export default {
       newBlacklist: {
         pseudo: '',
         reason: '',
-        ankamaPseudo: ''
+        ankamaPseudo: '',
       },
       blacklist: [],
     };
   },
   computed: {
     filteredBlacklist() {
-      return this.blacklist.filter((entry) =>
+      return this.blacklist.filter(entry =>
         entry.pseudo.toLowerCase().includes(this.searchQuery.toLowerCase())
       );
     },
   },
   methods: {
     addToBlacklist() {
-      if (this.newBlacklist.pseudo && this.newBlacklist.reason) {
+      if (this.newBlacklist.pseudo && this.newBlacklist.reason && this.newBlacklist.ankamaPseudo) {
         this.blacklist.push({ ...this.newBlacklist });
-        this.newBlacklist.pseudo = '';
-        this.newBlacklist.reason = '';
         this.showNotificationAddBlacklist = true;
         this.closeModal();
         setTimeout(() => {
@@ -190,6 +191,32 @@ export default {
         }, 3000);
       } else {
         alert('Veuillez remplir tous les champs !');
+      }
+    },
+    async fetchBlacklist() {
+      try {
+        const response = await axios.get('http://localhost:8000/blacklist');
+        this.blacklist = response.data;
+      } catch (error) {
+        console.error('Error fetching mules:', error);
+      }
+    },
+    async submitBlacklistMember(blacklistMember) {
+      console.log('submit', blacklistMember);
+      try {
+        // API POST request
+        const response = await axios.post('http://localhost:8000/blacklist', {
+          pseudo: blacklistMember.pseudo,
+          ankamaPseudo: blacklistMember.ankamaPseudo,
+          reason: blacklistMember.reason,
+        });
+        // reset form
+        this.resetForm();
+        this.closeModal(); // Optionnel : Fermer la modal si nécessaire
+        return response.data;
+      } catch (error) {
+        console.error('Error creating character:', error.response?.data || error.message);
+        alert('An error occurred while creating the character.');
       }
     },
     removeFromBlacklist(index) {
@@ -202,6 +229,20 @@ export default {
     closeModal() {
       this.showModal = false;
     },
+    resetForm() {
+      this.newBlacklist = {
+        pseudo: '',
+        reason: '',
+        ankamaPseudo: '',
+      };
+    },
+  },
+  async mounted() {
+    try {
+      await this.fetchBlacklist();
+    } catch (error) {
+      console.error('Error during component initialization:', error);
+    }
   },
 };
 </script>

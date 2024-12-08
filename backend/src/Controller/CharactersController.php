@@ -15,43 +15,43 @@ class CharactersController extends AbstractController
 {
 
     #[Route('/characters/', name: 'characters_list', methods: ['GET'])]
-public function getAllCharacters(CharactersRepository $repository): JsonResponse
-{
-    // Fetch characters ordered by rank.id
-    $characters = $repository->createQueryBuilder('c')
-        ->join('c.rank', 'r') // Join the rank table
-        ->orderBy('r.id', 'ASC') // Order by rank.id ascending
-        ->addOrderBy('c.id', 'ASC') // Optionally order by character.id for consistent results within ranks
-        ->getQuery()
-        ->getResult();
+    public function getAllCharacters(CharactersRepository $repository): 
+    {
+        // Fetch characters ordered by rank.id
+        $characters = $repository->createQueryBuilder('c')
+            ->join('c.rank', 'r') // Join the rank table
+            ->orderBy('r.id', 'ASC') // Order by rank.id ascending
+            ->addOrderBy('c.id', 'ASC') // Optionally order by character.id for consistent results within ranks
+            ->getQuery()
+            ->getResult();
 
-    // Format the response to include recruiter and rank details
-    $formattedCharacters = array_map(function ($character) {
-        return [
-            'id' => $character->getId(),
-            'pseudo' => $character->getPseudo(),
-            'class' => $character->getClass(),
-            'createdAt' => $character->getRecruitedAt()?->format('Y-m-d'),
-            'isArchived' => $character->isArchived(),
-            'recruiter' => $character->getRecruiter() ? [
-                'id' => $character->getRecruiter()->getId(),
-                'pseudo' => $character->getRecruiter()->getPseudo(),
-                'class' => $character->getRecruiter()->getClass(),
-            ] : null,
-            'rank' => $character->getRank() ? [
-                'id' => $character->getRank()->getId(),
-                'name' => $character->getRank()->getName(),
-            ] : null,
-        ];
-    }, $characters);
+        // Format the response to include recruiter and rank details
+        $formattedCharacters = array_map(function ($character) {
+            return [
+                'id' => $character->getId(),
+                'pseudo' => $character->getPseudo(),
+                'class' => $character->getClass(),
+                'createdAt' => $character->getRecruitedAt()?->format('Y-m-d'),
+                'isArchived' => $character->isArchived(),
+                'recruiter' => $character->getRecruiter() ? [
+                    'id' => $character->getRecruiter()->getId(),
+                    'pseudo' => $character->getRecruiter()->getPseudo(),
+                    'class' => $character->getRecruiter()->getClass(),
+                ] : null,
+                'rank' => $character->getRank() ? [
+                    'id' => $character->getRank()->getId(),
+                    'name' => $character->getRank()->getName(),
+                ] : null,
+            ];
+        }, $characters);
 
-    return $this->json($formattedCharacters, 200, [], [
-        'groups' => 'characters_list',
-        'circular_reference_handler' => function ($object) {
-            return $object->getId();
-        }
-    ]);
-}
+        return $this->json($formattedCharacters, 200, [], [
+            'groups' => 'characters_list',
+            'circular_reference_handler' => function ($object) {
+                return $object->getId();
+            }
+        ]);
+    }
 
 
     #[Route('/characters', name: 'characters_create', methods: ['POST'])]

@@ -15,7 +15,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 class MuleController extends AbstractController
 {
     #[Route('/mules', name: 'mules_list', methods: ['GET'])]
-    public function index(MuleRepository $repository): JsonResponse
+    public function getMules(MuleRepository $repository): JsonResponse
     {
         $mules = $repository->findAll();
 
