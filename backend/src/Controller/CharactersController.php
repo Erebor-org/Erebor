@@ -15,7 +15,7 @@ class CharactersController extends AbstractController
 {
 
     #[Route('/characters/', name: 'characters_list', methods: ['GET'])]
-    public function getAllCharacters(CharactersRepository $repository): 
+    public function getAllCharacters(CharactersRepository $repository): JsonResponse
     {
         // Fetch characters ordered by rank.id
         $characters = $repository->createQueryBuilder('c')

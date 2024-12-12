@@ -9,6 +9,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\HttpFoundation\JsonResponse;
 
 class BlacklistController extends AbstractController
 {
@@ -37,7 +38,7 @@ class BlacklistController extends AbstractController
     }
 
     #[Route('/blacklist/{id}', name: 'blacklist_delete', methods: ['DELETE'])]
-    public function delete(int $id, BlacklistRepository $blacklistRepository, EntityManagerInterface $entityManager): Response
+    public function delete(int $id, BlacklistRepository $blacklistRepository, EntityManagerInterface $entityManager): JsonResponse
     {
         $blacklist = $blacklistRepository->find($id);
 
@@ -50,8 +51,9 @@ class BlacklistController extends AbstractController
 
         return $this->json(['message' => 'Blacklist entry deleted']);
     }
-    #[Route('/blacklist/{id}', name: 'blacklist_show', methods: ['GET'])]
-    public function show(int $id, BlacklistRepository $blacklistRepository): Response
+
+    #[Route('/blacklist/{id<\d+>}', name: 'blacklist_show', methods: ['GET'])]
+    public function show(int $id, BlacklistRepository $blacklistRepository): JsonResponse
     {
         $blacklist = $blacklistRepository->find($id);
 

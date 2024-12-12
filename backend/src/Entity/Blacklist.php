@@ -24,7 +24,7 @@ class Blacklist
 
     public function getId(): ?int
     {
-        return $id;
+        return $this->id;
     }
 
     public function getPseudo(): ?string
