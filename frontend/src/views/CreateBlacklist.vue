@@ -163,7 +163,7 @@
       @click.self="closeConfirmModal"
     >
       <div
-        class="bg-[#f3d9b1] border-4 border-[#b02e2e] rounded-lg shadow-lg w-11/12 max-w-lg p-8 relative"
+        class="bg-white border-4 border-[#b02e2e] rounded-lg shadow-lg w-11/12 max-w-lg p-8 relative"
       >
         <h2 class="text-3xl font-bold text-[#b02e2e] mb-6 text-center">Confirmation</h2>
         <p class="text-lg text-[#b02e2e] mb-6 text-center">
