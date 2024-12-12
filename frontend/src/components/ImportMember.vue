@@ -60,6 +60,9 @@
               class="block w-full border-2 border-[#b07d46] bg-[#fffaf0] rounded-lg p-2 text-lg focus:outline-none focus:ring-2 focus:ring-[#f3d9b1]"
               required
             />
+            <div v-if="isPseudoInvalid" class="text-[#b02e2e] text-sm font-medium mt-2">
+              "{{ character.pseudo }}" est blacklist d'Erebor.
+            </div>
           </div>
           <!-- Pseudo ankama -->
           <div class="mb-4">
@@ -73,6 +76,10 @@
               class="block w-full border-2 border-[#b07d46] bg-[#fffaf0] rounded-lg p-2 text-lg focus:outline-none focus:ring-2 focus:ring-[#f3d9b1]"
               required
             />
+
+            <div v-if="isAnkamaPseudoInvalid" class="text-[#b02e2e] text-sm font-medium mt-2">
+              "{{ character.ankamaPseudo }}" est blacklist d'Erebor.
+            </div>
           </div>
           <!-- Classe -->
           <div class="mb-4">
@@ -180,6 +187,9 @@
               class="block w-full border-2 border-[#b07d46] bg-[#fffaf0] rounded-lg p-2 text-lg focus:outline-none focus:ring-2 focus:ring-[#f3d9b1]"
               required
             />
+            <div v-if="isMulePseudoInvalid" class="text-[#b02e2e] text-sm font-medium mt-2">
+              "{{ muleCharacter.pseudo }}" est blacklist d'Erebor.
+            </div>
           </div>
           <!-- Pseudo ankama -->
           <div class="mb-4">
@@ -193,6 +203,10 @@
               class="block w-full border-2 border-[#b07d46] bg-[#fffaf0] rounded-lg p-2 text-lg focus:outline-none focus:ring-2 focus:ring-[#f3d9b1]"
               required
             />
+
+            <div v-if="isMuleAnkamaPseudoInvalid" class="text-[#b02e2e] text-sm font-medium mt-2">
+              "{{ muleCharacter.ankamaPseudo }}" est blacklist d'Erebor.
+            </div>
           </div>
           <div class="mb-4">
             <label class="block text-lg font-medium text-[#b07d46] mb-2">
@@ -320,7 +334,7 @@ export default {
       selectedCharacterName: '',
       selectedCharacterIcon: '', // Display the icon of the selected character
       showCharacterSelection: false, // Toggle visibility of character selection
-      blacklistList: ['toto', 'Bard', 'Siisko', 'Lae', 'Shira'],
+      blacklist: [],
       classes: {
         sram: '/src/assets/icon_classe/sram.avif',
         forgelance: '/src/assets/icon_classe/forgelance.avif',
@@ -345,10 +359,19 @@ export default {
     };
   },
   methods: {
-    // Vérifier si le pseudo est valide
     isPseudoValid(pseudo) {
-      return !this.blacklistList.includes(pseudo);
+      console.log('pseudo', this.blacklist.includes(pseudo.toLowerCase()));
+      console.log('bl', this.blacklist);
+      return pseudo && !this.blacklist.some(
+          entry => entry.pseudo.toLowerCase() === pseudo.toLowerCase()
+        );
     },
+    isAnkamaPseudoValid(ankamaPseudo) {
+      return ankamaPseudo && !this.blacklist.some(
+          entry => entry.ankamaPseudo.toLowerCase() === ankamaPseudo.toLowerCase()
+        );
+    },
+
     resetForm() {
       // Réinitialiser les champs du formulaire principal
       this.character = {
@@ -373,9 +396,6 @@ export default {
     },
 
     async submitCharacter() {
-      console.log('submit', this.character);
-      console.log('Selected recruiterId:', this.character.recruiterId);
-
       // Close modal after successful submission
       this.closeModal();
       if (!this.character.class) {
@@ -384,6 +404,11 @@ export default {
       }
       if (!this.isPseudoValid(this.character.pseudo)) {
         this.errorMessage = `"${this.character.pseudo}" est blacklist d'Erebor.`;
+        return;
+      }
+
+      if (!this.isAnkamaPseudoValid(this.character.ankamaPseudo)) {
+        this.errorMessage = `"${this.character.ankamaPseudo}" est blacklist d'Erebor.`;
         return;
       }
       const payload = { ...this.character };
@@ -405,7 +430,7 @@ export default {
         this.closeModal(); // Optionnel : Fermer la modal si nécessaire
       } catch (error) {
         console.error('Error creating character:', error.response?.data || error.message);
-        alert('An error occurred while creating the character.');
+        console.log('An error occurred while creating the character.');
       }
     },
 
@@ -418,6 +443,11 @@ export default {
       }
       if (!this.isPseudoValid(this.muleCharacter.pseudo)) {
         this.errorMessageMule = `"${this.muleCharacter.pseudo}" est blacklist d'Erebor.`;
+        return;
+      }
+
+      if (!this.isAnkamaPseudoValid(this.muleCharacter.ankamaPseudo)) {
+        this.errorMessageMule = `"${this.muleCharacter.ankamaPseudo}" est blacklist d'Erebor.`;
         return;
       }
       if (!this.muleCharacter.linkedCharacterId) {
@@ -452,7 +482,7 @@ export default {
         return response.data; // Retour des données en cas de succès
       } catch (error) {
         console.error('Error creating mule character:', error.response?.data || error.message);
-        alert('An error occurred while creating the mule character.');
+        console.log('An error occurred while creating the mule character.');
         throw error; // Propagation de l'erreur pour une gestion supplémentaire
       }
     },
@@ -475,7 +505,7 @@ export default {
           'Error fetching characters with recruiters:',
           error.response?.data || error.message
         );
-        alert('An error occurred while fetching characters with recruiters.');
+        console.log('An error occurred while fetching characters with recruiters.');
       }
     },
     async loadNotArchivedCharacters() {
@@ -516,6 +546,14 @@ export default {
       this.selectedRecruiterName = ''; // Clear recruiter name
       this.selectedRecruiterIcon = ''; // Clear recruiter icon
     },
+    async fetchBlacklist() {
+      try {
+        const response = await axios.get('http://localhost:8000/blacklist');
+        this.blacklist = response.data;
+      } catch (error) {
+        console.error('Error fetching mules:', error);
+      }
+    },
   },
 
   computed: {
@@ -534,11 +572,45 @@ export default {
       const query = this.recruiterSearchQuery.toLowerCase();
       return this.recruiters.filter(recruiter => recruiter.pseudo.toLowerCase().includes(query));
     },
+    isPseudoInvalid() {
+      // Ensure blacklist is checked for a specific property (e.g., `pseudo`)
+      return (
+        this.character.pseudo &&
+        this.blacklist.some(
+          entry => entry.pseudo.toLowerCase() === this.character.pseudo.toLowerCase()
+        )
+      );
+    },
+    isAnkamaPseudoInvalid() {
+      return (
+        this.character.ankamaPseudo &&
+        this.blacklist.some(
+          entry => entry.ankamaPseudo.toLowerCase() === this.character.ankamaPseudo.toLowerCase()
+        )
+      );
+    },
+    isMulePseudoInvalid() {
+      return (
+        this.muleCharacter.pseudo &&
+        this.blacklist.some(
+          entry => entry.pseudo.toLowerCase() === this.muleCharacter.pseudo.toLowerCase()
+        )
+      );
+    },
+    isMuleAnkamaPseudoInvalid() {
+      return (
+        this.muleCharacter.ankamaPseudo &&
+        this.blacklist.some(
+          entry => entry.ankamaPseudo.toLowerCase() === this.muleCharacter.ankamaPseudo.toLowerCase()
+        )
+      );
+    },
   },
 
   mounted() {
     this.fetchRecruiters(); // Fetch characters when the component is mounted
     this.loadNotArchivedCharacters();
+    this.fetchBlacklist();
   },
   watch: {
     activeTab(newTab) {
