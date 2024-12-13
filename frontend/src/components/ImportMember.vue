@@ -60,10 +60,7 @@
               class="block w-full border-2 border-[#b07d46] bg-[#fffaf0] rounded-lg p-2 text-lg focus:outline-none focus:ring-2 focus:ring-[#f3d9b1]"
               required
             />
-            <div
-              v-if="!isPseudoInvalid"
-              class="text-[#b02e2e] text-sm font-medium mt-2"
-            >
+            <div v-if="isPseudoInvalid" class="text-[#b02e2e] text-sm font-medium mt-2">
               "{{ character.pseudo }}" est blacklist d'Erebor.
             </div>
           </div>
@@ -80,7 +77,7 @@
               required
             />
 
-            <div v-if="!isAnkamaPseudoInvalid" class="text-[#b02e2e] text-sm font-medium mt-2">
+            <div v-if="isAnkamaPseudoInvalid" class="text-[#b02e2e] text-sm font-medium mt-2">
               "{{ character.ankamaPseudo }}" est blacklist d'Erebor.
             </div>
           </div>
@@ -190,7 +187,7 @@
               class="block w-full border-2 border-[#b07d46] bg-[#fffaf0] rounded-lg p-2 text-lg focus:outline-none focus:ring-2 focus:ring-[#f3d9b1]"
               required
             />
-            <div v-if="!isMulePseudoInvalid" class="text-[#b02e2e] text-sm font-medium mt-2">
+            <div v-if="isMulePseudoInvalid" class="text-[#b02e2e] text-sm font-medium mt-2">
               "{{ muleCharacter.pseudo }}" est blacklist d'Erebor.
             </div>
           </div>
@@ -207,7 +204,7 @@
               required
             />
 
-            <div v-if="!isMuleAnkamaPseudoInvalid" class="text-[#b02e2e] text-sm font-medium mt-2">
+            <div v-if="isMuleAnkamaPseudoInvalid" class="text-[#b02e2e] text-sm font-medium mt-2">
               "{{ muleCharacter.ankamaPseudo }}" est blacklist d'Erebor.
             </div>
           </div>
@@ -363,10 +360,16 @@ export default {
   },
   methods: {
     isPseudoValid(pseudo) {
-      return pseudo && !this.blacklist.includes(pseudo.toLowerCase());
+      console.log('pseudo', this.blacklist.includes(pseudo.toLowerCase()));
+      console.log('bl', this.blacklist);
+      return pseudo && !this.blacklist.some(
+          entry => entry.pseudo.toLowerCase() === pseudo.toLowerCase()
+        );
     },
     isAnkamaPseudoValid(ankamaPseudo) {
-      return ankamaPseudo && !this.blacklist.includes(ankamaPseudo.toLowerCase());
+      return ankamaPseudo && !this.blacklist.some(
+          entry => entry.ankamaPseudo.toLowerCase() === ankamaPseudo.toLowerCase()
+        );
     },
 
     resetForm() {
@@ -393,9 +396,6 @@ export default {
     },
 
     async submitCharacter() {
-      console.log('submit', this.character);
-      console.log('Selected recruiterId:', this.character.recruiterId);
-
       // Close modal after successful submission
       this.closeModal();
       if (!this.character.class) {
@@ -573,16 +573,37 @@ export default {
       return this.recruiters.filter(recruiter => recruiter.pseudo.toLowerCase().includes(query));
     },
     isPseudoInvalid() {
-      return !this.isPseudoValid(this.character.pseudo);
+      // Ensure blacklist is checked for a specific property (e.g., `pseudo`)
+      return (
+        this.character.pseudo &&
+        this.blacklist.some(
+          entry => entry.pseudo.toLowerCase() === this.character.pseudo.toLowerCase()
+        )
+      );
     },
     isAnkamaPseudoInvalid() {
-      return !this.isAnkamaPseudoValid(this.character.ankamaPseudo);
+      return (
+        this.character.ankamaPseudo &&
+        this.blacklist.some(
+          entry => entry.ankamaPseudo.toLowerCase() === this.character.ankamaPseudo.toLowerCase()
+        )
+      );
     },
     isMulePseudoInvalid() {
-      return !this.isPseudoValid(this.muleCharacter.pseudo);
+      return (
+        this.muleCharacter.pseudo &&
+        this.blacklist.some(
+          entry => entry.pseudo.toLowerCase() === this.muleCharacter.pseudo.toLowerCase()
+        )
+      );
     },
     isMuleAnkamaPseudoInvalid() {
-      return !this.isAnkamaPseudoValid(this.muleCharacter.ankamaPseudo);
+      return (
+        this.muleCharacter.ankamaPseudo &&
+        this.blacklist.some(
+          entry => entry.ankamaPseudo.toLowerCase() === this.muleCharacter.ankamaPseudo.toLowerCase()
+        )
+      );
     },
   },
 
