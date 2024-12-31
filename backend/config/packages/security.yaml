@@ -19,13 +19,19 @@ security:
             lazy: true
             stateless: true
             provider: app_user_provider
-            json_login:
-                check_path: /api/login
-                username_path: email
-                password_path: password
+            form_login:
+                login_path: api_login
+                check_path: api_login
+                username_parameter: pseudo
+                password_parameter: password
             logout:
                 path: /api/logout
                 invalidate_session: true
+
+            remember_me:
+                secret: '%kernel.secret%'
+                lifetime: 2592000
+                path: /
 
             # activate different ways to authenticate
             # https://symfony.com/doc/current/security.html#the-firewall
@@ -36,11 +42,15 @@ security:
     # Easy way to control access for large sections of your site
     # Note: Only the *first* access control that matches will be used
     access_control:
-        - { path: ^/admin, roles: ROLE_ADMIN }
-        - { path: ^/profile, roles: ROLE_USER }
-        - { path: ^/api/register, roles: IS_AUTHENTICATED_ANONYMOUSLY }
+        - { path: ^/membres, roles: IS_AUTHENTICATED_FULLY }
+        - { path: ^/blacklist, roles: IS_AUTHENTICATED_FULLY }
+        - { path: ^/profile, roles: IS_AUTHENTICATED_FULLY }
+        - { path: ^/, roles: IS_AUTHENTICATED_FULLY }
+        - { path: ^/login$, methods: [POST], roles: IS_AUTHENTICATED_ANONYMOUSLY }
+        - { path: ^/register$, methods: [POST], roles: IS_AUTHENTICATED_ANONYMOUSLY }
         - { path: ^/api, roles: IS_AUTHENTICATED_FULLY }
-
+        - { path: ^/check-auth, roles: IS_AUTHENTICATED_ANONYMOUSLY }
+        - { path: ^/logout, roles: IS_AUTHENTICATED_FULLY }
 when@test:
     security:
         password_hashers:

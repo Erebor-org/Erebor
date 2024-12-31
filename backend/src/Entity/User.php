@@ -101,18 +101,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    public function getRank(): ?string
-    {
-        return $this->rank;
-    }
-
-    public function setRank(string $username): static
-    {
-        $this->username = $rank;
-
-        return $this;
-    }
-
 
     /**
      * @see UserInterface
@@ -122,4 +110,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         // If you store any temporary, sensitive data on the user, clear it here
         // $this->plainPassword = null;
     }
+    public function getSalt() {}
+
 }

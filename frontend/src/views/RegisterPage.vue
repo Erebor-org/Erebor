@@ -138,7 +138,7 @@ export default {
       };
 
       // Remplacez par une requête réelle à votre API Symfony
-      fetch("https://votre-backend-symfony/api/register", {
+      fetch("http://localhost:8000/register", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

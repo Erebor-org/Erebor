@@ -19,9 +19,7 @@ class AuthController
         $this->passwordEncoder = $passwordEncoder;
     }
 
-    /**
-     * @Route(\"/api/login\", name=\"api_login\", methods={\"POST\"})
-     */
+    #[Route('/login', name: 'api_login', methods: ['POST'])]
     public function login(Request $request, SessionInterface $session): JsonResponse
     {
         $data = json_decode($request->getContent(), true);
@@ -33,6 +31,11 @@ class AuthController
         }
 
         return new JsonResponse(['success' => false, 'message' => 'Invalid credentials'], 401);
+    }
+    #[Route('/logout', name: 'api_logout', methods: ['GET'])]
+    public function logout(): void
+    {
+        // Symfony automatically handles logout
     }
 }
 
