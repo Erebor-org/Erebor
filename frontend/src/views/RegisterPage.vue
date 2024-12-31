@@ -133,7 +133,7 @@ export default {
 
       // Envoyer les données à Symfony
       const userData = {
-        pseudo: this.form.pseudo,
+        username: this.form.pseudo,
         password: this.form.password,
       };
 

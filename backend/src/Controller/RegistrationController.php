@@ -4,27 +4,40 @@ namespace App\Controller;
 
 use App\Entity\User;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\HttpFoundation\JsonResponse;
 
 class RegistrationController extends AbstractController
 {
-    #[Route('/register', name: 'api_register', methods: ['POST'])]
+    private $managerRegistry;
+
+    public function __construct(ManagerRegistry $managerRegistry)
+    {
+        $this->managerRegistry = $managerRegistry;
+    }
+    #[Route('/register', name: 'register', methods: ['POST'])]
     public function register(Request $request, UserPasswordHasherInterface $passwordHasher): Response
     {
+
         $data = json_decode($request->getContent(), true);
 
+        if (empty($data['username']) || empty($data['password'])) {
+            return new JsonResponse(['error' => 'Invalid input'], 400);
+        }
+
         $user = new User();
-        $user->setPseudo($data['pseudo']);
+        $user->setUsername($data['username']);
         $hashedPassword = $passwordHasher->hashPassword($user, $data['password']);
         $user->setPassword($hashedPassword);
 
-        $em = $this->getDoctrine()->getManager();
-        $em->persist($user);
-        $em->flush();
+        $entityManager = $this->managerRegistry->getManager();
+        $entityManager->persist($user);
+        $entityManager->flush();
 
-        return $this->json(['message' => 'User registered successfully'], 201);
+        return new JsonResponse(['message' => 'User registered successfully'], 201);
     }
 }

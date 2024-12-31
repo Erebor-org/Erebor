@@ -16,17 +16,17 @@ security:
             pattern: ^/(_(profiler|wdt)|css|images|js)/
             security: false
         main:
+            pattern: ^/
             lazy: true
-            stateless: true
+            stateless: false
             provider: app_user_provider
-            form_login:
-                login_path: api_login
-                check_path: api_login
-                username_parameter: pseudo
-                password_parameter: password
+            json_login:
+                check_path: /login
+                username_path: username
+                password_path: password
             logout:
-                path: /api/logout
-                invalidate_session: true
+                path: /logout
+                target: http://localhost:5173/
 
             remember_me:
                 secret: '%kernel.secret%'
@@ -47,10 +47,10 @@ security:
         - { path: ^/profile, roles: IS_AUTHENTICATED_FULLY }
         - { path: ^/, roles: IS_AUTHENTICATED_FULLY }
         - { path: ^/login$, methods: [POST], roles: IS_AUTHENTICATED_ANONYMOUSLY }
-        - { path: ^/register$, methods: [POST], roles: IS_AUTHENTICATED_ANONYMOUSLY }
+        - { path: ^/register, methods: [POST], roles: IS_AUTHENTICATED_ANONYMOUSLY }
         - { path: ^/api, roles: IS_AUTHENTICATED_FULLY }
         - { path: ^/check-auth, roles: IS_AUTHENTICATED_ANONYMOUSLY }
-        - { path: ^/logout, roles: IS_AUTHENTICATED_FULLY }
+        - { path: ^/logout$, roles: IS_AUTHENTICATED_ANONYMOUSLY }
 when@test:
     security:
         password_hashers:
