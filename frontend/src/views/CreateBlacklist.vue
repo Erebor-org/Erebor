@@ -239,7 +239,7 @@ export default {
       );
 
       if (existingEntry) {
-        alert('Ce pseudo Ankama existe déjà dans la blacklist.');
+        console.log('Ce pseudo Ankama existe déjà dans la blacklist.');
         return;
       }
       try {
@@ -269,7 +269,7 @@ export default {
         return response.data;
       } catch (error) {
         console.error('Error creating character:', error.response?.data || error.message);
-        alert('An error occurred while creating the character.');
+        console.log('An error occurred while creating the character.');
       }
     },
 
@@ -302,7 +302,7 @@ export default {
         }, 3000);
       } catch (error) {
         console.error('Error removing character:', error.response?.data || error.message);
-        alert('An error occurred while removing the character.');
+        console.log('An error occurred while removing the character.');
       } finally {
         this.closeConfirmModal(); // Close the confirmation modal
       }

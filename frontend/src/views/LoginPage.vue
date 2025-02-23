@@ -37,11 +37,11 @@ export default {
         if (response.data.success) {
           this.$router.push('/dashboard');
         } else {
-          alert(response.data.message);
+          console.log(response.data.message);
         }
       } catch (error) {
         console.error(error);
-        alert('An error occurred during login.');
+        console.log('An error occurred during login.');
       }
     },
     async login(credentials) {

@@ -430,7 +430,7 @@ export default {
         this.closeModal(); // Optionnel : Fermer la modal si nécessaire
       } catch (error) {
         console.error('Error creating character:', error.response?.data || error.message);
-        alert('An error occurred while creating the character.');
+        console.log('An error occurred while creating the character.');
       }
     },
 
@@ -482,7 +482,7 @@ export default {
         return response.data; // Retour des données en cas de succès
       } catch (error) {
         console.error('Error creating mule character:', error.response?.data || error.message);
-        alert('An error occurred while creating the mule character.');
+        console.log('An error occurred while creating the mule character.');
         throw error; // Propagation de l'erreur pour une gestion supplémentaire
       }
     },
@@ -505,7 +505,7 @@ export default {
           'Error fetching characters with recruiters:',
           error.response?.data || error.message
         );
-        alert('An error occurred while fetching characters with recruiters.');
+        console.log('An error occurred while fetching characters with recruiters.');
       }
     },
     async loadNotArchivedCharacters() {

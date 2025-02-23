@@ -463,7 +463,7 @@ export default {
           'Error fetching not archived characters:',
           error.response?.data || error.message
         );
-        alert('An error occurred while fetching not archived characters.');
+        console.log('An error occurred while fetching not archived characters.');
       }
     },
     async archiveCharacter(characterId) {
@@ -488,7 +488,7 @@ export default {
         }, 3000);
       } catch (error) {
         console.error('Error archiving character:', error.response?.data || error.message);
-        alert('An error occurred while archiving the character.');
+        console.log('An error occurred while archiving the character.');
       }
     },
     async archiveMule(muleId) {
@@ -496,7 +496,7 @@ export default {
         // Ensure `selectedMule` is valid
         if (!this.selectedMule || !this.selectedMule.id) {
           console.error('Selected mule is null or missing an ID.');
-          alert('Aucun mule sélectionné ou identifiant manquant.');
+          console.log('Aucun mule sélectionné ou identifiant manquant.');
           return;
         }
 
@@ -540,7 +540,7 @@ export default {
         return archivedCharacters;
       } catch (error) {
         console.error('Error fetching archived characters:', error.response?.data || error.message);
-        alert('An error occurred while fetching archived characters.');
+        console.log('An error occurred while fetching archived characters.');
       }
     },
     async unarchiveCharacter(characterId) {
@@ -559,7 +559,7 @@ export default {
         this.$refs.notificationRef.showNotification('Character successfully unarchived!');
       } catch (error) {
         console.error('Error unarchiving character:', error.response?.data || error.message);
-        alert('An error occurred while unarchiving the character.');
+        console.log('An error occurred while unarchiving the character.');
       }
     },
     startEditingPseudo(id, currentPseudo, type) {
@@ -579,7 +579,7 @@ export default {
       console.log('type', type);
       console.log('editPseudo', this.editPseudo);
       if (this.editPseudo.trim() === '') {
-        alert('Le pseudo ne peut pas être vide.');
+        console.log('Le pseudo ne peut pas être vide.');
         return;
       }
 
@@ -603,7 +603,7 @@ export default {
           'Erreur lors de la mise à jour du pseudo:',
           error.response?.data || error.message
         );
-        alert('Une erreur est survenue lors de la mise à jour du pseudo.');
+        console.log('Une erreur est survenue lors de la mise à jour du pseudo.');
       }
     },
     filteredMulesByCharacter(characterId) {
