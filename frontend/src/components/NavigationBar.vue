@@ -1,7 +1,17 @@
 <script setup>
-import { RouterLink } from 'vue-router'
-</script>
+  import { useAuthStore } from '@/stores/authStore';
+  import { ref, computed } from 'vue';
 
+  const authStore = useAuthStore();
+
+  const logout = () => {
+    authStore.logout();
+  };
+
+  const isLoggedIn = computed(() => authStore.token !== null);
+  const user = computed(() => authStore.user);
+
+</script>
 <template>
   <div class="text-white grid">
     <!-- Dofus Logo Positioned Independently -->
@@ -18,11 +28,15 @@ import { RouterLink } from 'vue-router'
       </div>
 
       <!-- Right Section -->
-      <div class="flex items-center space-x-4">
+      <div class="flex items-center space-x-4" v-if="!isLoggedIn">
         <button class="text-sm uppercase underline-on-hover font-fantasy">
           <RouterLink to="/inscription">S'inscrire</RouterLink>
         </button>
+      </div>
+      <div class="flex items-center space-x-4" v-else>
+        <p> Bienvenue {{ user.username }}</p>
         <img :src="profile_icon" alt="User Avatar" class="h-10 w-10 rounded-full" />
+        <button class="text-sm uppercase underline-on-hover font-fantasy" @click="logout">Déconnexion</button>
       </div>
     </div>
 
@@ -43,8 +57,8 @@ import { RouterLink } from 'vue-router'
 
         <!-- Right Menu -->
         <div class="flex items-center space-x-6">
-          <button class="text-sm uppercase underline-on-hover"><RouterLink to="/membres">Membres</RouterLink></button>
-          <button class="text-sm uppercase underline-on-hover"><RouterLink to="/blacklist">Blacklist</RouterLink></button>
+          <button class="text-sm uppercase underline-on-hover" v-if="isLoggedIn"><RouterLink to="/membres">Membres</RouterLink></button>
+          <button class="text-sm uppercase underline-on-hover" v-if="isLoggedIn"><RouterLink to="/blacklist">Blacklist</RouterLink></button>
         </div>
       </div>
     </div>

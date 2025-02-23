@@ -10,7 +10,7 @@ export const useAuthStore = defineStore('auth', {
   actions: {
     async login(username, password) {
       try {
-        const response = await axios.post('http://localhost:8000/api/login_check', { username, password });
+        const response = await axios.post('http://localhost:8000/login', { username, password });
 
         if (response.data.token) {
           this.token = response.data.token;
@@ -25,7 +25,7 @@ export const useAuthStore = defineStore('auth', {
 
     async register(username, password) {
       try {
-        await axios.post('http://localhost:8000/api/register', { username, password });
+        await axios.post('http://localhost:8000/register', { username, password });
       } catch (error) {
         console.error("Erreur d'inscription:", error.response?.data || error.message);
       }

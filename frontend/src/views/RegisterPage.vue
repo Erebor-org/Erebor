@@ -1,3 +1,53 @@
+<script setup>
+  import { useAuthStore } from '@/stores/authStore';
+  import { ref, computed } from 'vue';
+  import erebor_logo from '@/assets/erebor_logo.png';
+  import register_bg from '@/assets/register_bg.webp';
+
+  const authStore = useAuthStore();
+
+  const activeTab = ref('register');
+  const showPassword = ref(false);
+
+  const form = ref({
+    pseudo: '',
+    password: '',
+    confirmPassword: '',
+  });
+
+  const loginForm = ref({
+    pseudo: '',
+    password: '',
+  });
+
+  const passwordsMatch = computed(() => form.value.password === form.value.confirmPassword);
+
+  const register = async () => {
+    if (!passwordsMatch.value) {
+      console.log('Les mots de passe ne correspondent pas !');
+      return;
+    }
+
+    await authStore.register(form.value.pseudo, form.value.password);
+    activeTab.value = 'login'; // Redirige vers la connexion après inscription
+  };
+
+  const login = async () => {
+    await authStore.login(loginForm.value.pseudo, loginForm.value.password);
+  };
+
+  const logout = () => {
+    authStore.logout();
+  };
+
+  const isLoggedIn = computed(() => authStore.token !== null);
+  const user = computed(() => authStore.user);
+
+  const togglePassword = () => {
+    showPassword.value = !showPassword.value;
+  };
+</script>
+
 <template>
   <div
     class="w-full grid bg-gradient-to-b flex items-center justify-center relative h-screen bg-cover bg-center"
@@ -175,112 +225,6 @@
     </div>
   </div>
 </template>
-
-<script>
-import erebor_logo from '@/assets/erebor_logo.png';
-import register_bg from '@/assets/register_bg.webp';
-
-import axios from 'axios';
-export default {
-  data() {
-    return {
-      erebor_logo,
-      register_bg,
-      form: {
-        pseudo: '',
-        password: '',
-        confirmPassword: '',
-      },
-
-      activeTab: 'register',
-      showPassword: false,
-      loginForm: {
-        pseudo: '',
-        password: '',
-      },
-      isLoggedIn: false,
-      user: null,
-    };
-  },
-  computed: {
-    passwordsMatch() {
-      return this.form.password === this.form.confirmPassword;
-    },
-  },
-  methods: {
-    togglePassword() {
-      this.showPassword = !this.showPassword;
-    },
-    register() {
-      if (this.form.password !== this.form.confirmPassword) {
-        console.log('Les mots de passe ne correspondent pas !');
-        return;
-      }
-
-      // Envoyer les données à Symfony
-      const userData = {
-        username: this.form.pseudo,
-        password: this.form.password,
-      };
-
-      // Remplacez par une requête réelle à votre API Symfony
-      fetch('http://localhost:8000/register', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(userData),
-      })
-        .then(response => {
-          if (!response.ok) {
-            throw new Error("Erreur lors de l'enregistrement");
-          }
-          return response.json();
-        })
-        .then(data => {
-          console.log('Utilisateur enregistré :', data);
-          console.log('Enregistrement réussi !');
-        })
-        .catch(error => {
-          console.error(error);
-          console.log("Une erreur s'est produite.");
-        });
-    },
-    login() {
-      const loginData = {
-        username: this.loginForm.pseudo,
-        password: this.loginForm.password,
-      };
-
-      fetch('http://localhost:8000/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(loginData),
-      })
-        .then(response => {
-          if (!response.ok) {
-            throw new Error('Erreur lors de la connexion');
-          }
-          return response.json();
-        })
-        .then(data => {
-          console.log('Utilisateur connecté :', data);
-          console.log('Login réussi !');
-        })
-        .catch(error => {
-          console.error(error);
-          console.log("Une erreur s'est produite.");
-        });
-    }
-  },
-  mounted() {
-      console.log('Component mounted'); // Debugging log
-
-    },
-};
-</script>
 
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Uncial+Antiqua&display=swap');
