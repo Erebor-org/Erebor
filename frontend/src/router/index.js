@@ -22,7 +22,7 @@ router.beforeEach((to, from, next) => {
   if (to.meta.requiresAuth && !authStore.token) {
     next('/');
   } else if (to.meta.requiresAdmin && (!authStore.user || !authStore.user.roles.includes('ROLE_ADMIN'))) {
-    next('/');
+    next('/membres');
   } else {
     next();
   }

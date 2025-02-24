@@ -1,11 +1,12 @@
 <script setup>
   import { useAuthStore } from '@/stores/authStore';
-  import { ref, computed } from 'vue';
-
+  import { computed } from 'vue';
+  import { useRouter } from 'vue-router';
   const authStore = useAuthStore();
-
+  const router = useRouter();
   const logout = () => {
     authStore.logout();
+    router.push('/');
   };
 
   const isLoggedIn = computed(() => authStore.token !== null);
@@ -34,7 +35,7 @@
         </button>
       </div>
       <div class="flex items-center space-x-4" v-else>
-        <p> Bienvenue {{ user.username }}</p>
+        <p>  {{ user.username }}  </p>
         <img :src="profile_icon" alt="User Avatar" class="h-10 w-10 rounded-full" />
         <button class="text-sm uppercase underline-on-hover font-fantasy" @click="logout">Déconnexion</button>
       </div>

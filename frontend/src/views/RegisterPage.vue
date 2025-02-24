@@ -3,10 +3,11 @@
   import { ref, computed } from 'vue';
   import erebor_logo from '@/assets/erebor_logo.png';
   import register_bg from '@/assets/register_bg.webp';
+  import { useRouter } from 'vue-router';
 
   const authStore = useAuthStore();
-
-  const activeTab = ref('register');
+  const router = useRouter();
+  const activeTab = ref('login');
   const showPassword = ref(false);
 
   const form = ref({
@@ -29,19 +30,17 @@
     }
 
     await authStore.register(form.value.pseudo, form.value.password);
-    activeTab.value = 'login'; // Redirige vers la connexion après inscription
+    if (authStore.token) {
+    router.push('/membres'); // Redirection après l'inscription et connexion réussies
+    }
   };
 
   const login = async () => {
     await authStore.login(loginForm.value.pseudo, loginForm.value.password);
+    if (authStore.token) {
+    router.push('/membres'); // Redirige si le token est défini après le login
+  }
   };
-
-  const logout = () => {
-    authStore.logout();
-  };
-
-  const isLoggedIn = computed(() => authStore.token !== null);
-  const user = computed(() => authStore.user);
 
   const togglePassword = () => {
     showPassword.value = !showPassword.value;
@@ -53,11 +52,6 @@
     class="w-full grid bg-gradient-to-b flex items-center justify-center relative h-screen bg-cover bg-center"
     :style="{ backgroundImage: `url(${register_bg})` }"
   >
-    <div v-if="isLoggedIn">
-      <p>Bienvenue, {{ user.username }}</p>
-      <button @click="logout">Déconnexion</button>
-    </div>
-    <div v-else>
       <!-- Form Container -->
       <div
         class="relative w-full max-w-lg bg-yellow-50 p-8 rounded-xl shadow-lg border border-red-700 z-10"
@@ -222,7 +216,6 @@
           </form>
         </div>
       </div>
-    </div>
   </div>
 </template>
 
