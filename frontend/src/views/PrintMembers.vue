@@ -29,7 +29,7 @@
             }"
             class="px-6 py-2 rounded-full font-bold transition-all duration-300"
           >
-            Active Characters
+            Membres actifs
           </button>
           <button
             @click="activeTab = 'archived'"
@@ -39,7 +39,7 @@
             }"
             class="px-6 py-2 rounded-full font-bold transition-all duration-300"
           >
-            Archived Characters
+            Membres archivés
           </button>
         </div>
       </div>
@@ -51,7 +51,7 @@
           v-model="currentSearchQuery"
           :placeholder="
             activeTab === 'active'
-              ? 'Search by name, recruiter, rank, or mule...'
+              ? 'Rechercher par le nom, le rang, le recruteur..'
               : 'Search archived characters...'
           "
           class="w-full md:w-1/2 border-2 border-[#b07d46] bg-[#fffaf0] rounded-full py-2 px-6 text-lg focus:outline-none focus:ring-2 focus:ring-[#f3d9b1] mb-4 md:mb-0"
@@ -62,7 +62,7 @@
           @click="showModalMember = true"
           class="bg-[#b02e2e] text-[#f3d9b1] font-bold py-2 px-6 rounded-full hover:bg-[#942828] transition-all duration-300"
         >
-          Add Character
+          Ajouter un membre
         </button>
       </div>
     </div>
@@ -70,16 +70,16 @@
     <!-- Main Content -->
     <div v-if="activeTab === 'active'" class="w-11/12 max-w-7xl">
       <div class="bg-white border-2 border-[#b07d46] rounded-lg shadow-lg p-8 mb-6">
-        <h2 class="text-3xl font-bold text-[#b02e2e] mb-4">Active Characters</h2>
+        <h2 class="text-3xl font-bold text-[#b02e2e] mb-4">Membres actifs</h2>
         <!-- Characters Table -->
         <div class="overflow-y-auto max-h-96">
           <table class="w-full text-center border-collapse bg-white rounded-lg shadow-lg">
             <thead class="sticky top-0 bg-[#b02e2e] z-10">
               <tr class="text-[#f3d9b1] text-lg">
-                <th class="p-4">Class</th>
-                <th class="p-4">Name</th>
-                <th class="p-4">Recruiter</th>
-                <th class="p-4">Rank</th>
+                <th class="p-4">Classe</th>
+                <th class="p-4">Nom</th>
+                <th class="p-4">Recruteur</th>
+                <th class="p-4">Rang</th>
                 <th class="p-4">Mules</th>
                 <th class="p-4">Actions</th>
               </tr>
@@ -275,10 +275,10 @@
           <table class="w-full text-center border-collapse bg-white rounded-lg shadow-lg">
             <thead class="sticky top-0 bg-[#b02e2e] z-10">
               <tr class="text-[#f3d9b1] text-lg">
-                <th class="p-4">Class</th>
-                <th class="p-4">Name</th>
-                <th class="p-4">Recruiter</th>
-                <th class="p-4">Rank</th>
+                <th class="p-4">Classe</th>
+                <th class="p-4">Nom</th>
+                <th class="p-4">Recruteur</th>
+                <th class="p-4">Rang</th>
                 <th class="p-4">Actions</th>
               </tr>
             </thead>
@@ -345,41 +345,6 @@
           </button>
           <button
             @click="archiveCharacter(selectedMember.id)"
-            class="bg-[#b02e2e] text-[#f3d9b1] font-bold py-2 px-4 rounded-lg hover:bg-[#942828]"
-          >
-            Archiver
-          </button>
-        </div>
-      </div>
-    </div>
-    <!-- Modal archive character -->
-    <div
-      v-if="showModalMule"
-      class="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50"
-      @click.self="closeMuleModal"
-    >
-      <div class="bg-[#fff5e6] border-4 border-[#b07d46] rounded-lg p-6 w-1/3 relative">
-        <!-- Close Button -->
-        <button
-          class="absolute top-3 right-3 text-[#b02e2e] hover:text-[#942828] font-bold text-lg"
-          @click="closeMuleModal"
-        >
-          &times;
-        </button>
-
-        <h2 class="text-xl font-bold text-[#b02e2e] mb-4">Archiver</h2>
-        <p class="text-lg text-[#b07d46] mb-6">
-          Voulez-vous archiver le joueur <strong>{{ selectedMule.pseudo }}</strong> ?
-        </p>
-        <div class="flex justify-end space-x-4">
-          <button
-            @click="closeMuleModal"
-            class="bg-[#b07d46] text-[#fff5e6] font-bold py-2 px-4 rounded-lg hover:bg-[#9c682e]"
-          >
-            Annuler
-          </button>
-          <button
-            @click="archiveMule(selectedMule.id)"
             class="bg-[#b02e2e] text-[#f3d9b1] font-bold py-2 px-4 rounded-lg hover:bg-[#942828]"
           >
             Archiver
@@ -602,37 +567,32 @@ export default {
     },
     addCharacterToTable() {
       this.fetchNotArchivedCharacters();
-        
-      this.$refs.notificationRef.showNotification(
-          `Le personnage a bien été ajouté`
-        );
+
+      this.$refs.notificationRef.showNotification(`Le personnage a bien été ajouté`);
     },
     addMuleToTable() {
       this.fetchAllMules();
-        
-      this.$refs.notificationRef.showNotification(
-          `La mule a bien été ajouté`
-        );
+
+      this.$refs.notificationRef.showNotification(`La mule a bien été ajouté`);
     },
     async archiveMule(muleId) {
       try {
-        // Ensure `selectedMule` is valid
         if (!this.selectedMule || !this.selectedMule.id) {
           console.error('Selected mule is null or missing an ID.');
-          console.log('Aucun mule sélectionné ou identifiant manquant.');
           return;
         }
 
-        // Archive the mule in the backend
         await axios.put(`http://localhost:8000/mule/archive/${muleId}`, {
           isArchived: true,
         });
-        // Remove the mule locally
-        this.notArchivedMules[muleId] = this.notArchivedMules[muleId].filter(
-          mule => mule.id !== muleId
-        );
 
-        // Close the modal and show a notification
+        // ✅ Check if `notArchivedMules[muleId]` exists before filtering
+        if (this.notArchivedMules[muleId]) {
+          this.notArchivedMules[muleId] = this.notArchivedMules[muleId].filter(
+            mule => mule.id !== muleId
+          );
+        }
+
         this.closeMuleModal();
         this.$refs.notificationRef.showNotification(
           `${this.selectedMule.pseudo} a bien été archivé`
@@ -641,20 +601,27 @@ export default {
         console.error('Error archiving mule:', error.response?.data || error.message);
       }
     },
+
     async fetchAllMules() {
       try {
         const response = await axios.get('http://localhost:8000/mules');
         const mules = response.data.filter(mule => !mule.isArchived);
-        this.notArchivedMules = mules.reduce((acc, mule) => {
+
+        // ✅ Ensure `notArchivedMules` is always an object
+        this.notArchivedMules = {};
+
+        mules.forEach(mule => {
           const charId = mule.mainCharacter?.id;
-          if (!acc[charId]) acc[charId] = [];
-          acc[charId].push(mule);
-          return acc;
-        }, {});
+          if (!this.notArchivedMules[charId]) {
+            this.notArchivedMules[charId] = [];
+          }
+          this.notArchivedMules[charId].push(mule);
+        });
       } catch (error) {
         console.error('Error fetching mules:', error);
       }
     },
+
     async fetchArchivedCharacters() {
       try {
         const response = await axios.get('http://localhost:8000/characters');
@@ -754,7 +721,7 @@ export default {
       this.showModalMule = false;
     },
     openUnarchivedCharacterModal(character) {
-      console.log("character", character);
+      console.log('character', character);
       this.selectedUnarchivedCharacter = character;
       this.showUnarchivedCharacterModal = true;
     },

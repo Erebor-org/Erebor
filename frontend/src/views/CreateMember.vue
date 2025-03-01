@@ -18,7 +18,7 @@
         }"
         class="px-4 py-2 rounded-lg font-bold transition-colors"
       >
-        Characters
+        Membres
       </button>
       <button
         @click="activeTab = 'archived'"
@@ -28,7 +28,7 @@
         }"
         class="px-4 py-2 rounded-lg font-bold transition-colors"
       >
-        Archived Characters
+        Membres archivés
       </button>
     </div>
     <!-- Main Block -->
