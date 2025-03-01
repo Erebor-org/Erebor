@@ -62,7 +62,7 @@
           @click="showModalMember = true"
           class="bg-[#b02e2e] text-[#f3d9b1] font-bold py-2 px-6 rounded-full hover:bg-[#942828] transition-all duration-300"
         >
-          Ajouter un membre
+          Ajouter un personnage
         </button>
       </div>
     </div>
@@ -582,26 +582,31 @@ export default {
           return;
         }
 
+        // Archive the mule in the backend
         await axios.put(`http://localhost:8000/mule/archive/${muleId}`, {
           isArchived: true,
         });
 
-        // ✅ Check if `notArchivedMules[muleId]` exists before filtering
-        if (this.notArchivedMules[muleId]) {
-          this.notArchivedMules[muleId] = this.notArchivedMules[muleId].filter(
+        // ✅ Update the state **without refreshing**
+        Object.keys(this.notArchivedMules).forEach(characterId => {
+          this.notArchivedMules[characterId] = this.notArchivedMules[characterId].filter(
             mule => mule.id !== muleId
           );
-        }
+        });
 
         this.closeMuleModal();
-        this.$refs.notificationRef.showNotification(
-          `${this.selectedMule.pseudo} a bien été archivé`
-        );
+
+        // ✅ Show notification
+        const mulePseudo = this.selectedMule.pseudo || 'La mule';
+        this.$refs.notificationRef.showNotification(`${mulePseudo} a bien été archivée.`);
+
+        // Clear selection
+        this.selectedMule = null;
       } catch (error) {
         console.error('Error archiving mule:', error.response?.data || error.message);
+        this.$refs.notificationRef.showNotification('Erreur lors de l’archivage.');
       }
     },
-
     async fetchAllMules() {
       try {
         const response = await axios.get('http://localhost:8000/mules');
