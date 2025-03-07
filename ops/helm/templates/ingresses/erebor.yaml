@@ -18,7 +18,7 @@ metadata:
   namespace: {{ include "erebor.namespace" . }}
   labels:
     {{- include "erebor.commonLabels" . | nindent 4 }}
-    app.kubernetes.io/name: strapi
+    app.kubernetes.io/name: symfony
   {{- with .Values.ingress.annotations }}
   annotations:
     {{- toYaml . | nindent 4 }}

@@ -94,12 +94,12 @@ imagePullSecrets:
 
 {{- /* erebor.symfonyImage.repo */}}
 {{ define "erebor.symfonyImage.repo" -}}
-{{ default (include "erebor.globalImage.repo" .) .Values.imagesConfiguration.custom.strapi.repo }}
+{{ default (include "erebor.globalImage.repo" .) .Values.imagesConfiguration.custom.symfony.repo }}
 {{- end -}}
 
 {{- /* erebor.symfonyImage.tag */}}
 {{ define "erebor.symfonyImage.tag" -}}
-{{ default (include "erebor.globalImage.tag" .) .Values.imagesConfiguration.custom.strapi.tag }}
+{{ default (include "erebor.globalImage.tag" .) .Values.imagesConfiguration.custom.symfony.tag }}
 {{- end -}}
 
 {{- /* erebor.symfonyImage.url */}}
