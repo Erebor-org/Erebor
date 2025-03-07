@@ -48,25 +48,23 @@ jobs:
       - name: Build and push Docker image
         env:
           VERSION: ${{ needs.prepare-builds.outputs.version }}
-          PUBLIC_STRAPI_URL: ${{ vars.PUBLIC_STRAPI_URL }}
-          STRAPI_API_TOKEN: ${{ secrets.STRAPI_API_TOKEN }}
+          VITE_SYMFONY_URL: ${{ vars.VITE_SYMFONY_URL }}
         run: |
           REPO_NAME=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
           echo "${{ secrets.GH_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
 
           # Build and tag Docker image with the new version
-          docker build -f ./front/docker/Dockerfile.prod . \
-            --build-arg PUBLIC_STRAPI_URL=$PUBLIC_STRAPI_URL \
-            --build-arg STRAPI_API_TOKEN=$STRAPI_API_TOKEN \
-            --tag ghcr.io/$REPO_NAME/front:$VERSION
-          docker push ghcr.io/$REPO_NAME/front:$VERSION
+          docker build -f ./frontend/docker/Dockerfile.prod . \
+            --build-arg VITE_SYMFONY_URL=$VITE_SYMFONY_URL \
+            --tag ghcr.io/$REPO_NAME/nginx:$VERSION
+          docker push ghcr.io/$REPO_NAME/nginx:$VERSION
 
           # Optionally, tag it as 'latest' for development environments
-          docker tag ghcr.io/$REPO_NAME/front:$VERSION ghcr.io/$REPO_NAME/front:latest
-          docker push ghcr.io/$REPO_NAME/front:latest
+          docker tag ghcr.io/$REPO_NAME/nginx:$VERSION ghcr.io/$REPO_NAME/nginx:latest
+          docker push ghcr.io/$REPO_NAME/nginx:latest
           docker logout ghcr.io
 
-  strapi-build:
+  symfony-build:
     runs-on: self-hosted
     needs: prepare-builds
     steps:
@@ -81,19 +79,19 @@ jobs:
           echo "${{ secrets.GH_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
 
           # Build and tag Docker image with the new version
-          docker build -f ./strapi/docker/Dockerfile.prod . --tag ghcr.io/$REPO_NAME/strapi:$VERSION
-          docker push ghcr.io/$REPO_NAME/strapi:$VERSION
+          docker build -f ./backend/docker/Dockerfile.prod . --tag ghcr.io/$REPO_NAME/symfony:$VERSION
+          docker push ghcr.io/$REPO_NAME/symfony:$VERSION
 
           # Optionally, tag it as 'latest' for development environments
-          docker tag ghcr.io/$REPO_NAME/strapi:$VERSION ghcr.io/$REPO_NAME/strapi:latest
-          docker push ghcr.io/$REPO_NAME/strapi:latest
+          docker tag ghcr.io/$REPO_NAME/symfony:$VERSION ghcr.io/$REPO_NAME/symfony:latest
+          docker push ghcr.io/$REPO_NAME/symfony:latest
 
           docker logout ghcr.io
 
   create-release:
     runs-on: self-hosted
     # Added prepare-builds as a dependency to ensure the new version is available
-    needs: ["prepare-builds", "front-build", "strapi-build"]
+    needs: ["prepare-builds", "front-build", "symfony-build"]
     env:
       VERSION: ${{ needs.prepare-builds.outputs.version }}
     steps:
