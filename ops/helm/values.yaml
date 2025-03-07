@@ -39,7 +39,7 @@ deployments:
             memory: 2Gi
         imagePullPolicy:
         config:
-          APP_ENV: dev
+          APP_ENV: prod
           APP_SECRET: f8fd405aad947035e50dee9c9069f8d9
           DATABASE_URL: "pgsql://erebordev:AbcrRaeDmi4wxQsv.EYAi8U_QKm@90.92.185.232:45150/erebordev"
           MESSENGER_TRANSPORT_DSN: doctrine://default?auto_setup=0
