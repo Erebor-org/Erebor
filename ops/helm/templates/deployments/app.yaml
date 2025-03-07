@@ -59,7 +59,7 @@ spec:
             - secretRef:
                 name: {{ include "erebor.fullname" . }}-nginx-config
           ports:
-            - containerPort: 8000
+            - containerPort: 9000
               protocol: TCP
           {{- if .Values.deployments.app.containers.symfony.resources }}
           {{- with .Values.deployments.app.containers.symfony.resources }}

@@ -528,7 +528,7 @@ export default {
 
     async fetchNotArchivedCharacters() {
       try {
-        const response = await axios.get('http://localhost:8000/characters');
+        const response = await axios.get('http://localhost:9000/characters');
         const notArchivedCharacters = response.data.filter(character => !character.isArchived);
         this.charactersNotArchived = response.data.filter(character => !character.isArchived);
         return notArchivedCharacters;
@@ -542,7 +542,7 @@ export default {
     },
     async archiveCharacter(characterId) {
       try {
-        await axios.put(`http://localhost:8000/characters/${characterId}/archive`, {
+        await axios.put(`http://localhost:9000/characters/${characterId}/archive`, {
           isArchived: true,
         });
 
@@ -586,7 +586,7 @@ export default {
         }
 
         // Archive the mule in the backend
-        await axios.put(`http://localhost:8000/mule/archive/${muleId}`, {
+        await axios.put(`http://localhost:9000/mule/archive/${muleId}`, {
           isArchived: true,
         });
 
@@ -612,7 +612,7 @@ export default {
     },
     async fetchAllMules() {
       try {
-        const response = await axios.get('http://localhost:8000/mules');
+        const response = await axios.get('http://localhost:9000/mules');
         const mules = response.data.filter(mule => !mule.isArchived);
 
         // ✅ Ensure `notArchivedMules` is always an object
@@ -632,7 +632,7 @@ export default {
 
     async fetchArchivedCharacters() {
       try {
-        const response = await axios.get('http://localhost:8000/characters');
+        const response = await axios.get('http://localhost:9000/characters');
         const archivedCharacters = response.data.filter(character => character.isArchived);
         this.archivedCharacters = archivedCharacters;
         return archivedCharacters;
@@ -643,7 +643,7 @@ export default {
     },
     async unarchiveCharacter(characterId) {
       try {
-        await axios.put(`http://localhost:8000/characters/${characterId}/unarchive`, {
+        await axios.put(`http://localhost:9000/characters/${characterId}/unarchive`, {
           isArchived: false,
         });
 
@@ -690,12 +690,12 @@ export default {
 
       try {
         if (type === 'character') {
-          await axios.put(`http://localhost:8000/characters/${entity.id}/update-pseudo`, {
+          await axios.put(`http://localhost:9000/characters/${entity.id}/update-pseudo`, {
             pseudo: this.editPseudo,
           });
           entity.pseudo = this.editPseudo; // Update locally
         } else if (type === 'mule') {
-          await axios.put(`http://localhost:8000/mules/${entity.id}/update-pseudo`, {
+          await axios.put(`http://localhost:9000/mules/${entity.id}/update-pseudo`, {
             pseudo: this.editPseudo,
           });
           entity.pseudo = this.editPseudo; // Update locally
@@ -777,7 +777,7 @@ export default {
     },
     async updateCharacterClass(characterId, newClass) {
       try {
-        await axios.put(`http://localhost:8000/characters/${characterId}/update-class`, {
+        await axios.put(`http://localhost:9000/characters/${characterId}/update-class`, {
           class: newClass,
         });
 
@@ -799,7 +799,7 @@ export default {
     },
     async updateMuleClass(muleId, newClass) {
       try {
-        await axios.put(`http://localhost:8000/mules/${muleId}/update-class`, {
+        await axios.put(`http://localhost:9000/mules/${muleId}/update-class`, {
           class: newClass,
         });
         // Update the mule's class locally for instant feedback

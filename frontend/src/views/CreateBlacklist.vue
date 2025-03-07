@@ -244,7 +244,7 @@ export default {
       }
       try {
         // API POST request
-        const response = await axios.post('http://localhost:8000/blacklist', {
+        const response = await axios.post('http://localhost:9000/blacklist', {
           pseudo: blacklistMember.pseudo,
           ankamaPseudo: blacklistMember.ankamaPseudo,
           reason: blacklistMember.reason,
@@ -275,7 +275,7 @@ export default {
 
     async fetchBlacklist() {
       try {
-        const response = await axios.get('http://localhost:8000/blacklist');
+        const response = await axios.get('http://localhost:9000/blacklist');
         this.blacklist = response.data;
       } catch (error) {
         console.error('Error fetching mules:', error);
@@ -288,7 +288,7 @@ export default {
 
       try {
         // API DELETE request
-        await axios.delete(`http://localhost:8000/blacklist/${member.id}`);
+        await axios.delete(`http://localhost:9000/blacklist/${member.id}`);
 
         // Remove the entry from the blacklist array
         this.blacklist = this.blacklist.filter(entry => entry.id !== member.id);

@@ -7,7 +7,7 @@ fullnameOverride:
 imagesConfiguration:
   global:
     repo:
-    tag: latest
+    tag: 2025-03-07-v4
   custom:
     symfony:
       repo: ghcr.io/erebor-org/erebor/symfony
@@ -31,7 +31,7 @@ deployments:
             memory: 500Mi
         imagePullPolicy:
         config:
-          VITE_SYMFONY_URL: http://localhost:8000
+          VITE_SYMFONY_URL: http://localhost:9000
       symfony:
         resources:
           limits:
