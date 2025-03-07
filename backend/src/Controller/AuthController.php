@@ -55,6 +55,7 @@ class AuthController extends AbstractController
 
         return new JsonResponse(['token' => $token, 'user' => ['id' => $user->getId(), 'username' => $user->getUsername(), 'roles' => $user->getRoles()]]);
     }
+    
 }
 
 ?>

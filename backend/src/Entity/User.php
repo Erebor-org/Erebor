@@ -85,4 +85,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         // If you store temporary sensitive data, clear it here
     }
+    public function getSalt() {}
+
 }
