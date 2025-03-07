@@ -1,0 +1,19 @@
+{{- $name := "nginx" -}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "erebor.fullname" . }}-{{ $name }}
+  namespace: {{ include "erebor.namespace" . }}
+  labels:
+    {{- (include "erebor.commonLabels" .) | nindent 4 }}
+    app.kubernetes.io/name: {{ $name }}
+spec:
+  ports:
+  - name: {{ $name }}
+    port: {{ default 80 .Values.services.nginx.port }}
+    protocol: TCP
+    targetPort: 80
+  selector:
+    {{- (include "erebor.selectorLabels" .) | nindent 4 }}
+    app.kubernetes.io/name: {{ $name }}
+  type: ClusterIP

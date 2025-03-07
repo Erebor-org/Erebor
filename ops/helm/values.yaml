@@ -3,96 +3,85 @@ nameOverride:
 # fullnameOverride
 fullnameOverride:
 
-### Deployments configuration
-deployments:
-  front:
-    labels:
-    annotations:
-    replicas:
-    terminationGracePeriodSeconds:
-    containers:
-      front:
-        resources:
-        imagePullPolicy:
-    config:
-      # PUBLIC_STRAPI_URL default is https://strapi.neitosden.fr
-      PUBLIC_STRAPI_URL: https://strapi.neitosden.fr
-      STRAPI_API_TOKEN:
-  strapi:
-    labels:
-    annotations:
-    replicas:
-    terminationGracePeriodSeconds:
-    containers:
-      strapi:
-        resources:
-        imagePullPolicy:
-    pvc:
-      uploads:
-        storage: 100Gi
-    config:
-      # HOST default is 0.0.0.0
-      HOST:
-      # PORT default is 1337
-      PORT:
-      APP_KEYS:
-      API_TOKEN_SALT:
-      ADMIN_JWT_SECRET:
-      TRANSFER_TOKEN_SALT:
-      # DB_CLIENT default is postgres
-      DB_CLIENT:
-      DB_HOST:
-      DB_PORT:
-      # DB_NAME default is cacao
-      DB_NAME:
-      # DB_USERNAME default is cacao
-      DB_USERNAME:
-      DB_PASSWORD:
-      # DB_SSL default is false
-      DB_SSL:
-      JWT_SECRET:
-      # CORS_URL is a space separeted list of allowed origins
-      CORS_URL:
-
-# imagesConfiguration allow to configure container image URLs for the console.
-# Since all 3 images used by the console are shipped synchronously.
+## Image configuration
 imagesConfiguration:
   global:
     repo:
     tag: latest
   custom:
-    strapi:
-      repo: ghcr.io/neitofr/association-cacao/strapi
+    symfony:
+      repo: ghcr.io/erebor-org/erebor/symfony
       tag:
     front:
-      repo: ghcr.io/neitofr/association-cacao/front
+      repo: ghcr.io/erebor-org/erebor/nginx
       tag:
+
+### Deployments configuration
+deployments:
+  nginx:
+    labels:
+    annotations:
+    replicas:
+    terminationGracePeriodSeconds:
+    containers:
+      nginx:
+        resources:
+          limits:
+            cpu: 500m
+            memory: 500Mi
+        imagePullPolicy:
+    config:
+      VITE_SYMFONY_URL: http://localhost:8000
+
+  sympfony:
+    labels:
+    annotations:
+    replicas:
+    terminationGracePeriodSeconds:
+    containers:
+      symfony:
+        resources:
+          limits:
+            cpu: 1000m
+            memory: 2Gi
+        imagePullPolicy:
+    config:
+      APP_ENV: dev
+      APP_SECRET: f8fd405aad947035e50dee9c9069f8d9
+      DATABASE_URL: "pgsql://erebordev:AbcrRaeDmi4wxQsv.EYAi8U_QKm@90.92.185.232:45150/erebordev"
+      MESSENGER_TRANSPORT_DSN: doctrine://default?auto_setup=0
+      MAILER_DSN: null://null
+      CORS_ALLOW_ORIGIN: '^https?://(localhost|127\.0\.0\.1)(:[0-9]+)?$'
+      JWT_SECRET_KEY: "%kernel.project_dir%/config/jwt/private.pem"
+      JWT_PUBLIC_KEY: "%kernel.project_dir%/config/jwt/public.pem"
+      JWT_PASSPHRASE: 1251b4f7cff93b2dfb6b33e135308c781da87e57e25fb2d99646d1ddf14563f6
 
 ### Ingress configuration
 ### Will automatically bind the hosts to the service
+
 ingress:
   enabled: yes
   className: nginx
   annotations:
     cert-manager.io/cluster-issuer: letsencrypt
   tls:
-    - secretName: strapi-tls
+    - secretName: erebor-tls
       hosts:
-        - strapi.neitosden.fr
-        - cacao.neitosden.fr
+        - erebor-dofus.fr
+        - api.erebor-dofus.fr
   hosts:
-    - host: strapi.neitosden.fr
+    - host: erebor-dofus.fr
       paths:
         - path: /
           pathType: Prefix
-          serviceName: strapi
-          servicePort: 1337
-    - host: cacao.neitosden.fr
+          serviceName: nginx
+          servicePort: 80
+    - host: api.erebor-dofus.fr
       serviceName: front
       paths:
         - path: /
           pathType: Prefix
-          serviceName: front
+          serviceName: nginx
           servicePort: 80
 
 # globalLabels will be applied to all deployments and jobs
@@ -112,46 +101,5 @@ imagePullSecrets:
   - name: regcred
 
 services:
-  ## Ports are the one exposed by the service
-  strapi:
-    port: 1337
-  front:
+  nginx:
     port: 80
-
-# optional cronjob to backup
-# vars are all set in github repo vars/secrets
-pgbackup:
-  enabled: yes
-  # default schedule is 0 2 * * * (daily at 2AM)
-  schedule:
-  image:
-  config:
-    DB_HOST:
-    DB_PORT:
-    DB_USER:
-    DB_PASSWORD:
-    DBS_TO_BACKUP:
-    ENCRPYPTION_KEY:
-    S3_URL:
-    S3_BUCKET:
-    # S3_BUCKET_URL default is S3_URL
-    S3_BUCKET_URL:
-    S3_ACCESS_KEY:
-    S3_SECRET_KEY:
-    S3_REGION:
-
-upload_backup: 
-  enabled: yes
-  # default schedule is 0 */4 * * * (every 4 hours)
-  schedule:
-  image:
-  config:
-    S3_URL:
-    S3_BUCKET:
-    # S3_BUCKET_URL default is S3_URL
-    S3_BUCKET_URL:
-    S3_ACCESS_KEY:
-    S3_SECRET_KEY:
-    S3_REGION:
-    SRC_DIR:
-    DEST_DIR:

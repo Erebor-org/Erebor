@@ -14,10 +14,10 @@ apiVersion: extensions/v1beta1
 {{- end }}
 kind: Ingress
 metadata:
-  name: {{ include "cacao.fullname" $ }}
-  namespace: {{ include "cacao.namespace" . }}
+  name: {{ include "erebor.fullname" $ }}
+  namespace: {{ include "erebor.namespace" . }}
   labels:
-    {{- include "cacao.commonLabels" . | nindent 4 }}
+    {{- include "erebor.commonLabels" . | nindent 4 }}
     app.kubernetes.io/name: strapi
   {{- with .Values.ingress.annotations }}
   annotations:
@@ -50,7 +50,7 @@ spec:
             backend:
               {{- if semverCompare ">=1.19-0" $.Capabilities.KubeVersion.GitVersion }}
               service:
-                name: "{{ include "cacao.fullname" $ }}-{{ .serviceName }}"
+                name: "{{ include "erebor.fullname" $ }}-{{ .serviceName }}"
                 port:
                   number: {{ .servicePort }}
               {{- else }}

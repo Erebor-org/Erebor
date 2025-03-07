@@ -1,5 +1,5 @@
 apiVersion: v2
-name: cacao
+name: erebor
 description: A Helm chart for deploying erebor's website
 
 type: application
