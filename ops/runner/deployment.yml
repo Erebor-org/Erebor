@@ -8,4 +8,4 @@ spec:
   template:
     spec:
       image: ghcr.io/neito-s-den/actions-runner:2024-11-02-v1
-      repository: NeitoFR/association-cacao
+      repository: Erebor-org/Erebor
