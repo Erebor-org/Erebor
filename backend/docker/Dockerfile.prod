@@ -49,6 +49,8 @@ COPY --from=builder /app /var/www/html
 COPY ./backend/docker/php/php.ini /usr/local/etc/php/conf.d/app.ini
 
 # Set permissions
+RUN mkdir /var/www/html/var
+
 RUN chown -R www-data:www-data /var/www/html/var
 
 # Create cache directory and set permissions
