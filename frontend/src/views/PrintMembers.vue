@@ -546,23 +546,26 @@ export default {
           isArchived: true,
         });
 
-        // Remove the character from the list
-        this.charactersNotArchived = this.charactersNotArchived.filter(
-          char => char.id !== characterId
-        );
-        this.showModal = false;
-        this.showNotification = true;
-        this.$refs.notificationRef.showNotification(
-          `${this.selectedMember.pseudo} a bien été archivé`
-        );
+        // Find the character being archived
+        const archivedCharacter = this.charactersNotArchived.find(char => char.id === characterId);
 
-        // Automatically hide the notification after 3 seconds
-        setTimeout(() => {
-          this.showNotification = false;
-        }, 3000);
+        if (archivedCharacter) {
+          // Remove from active list
+          this.charactersNotArchived = this.charactersNotArchived.filter(
+            char => char.id !== characterId
+          );
+
+          // Add to archived list
+          this.archivedCharacters.push({ ...archivedCharacter, isArchived: true });
+        }
+
+        this.showModal = false;
+        this.$refs.notificationRef.showNotification(
+          `${archivedCharacter.pseudo} a bien été archivé`
+        );
       } catch (error) {
         console.error('Error archiving character:', error.response?.data || error.message);
-        console.log('An error occurred while archiving the character.');
+        this.$refs.notificationRef.showNotification('Erreur lors de l’archivage du personnage.');
       }
     },
     addCharacterToTable() {
@@ -644,18 +647,24 @@ export default {
           isArchived: false,
         });
 
-        // Remove the character from the archived list
-        this.archivedCharacters = this.archivedCharacters.filter(char => char.id !== characterId);
+        // Find the unarchived character
+        const unarchivedCharacter = this.archivedCharacters.find(char => char.id === characterId);
 
-        // Optionally refresh the active character list
-        await this.fetchNotArchivedCharacters();
+        if (unarchivedCharacter) {
+          // Remove from archived list
+          this.archivedCharacters = this.archivedCharacters.filter(char => char.id !== characterId);
 
-        // Show success notification
+          // Add back to active characters
+          this.charactersNotArchived.push({ ...unarchivedCharacter, isArchived: false });
+        }
+
         this.showUnarchivedCharacterModal = false;
-        this.$refs.notificationRef.showNotification('Character successfully unarchived!');
+        this.$refs.notificationRef.showNotification('Personnage restauré avec succès !');
       } catch (error) {
         console.error('Error unarchiving character:', error.response?.data || error.message);
-        console.log('An error occurred while unarchiving the character.');
+        this.$refs.notificationRef.showNotification(
+          'Erreur lors de la restauration du personnage.'
+        );
       }
     },
     startEditingPseudo(id, currentPseudo, type) {
