@@ -12,9 +12,9 @@ export const useAuthStore = defineStore('auth', {
   actions: {
     async register(username, password) {
       try {
-        await axios.post('http://localhost:8000/register', { username, password });
+        await axios.post('https://api.erebor-dofus.fr/register', { username, password });
 
-        const response = await axios.post('http://localhost:8000/login', {
+        const response = await axios.post('https://api.erebor-dofus.fr/login', {
           username,
           password,
         });
@@ -36,7 +36,7 @@ export const useAuthStore = defineStore('auth', {
     async login(username, password) {
       this.isLoading = true;
       try {
-        const response = await axios.post("http://localhost:8000/login", { username, password });
+        const response = await axios.post("https://api.erebor-dofus.fr/login", { username, password });
 
         if (response.data.token) {
           this.token = response.data.token;

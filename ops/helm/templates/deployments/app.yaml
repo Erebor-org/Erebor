@@ -1,0 +1,73 @@
+{{- $name := "app" -}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "erebor.fullname" . }}-{{ $name }}
+  namespace: {{ template "erebor.namespace" . }}
+  labels:
+    app.kubernetes.io/name: {{ $name }}
+    {{- (include "erebor.commonLabels" .) | nindent 4 }}
+    {{- if .Values.deployments.app.labels }}
+    {{- toYaml .Values.deployments.app.labels | nindent 4 }}
+    {{- end }}
+  annotations:
+    {{- (include "erebor.globalAnnotations" . ) | nindent 4 }}
+    {{- if .Values.deployments.app.annotations }}
+    {{- toYaml .Values.deployments.app.annotations | nindent 4 }}
+    {{- end }}
+spec:
+  replicas: {{ default 1 .Values.deployments.app.replicas }}
+  selector:
+    matchLabels:
+      {{ include "erebor.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/name: {{ $name }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ $name }}
+        {{- (include "erebor.commonLabels" .) | nindent 8 }}
+        {{- if .Values.deployments.app.labels }}
+        {{- toYaml .Values.deployments.app.labels | nindent 8 }}
+        {{- end }}
+      annotations:
+        {{- (include "erebor.globalAnnotations" . ) | nindent 8 }}
+        {{- if .Values.deployments.app.annotations }}
+        {{- toYaml .Values.deployments.app.annotations | nindent 8 }}
+        {{- end }}
+    spec:
+      containers:
+        - name: nginx
+          image: {{ include "erebor.nginxImage.url" . }}
+          imagePullPolicy: {{ default "IfNotPresent" .Values.deployments.app.containers.nginx.imagePullPolicy }}
+          envFrom:
+            - secretRef:
+                name: {{ include "erebor.fullname" . }}-nginx-config
+          ports:
+            - containerPort: 80
+              protocol: TCP
+          {{- if .Values.deployments.app.containers.nginx.resources }}
+          {{- with .Values.deployments.app.containers.nginx.resources }}
+          resources:
+          {{- toYaml . | nindent 12 }}
+          {{- end -}}
+          {{- else }}
+          {{- end }}
+        - name: symfony
+          image: {{ include "erebor.symfonyImage.url" . }}
+          imagePullPolicy: {{ default "IfNotPresent" .Values.deployments.app.containers.symfony.imagePullPolicy }}
+          envFrom:
+            - secretRef:
+                name: {{ include "erebor.fullname" . }}-nginx-config
+          ports:
+            - containerPort: 9000
+              protocol: TCP
+          {{- if .Values.deployments.app.containers.symfony.resources }}
+          {{- with .Values.deployments.app.containers.symfony.resources }}
+          resources:
+          {{- toYaml . | nindent 12 }}
+          {{- end -}}
+          {{- else }}
+          {{- end -}}
+      {{- (include "erebor.imagePullSecrets" .) | nindent 6 }}
+      restartPolicy: Always
+      terminationGracePeriodSeconds: {{ default 30 .Values.deployments.app.terminationGracePeriodSeconds }}
