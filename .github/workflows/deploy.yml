@@ -25,10 +25,22 @@ jobs:
       - name: Create values file
         run: |
           TAG=$(git describe --tags --abbrev=0)
+          # Escape special characters in variables
+          VITE_SYMFONY_URL=$(echo "${{ vars.VITE_SYMFONY_URL }}" | sed 's/[\/&]/\\&/g')
+          APP_ENV=$(echo "${{ vars.APP_ENV }}" | sed 's/[\/&]/\\&/g')
+          APP_SECRET=$(echo "${{ secrets.APP_SECRET }}" | sed 's/[\/&]/\\&/g')
+          DATABASE_URL=$(echo "${{ secrets.DATABASE_URL }}" | sed 's/[\/&]/\\&/g')
+          MESSENGER_TRANSPORT_DSN=$(echo "${{ secrets.MESSENGER_TRANSPORT_DSN }}" | sed 's/[\/&]/\\&/g')
+          MAILER_DSN=$(echo "${{ secrets.MAILER_DSN }}" | sed 's/[\/&]/\\&/g')
+          CORS_ALLOW_ORIGIN=$(echo "${{ vars.CORS_ALLOW_ORIGIN }}" | sed 's/[\/&]/\\&/g')
+          JWT_SECRET_KEY=$(echo "${{ vars.JWT_SECRET_KEY }}" | sed 's/[\/&]/\\&/g')
+          JWT_PUBLIC_KEY=$(echo "${{ vars.JWT_PUBLIC_KEY }}" | sed 's/[\/&]/\\&/g')
+          JWT_PASSPHRASE=$(echo "${{ secrets.JWT_PASSPHRASE }}" | sed 's/[\/&]/\\&/g')
+
           cat <<EOF > values.yaml
           imagesConfiguration:
             global:
-              tag: "$TAG"
+              tag: "${TAG}"
             custom:
               symfony:
                 repo: ghcr.io/erebor-org/erebor/symfony
@@ -43,22 +55,22 @@ jobs:
                       cpu: 500m
                       memory: 500Mi
                   config:
-                    VITE_SYMFONY_URL: "${{ vars.VITE_SYMFONY_URL }}"
+                    VITE_SYMFONY_URL: "${VITE_SYMFONY_URL}"
                 symfony:
                   resources:
                     limits:
                       cpu: 1000m
                       memory: 2Gi
                   config:
-                    APP_ENV: "${{ vars.APP_ENV }}"
-                    APP_SECRET: "${{ secrets.APP_SECRET }}"
-                    DATABASE_URL: "${{ secrets.DATABASE_URL }}"
-                    MESSENGER_TRANSPORT_DSN: "${{ secrets.MESSENGER_TRANSPORT_DSN }}"
-                    MAILER_DSN: "${{ secrets.MAILER_DSN }}"
-                    CORS_ALLOW_ORIGIN: "${{ vars.CORS_ALLOW_ORIGIN }}"
-                    JWT_SECRET_KEY: "${{ vars.JWT_SECRET_KEY }}"
-                    JWT_PUBLIC_KEY: "${{ vars.JWT_PUBLIC_KEY }}"
-                    JWT_PASSPHRASE: "${{ secrets.JWT_PASSPHRASE }}"
+                    APP_ENV: "${APP_ENV}"
+                    APP_SECRET: "${APP_SECRET}"
+                    DATABASE_URL: "${DATABASE_URL}"
+                    MESSENGER_TRANSPORT_DSN: "${MESSENGER_TRANSPORT_DSN}"
+                    MAILER_DSN: "${MAILER_DSN}"
+                    CORS_ALLOW_ORIGIN: "${CORS_ALLOW_ORIGIN}"
+                    JWT_SECRET_KEY: "${JWT_SECRET_KEY}"
+                    JWT_PUBLIC_KEY: "${JWT_PUBLIC_KEY}"
+                    JWT_PASSPHRASE: "${JWT_PASSPHRASE}"
           ingress:
             enabled: yes
             className: nginx
