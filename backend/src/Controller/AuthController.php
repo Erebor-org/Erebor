@@ -22,7 +22,7 @@ class AuthController extends AbstractController
         $this->passwordHasher = $passwordHasher;
     }
 
-    #[Route('/register', name: 'api_register', methods: ['POST'])]
+    #[Route('/api/register', name: 'api_register', methods: ['POST'])]
     public function register(Request $request): JsonResponse
     {
         $data = json_decode($request->getContent(), true);
@@ -44,7 +44,7 @@ class AuthController extends AbstractController
         return new JsonResponse(['message' => 'User created successfully'], 201);
     }
 
-    #[Route('/login', name: 'api_login', methods: ['POST'])]
+    #[Route('/api/login', name: 'api_login', methods: ['POST'])]
     public function login(#[CurrentUser] ?User $user, JWTTokenManagerInterface $jwtManager): JsonResponse
     {
         if (!$user) {
