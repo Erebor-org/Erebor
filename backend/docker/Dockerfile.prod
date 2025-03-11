@@ -48,14 +48,15 @@ WORKDIR /var/www/html
 COPY --from=builder /app /var/www/html
 COPY ./backend/docker/php/php.ini /usr/local/etc/php/conf.d/php.ini
 
-RUN mkdir /var/www/html/var
-RUN echo "APP_ENV=prod" > .env
-# Set permissions
-RUN chown -R www-data:www-data /var/www/html/var
+# Create necessary directories and set permissions
+RUN mkdir -p /var/www/html/var \
+    && mkdir -p /var/www/html/var/cache \
+    && mkdir -p /var/www/html/var/log \
+    && chown -R www-data:www-data /var/www/html \
+    && chmod -R 755 /var/www/html \
+    && chmod -R 777 /var/www/html/var
 
-# Create cache directory and set permissions
-RUN mkdir -p /var/www/html/var/cache \
-    && chmod -R 777 /var/www/html/var/cache
+RUN echo "APP_ENV=prod" > .env
 
 EXPOSE 9000
 
