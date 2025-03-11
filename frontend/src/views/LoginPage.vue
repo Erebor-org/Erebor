@@ -26,7 +26,7 @@ export default {
     async handleLogin() {
       try {
         const response = await axios.post(
-          'https://api.erebor-dofus.fr/api/login',
+          'https://api.erebor-dofus.fr/login',
           {
             username: this.username,
             password: this.password,
@@ -45,7 +45,9 @@ export default {
       }
     },
     async login(credentials) {
-      return axios.post('https://api.erebor-dofus.fr/api/login', credentials, { withCredentials: true });
+      return axios.post('https://api.erebor-dofus.fr/api/login', credentials, {
+        withCredentials: true,
+      });
     },
   },
 };
