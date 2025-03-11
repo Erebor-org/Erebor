@@ -102,6 +102,7 @@ jobs:
       - name: Deploy to Kubernetes using Helm
         run: |
           echo "Deploying version $TAG"
+          cat values.yaml
           helm upgrade --install erebor ./ops/helm \
             --namespace erebor --create-namespace \
             -f values.yaml
