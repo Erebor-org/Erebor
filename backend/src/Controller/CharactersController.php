@@ -76,12 +76,14 @@ class CharactersController extends AbstractController
         // Calcul de la différence de jours
         $now = new \DateTime();
         $daysDifference = $recruitedAt->diff($now)->days;
-
+        // Ensure minimum 1 day difference
+        if ($daysDifference === 0) {
+            $daysDifference = 1;
+        }
         // Trouver le rang correspondant
         $rank = $ranksRepository->findRankForDays($daysDifference);
 
-
-        if (!$rank) {
+        if (!$rank || $rank === 0) {
             return $this->json(['error' => 'No suitable rank found'], 404);
         }
 
