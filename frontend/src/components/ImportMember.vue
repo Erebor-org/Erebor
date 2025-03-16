@@ -437,7 +437,6 @@ export default {
 
     async submitMuleCharacter() {
       // Validation de base
-      console.log('mule', this.muleCharacter);
       if (!this.muleCharacter.class) {
         this.errorMessageMule = 'Veuillez sélectionner une classe avant de soumettre.';
         return;
@@ -464,9 +463,6 @@ export default {
           class: this.muleCharacter.class,
           mainCharacterId: this.muleCharacter.linkedCharacterId,
         });
-
-        console.log('Mule character created successfully:', response.data);
-
         // Réinitialiser le formulaire après succès
         this.muleCharacter = {
           pseudo: '',
