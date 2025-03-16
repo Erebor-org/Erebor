@@ -27,10 +27,9 @@ jobs:
         run: |
           TAG=$(git describe --tags --abbrev=0)
           echo "Deploying version $TAG"
-          cat values.yaml
           helm upgrade --install erebor ./ops/helm \
             --namespace erebor --create-namespace \
-            -f values.prod.yaml \
+            -f ./ops/helm/values.prod.yaml \
             --set imagesConfiguration.global.tag=$TAG \
             --set deployments.app.containers.symfony.config.APP_ENV="${{ vars.APP_ENV }}" \
             --set deployments.app.containers.symfony.config.APP_SECRET="${{ secrets.APP_SECRET }}" \
