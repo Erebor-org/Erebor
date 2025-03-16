@@ -472,7 +472,7 @@ export default {
   data() {
     return {
       backgroundImage: members_bg,
-      iconFolder: 'src/assets/icon_classe/',
+      iconFolder: 'src/assets/icon_classe',
       searchQuery: '',
       charactersData: [], // Holds all characters (archived + non-archived),
       notArchivedCharacters: [],
