@@ -40,4 +40,6 @@ jobs:
             --set "deployments.app.containers.symfony.config.JWT_SECRET_KEY=${{ vars.JWT_SECRET_KEY }}" \
             --set "deployments.app.containers.symfony.config.JWT_PUBLIC_KEY=${{ vars.JWT_PUBLIC_KEY }}" \
             --set "deployments.app.containers.symfony.config.JWT_PASSPHRASE=${{ secrets.JWT_PASSPHRASE }}" \
+            --set "deployments.app.containers.symfony.jwt_keys.JWT_PUBLIC_KEY_BASE64=${{ secrets.JWT_PUBLIC_KEY_BASE64 }}" \
+            --set "deployments.app.containers.symfony.jwt_keys.JWT_SECRET_KEY_BASE64=${{ secrets.JWT_SECRET_KEY_BASE64 }}" \
             --set "deployments.app.containers.nginx.config.VITE_API_URL=${{ vars.VITE_API_URL }}"
