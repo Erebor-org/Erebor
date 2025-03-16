@@ -194,7 +194,7 @@
 import Notification from '@/components/NotificationCenter.vue';
 import register_bg from '@/assets/register_bg.webp';
 import axios from 'axios';
-
+const API_URL = import.meta.env.VITE_API_URL;
 export default {
   components: {
     Notification,
@@ -244,7 +244,7 @@ export default {
       }
       try {
         // API POST request
-        const response = await axios.post('http://localhost:8000/blacklist', {
+        const response = await axios.post(`${API_URL}/blacklist`, {
           pseudo: blacklistMember.pseudo,
           ankamaPseudo: blacklistMember.ankamaPseudo,
           reason: blacklistMember.reason,
@@ -275,7 +275,7 @@ export default {
 
     async fetchBlacklist() {
       try {
-        const response = await axios.get('http://localhost:8000/blacklist');
+        const response = await axios.get(`${API_URL}/blacklist`);
         this.blacklist = response.data;
       } catch (error) {
         console.error('Error fetching mules:', error);

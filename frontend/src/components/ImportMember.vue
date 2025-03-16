@@ -292,6 +292,8 @@ import axios from 'axios';
 import register_bg from '@/assets/register_bg.webp';
 
 const images = import.meta.glob('@/assets/icon_classe/*.avif', { eager: true });
+const API_URL = import.meta.env.VITE_API_URL;
+
 export default {
   props: {
     showModalMember: {
@@ -416,7 +418,7 @@ export default {
       console.log('Données Personnage Principal:', payload);
       try {
         // API POST request
-        const response = await axios.post('http://localhost:8000/characters', {
+        const response = await axios.post(`${API_URL}/characters`, {
           pseudo: this.character.pseudo,
           ankamaPseudo: this.character.ankamaPseudo,
           class: this.character.class,
@@ -457,7 +459,7 @@ export default {
 
       // Appel à la méthode pour poster la mule
       try {
-        const response = await axios.post('http://localhost:8000/mules', {
+        const response = await axios.post(`${API_URL}/mules`, {
           pseudo: this.muleCharacter.pseudo,
           ankamaPseudo: this.muleCharacter.ankamaPseudo,
           class: this.muleCharacter.class,
@@ -494,7 +496,7 @@ export default {
     },
     async fetchRecruiters() {
       try {
-        const response = await axios.get('http://localhost:8000/characters/recruiters'); // Replace with your actual API endpoint
+        const response = await axios.get(`${API_URL}/characters/recruiters`); // Replace with your actual API endpoint
         console.log('recruiters', response.data);
         this.recruiters = response.data; // Assign the response to the characters array
       } catch (error) {
@@ -545,7 +547,7 @@ export default {
     },
     async fetchBlacklist() {
       try {
-        const response = await axios.get('http://localhost:8000/blacklist');
+        const response = await axios.get(`${API_URL}/blacklist`);
         this.blacklist = response.data;
       } catch (error) {
         console.error('Error fetching mules:', error);
