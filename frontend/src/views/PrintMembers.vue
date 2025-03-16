@@ -637,6 +637,50 @@ export default {
       await this.fetchCharacters();
       this.$refs.notificationRef.showNotification('Le personnage a bien été ajouté');
     },
+    startEditingPseudo(id, currentPseudo, type) {
+      if (type === 'character') {
+        this.editingPseudo = { type: 'character', id };
+      } else if (type === 'mule') {
+        this.editingPseudo = { type: 'mule', id };
+      }
+      this.editPseudo = currentPseudo || ''; // Set to the current pseudo or empty if undefined
+      this.$nextTick(() => {
+        const input = this.$refs.editInput;
+        if (input) input.focus(); // Focus the input field
+      });
+    },
+    async savePseudo(entity, type) {
+      console.log('entity', entity);
+      console.log('type', type);
+      console.log('editPseudo', this.editPseudo);
+      if (this.editPseudo.trim() === '') {
+        console.log('Le pseudo ne peut pas être vide.');
+        return;
+      }
+
+      try {
+        if (type === 'character') {
+          await axios.put(`http://localhost:8000/characters/${entity.id}/update-pseudo`, {
+            pseudo: this.editPseudo,
+          });
+          entity.pseudo = this.editPseudo; // Update locally
+        } else if (type === 'mule') {
+          await axios.put(`http://localhost:8000/mules/${entity.id}/update-pseudo`, {
+            pseudo: this.editPseudo,
+          });
+          entity.pseudo = this.editPseudo; // Update locally
+        }
+        this.editingPseudo = { type: null, id: null };
+        this.editPseudo = ''; // Clear the temporary pseudo
+        this.$refs.notificationRef.showNotification('Pseudo mis à jour avec succès !');
+      } catch (error) {
+        console.error(
+          'Erreur lors de la mise à jour du pseudo:',
+          error.response?.data || error.message
+        );
+        console.log('Une erreur est survenue lors de la mise à jour du pseudo.');
+      }
+    },
 
     async addMuleToTable() {
       await this.fetchAllMules();
