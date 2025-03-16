@@ -31,7 +31,7 @@ deployments:
             memory: 500Mi
         imagePullPolicy:
         config:
-          VITE_SYMFONY_URL:
+          VITE_API_URL:
       symfony:
         resources:
           limits:
