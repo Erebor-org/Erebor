@@ -27,6 +27,7 @@ jobs:
         run: |
           TAG=$(git describe --tags --abbrev=0)
           echo "Deploying version $TAG"
+          cat values.yaml
           helm upgrade --install erebor ./ops/helm \
             --namespace erebor --create-namespace \
             -f values.prod.yaml \

@@ -57,7 +57,7 @@ spec:
           imagePullPolicy: {{ default "IfNotPresent" .Values.deployments.app.containers.symfony.imagePullPolicy }}
           envFrom:
             - secretRef:
-                name: {{ include "erebor.fullname" . }}-nginx-config
+                name: {{ include "erebor.fullname" . }}-symfony-config
           ports:
             - containerPort: 9000
               protocol: TCP
@@ -67,7 +67,26 @@ spec:
           {{- toYaml . | nindent 12 }}
           {{- end -}}
           {{- else }}
-          {{- end -}}
+          {{- end }}
+          volumeMounts:
+            - name: pem-volume
+              readOnly: true
+              mountPath: /var/www/html/config/jwt/private.pem
+              subPath: private.pem
+            - name: pem-volume
+              readOnly: true
+              mountPath: /var/www/html/config/jwt/public.pem
+              subPath: public.pem
+      volumes:
+        - name: pem-volume
+          secret:
+            secretName: {{ include "erebor.fullname" . }}-pem-files
+            items:
+              - key: JWT_SECRET_KEY_BASE64
+                path: private.pem
+              - key: JWT_PUBLIC_KEY_BASE64
+                path: public.pem
+            defaultMode: 420
       {{- (include "erebor.imagePullSecrets" .) | nindent 6 }}
       restartPolicy: Always
       terminationGracePeriodSeconds: {{ default 30 .Values.deployments.app.terminationGracePeriodSeconds }}
