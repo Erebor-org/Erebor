@@ -291,16 +291,19 @@
 import axios from 'axios';
 import register_bg from '@/assets/register_bg.webp';
 
+const images = import.meta.glob('@/assets/icon_classe/*.avif', { eager: true });
+const API_URL = import.meta.env.VITE_API_URL;
+
 export default {
   props: {
     showModalMember: {
       type: Boolean,
       required: true,
     },
-    fetchNotArchivedCharacters: {
-      type: Function,
-      required: true,
-    },
+  fetchNotArchivedCharacters: {
+    type: Array,
+    required: true
+}
   },
   data() {
     return {
@@ -335,27 +338,27 @@ export default {
       selectedCharacterIcon: '', // Display the icon of the selected character
       showCharacterSelection: false, // Toggle visibility of character selection
       blacklist: [],
-      classes: {
-        sram: '/src/assets/icon_classe/sram.avif',
-        forgelance: '/src/assets/icon_classe/forgelance.avif',
-        cra: '/src/assets/icon_classe/cra.avif',
-        ecaflip: '/src/assets/icon_classe/ecaflip.avif',
-        eniripsa: '/src/assets/icon_classe/eniripsa.avif',
-        enutrof: '/src/assets/icon_classe/enutrof.avif',
-        feca: '/src/assets/icon_classe/feca.avif',
-        eliotrope: '/src/assets/icon_classe/eliotrope.avif',
-        iop: '/src/assets/icon_classe/iop.avif',
-        osamodas: '/src/assets/icon_classe/osamodas.avif',
-        pandawa: '/src/assets/icon_classe/pandawa.avif',
-        roublard: '/src/assets/icon_classe/roublard.avif',
-        sacrieur: '/src/assets/icon_classe/sacrieur.avif',
-        sadida: '/src/assets/icon_classe/sadida.avif',
-        steamer: '/src/assets/icon_classe/steamer.avif',
-        xelor: '/src/assets/icon_classe/xelor.avif',
-        zobal: '/src/assets/icon_classe/zobal.avif',
-        huppermage: '/src/assets/icon_classe/huppermage.avif',
-        ouginak: '/src/assets/icon_classe/ouginak.avif',
-      },
+       classes: {
+        sram: images['/src/assets/icon_classe/sram.avif'].default,
+        forgelance: images['/src/assets/icon_classe/forgelance.avif'].default,
+        cra: images['/src/assets/icon_classe/cra.avif'].default,
+        ecaflip: images['/src/assets/icon_classe/ecaflip.avif'].default,
+        eniripsa: images['/src/assets/icon_classe/eniripsa.avif'].default,
+        enutrof: images['/src/assets/icon_classe/enutrof.avif'].default,
+        feca: images['/src/assets/icon_classe/feca.avif'].default,
+        eliotrope: images['/src/assets/icon_classe/eliotrope.avif'].default,
+        iop: images['/src/assets/icon_classe/iop.avif'].default,
+        osamodas: images['/src/assets/icon_classe/osamodas.avif'].default,
+        pandawa: images['/src/assets/icon_classe/pandawa.avif'].default,
+        roublard: images['/src/assets/icon_classe/roublard.avif'].default,
+        sacrieur: images['/src/assets/icon_classe/sacrieur.avif'].default,
+        sadida: images['/src/assets/icon_classe/sadida.avif'].default,
+        steamer: images['/src/assets/icon_classe/steamer.avif'].default,
+        xelor: images['/src/assets/icon_classe/xelor.avif'].default,
+        zobal: images['/src/assets/icon_classe/zobal.avif'].default,
+        huppermage: images['/src/assets/icon_classe/huppermage.avif'].default,
+        ouginak: images['/src/assets/icon_classe/ouginak.avif'].default,
+      }
     };
   },
   methods: {
@@ -415,7 +418,7 @@ export default {
       console.log('Données Personnage Principal:', payload);
       try {
         // API POST request
-        const response = await axios.post('https://api.erebor-dofus.fr/characters', {
+        const response = await axios.post(`${API_URL}/characters`, {
           pseudo: this.character.pseudo,
           ankamaPseudo: this.character.ankamaPseudo,
           class: this.character.class,
@@ -436,7 +439,6 @@ export default {
 
     async submitMuleCharacter() {
       // Validation de base
-      console.log('mule', this.muleCharacter);
       if (!this.muleCharacter.class) {
         this.errorMessageMule = 'Veuillez sélectionner une classe avant de soumettre.';
         return;
@@ -457,15 +459,12 @@ export default {
 
       // Appel à la méthode pour poster la mule
       try {
-        const response = await axios.post('https://api.erebor-dofus.fr/mules', {
+        const response = await axios.post(`${API_URL}/mules`, {
           pseudo: this.muleCharacter.pseudo,
           ankamaPseudo: this.muleCharacter.ankamaPseudo,
           class: this.muleCharacter.class,
           mainCharacterId: this.muleCharacter.linkedCharacterId,
         });
-
-        console.log('Mule character created successfully:', response.data);
-
         // Réinitialiser le formulaire après succès
         this.muleCharacter = {
           pseudo: '',
@@ -497,7 +496,7 @@ export default {
     },
     async fetchRecruiters() {
       try {
-        const response = await axios.get('https://api.erebor-dofus.fr/characters/recruiters'); // Replace with your actual API endpoint
+        const response = await axios.get(`${API_URL}/characters/recruiters`); // Replace with your actual API endpoint
         console.log('recruiters', response.data);
         this.recruiters = response.data; // Assign the response to the characters array
       } catch (error) {
@@ -508,13 +507,13 @@ export default {
         console.log('An error occurred while fetching characters with recruiters.');
       }
     },
-    async loadNotArchivedCharacters() {
-      try {
-        this.notArchivedCharacters = await this.fetchNotArchivedCharacters();
-      } catch (error) {
-        console.error('Error loading not archived characters:', error.message);
-      }
-    },
+    // async loadNotArchivedCharacters() {
+    //   try {
+    //     this.notArchivedCharacters = this.fetchNotArchivedCharacters;
+    //   } catch (error) {
+    //     console.error('Error loading not archived characters:', error.message);
+    //   }
+    // },
     selectNotArchivedCharacter(character) {
       this.muleCharacter.linkedCharacterId = character.id;
       this.selectedCharacterName = character.pseudo;
@@ -548,7 +547,7 @@ export default {
     },
     async fetchBlacklist() {
       try {
-        const response = await axios.get('https://api.erebor-dofus.fr/blacklist');
+        const response = await axios.get(`${API_URL}/blacklist`);
         this.blacklist = response.data;
       } catch (error) {
         console.error('Error fetching mules:', error);
@@ -559,9 +558,9 @@ export default {
   computed: {
     // Filter characters based on search query
     filteredNotArchivedCharacters() {
-      if (!this.searchQuery) return this.notArchivedCharacters;
+      if (!this.searchQuery) return this.fetchNotArchivedCharacters;
       const query = this.searchQuery.toLowerCase();
-      return this.notArchivedCharacters.filter(character =>
+      return this.fetchNotArchivedCharacters.filter(character =>
         character.pseudo.toLowerCase().includes(query)
       );
     },
@@ -609,7 +608,7 @@ export default {
 
   mounted() {
     this.fetchRecruiters(); // Fetch characters when the component is mounted
-    this.loadNotArchivedCharacters();
+   // this.loadNotArchivedCharacters();
     this.fetchBlacklist();
   },
   watch: {

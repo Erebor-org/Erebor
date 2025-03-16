@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia';
 import axios from 'axios';
 import router from '@/router'; // ✅ Import router globally
-
+const API_URL = import.meta.env.VITE_API_URL;
 export const useAuthStore = defineStore('auth', {
   state: () => ({
     token: localStorage.getItem('token') || null,
@@ -12,9 +12,9 @@ export const useAuthStore = defineStore('auth', {
   actions: {
     async register(username, password) {
       try {
-        await axios.post('https://api.erebor-dofus.fr/register', { username, password });
+        await axios.post(`${API_URL}/register`, { username, password });
 
-        const response = await axios.post('https://api.erebor-dofus.fr/login', {
+        const response = await axios.post(`${API_URL}/login`, {
           username,
           password,
         });
@@ -36,7 +36,7 @@ export const useAuthStore = defineStore('auth', {
     async login(username, password) {
       this.isLoading = true;
       try {
-        const response = await axios.post("https://api.erebor-dofus.fr/login", { username, password });
+        const response = await axios.post(`${API_URL}/login`, { username, password });
 
         if (response.data.token) {
           this.token = response.data.token;

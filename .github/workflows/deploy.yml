@@ -22,87 +22,23 @@ jobs:
           git config --global user.name "github-actions[bot]"
           git config --global user.email "actions@github.com"
 
-      - name: Create values file
-        run: |
-          TAG=$(git describe --tags --abbrev=0)
-          # Escape special characters in variables
-          VITE_SYMFONY_URL=$(echo "${{ vars.VITE_SYMFONY_URL }}" | sed 's/[\/&]/\\&/g')
-          APP_ENV=$(echo "${{ vars.APP_ENV }}" | sed 's/[\/&]/\\&/g')
-          APP_SECRET=$(echo "${{ secrets.APP_SECRET }}" | sed 's/[\/&]/\\&/g')
-          DATABASE_URL=$(echo "${{ secrets.DATABASE_URL }}" | sed 's/[\/&]/\\&/g')
-          MESSENGER_TRANSPORT_DSN=$(echo "${{ secrets.MESSENGER_TRANSPORT_DSN }}" | sed 's/[\/&]/\\&/g')
-          MAILER_DSN=$(echo "${{ secrets.MAILER_DSN }}" | sed 's/[\/&]/\\&/g')
-          CORS_ALLOW_ORIGIN=$(echo "${{ vars.CORS_ALLOW_ORIGIN }}" | sed 's/[\/&]/\\&/g')
-          JWT_SECRET_KEY=$(echo "${{ vars.JWT_SECRET_KEY }}" | sed 's/[\/&]/\\&/g')
-          JWT_PUBLIC_KEY=$(echo "${{ vars.JWT_PUBLIC_KEY }}" | sed 's/[\/&]/\\&/g')
-          JWT_PASSPHRASE=$(echo "${{ secrets.JWT_PASSPHRASE }}" | sed 's/[\/&]/\\&/g')
-
-          cat <<EOF > values.yaml
-          imagesConfiguration:
-            global:
-              tag: "${TAG}"
-            custom:
-              symfony:
-                repo: ghcr.io/erebor-org/erebor/symfony
-              front:
-                repo: ghcr.io/erebor-org/erebor/nginx
-          deployments:
-            app:
-              containers:
-                nginx:
-                  resources:
-                    limits:
-                      cpu: 500m
-                      memory: 500Mi
-                  config:
-                    VITE_SYMFONY_URL: "${VITE_SYMFONY_URL}"
-                symfony:
-                  resources:
-                    limits:
-                      cpu: 1000m
-                      memory: 2Gi
-                  config:
-                    APP_ENV: "${APP_ENV}"
-                    APP_SECRET: "${APP_SECRET}"
-                    DATABASE_URL: "${DATABASE_URL}"
-                    MESSENGER_TRANSPORT_DSN: "${MESSENGER_TRANSPORT_DSN}"
-                    MAILER_DSN: "${MAILER_DSN}"
-                    CORS_ALLOW_ORIGIN: "${CORS_ALLOW_ORIGIN}"
-                    JWT_SECRET_KEY: "${JWT_SECRET_KEY}"
-                    JWT_PUBLIC_KEY: "${JWT_PUBLIC_KEY}"
-                    JWT_PASSPHRASE: "${JWT_PASSPHRASE}"
-          ingress:
-            enabled: yes
-            className: nginx
-            annotations:
-              cert-manager.io/cluster-issuer: letsencrypt
-            tls:
-              - secretName: erebor-tls
-                hosts:
-                    - erebor-dofus.fr
-                    - api.erebor-dofus.fr
-            hosts:
-              - host: erebor-dofus.fr
-                paths:
-                  - path: /
-                    pathType: Prefix
-                    serviceName: nginx
-                    servicePort: 80
-              - host: api.erebor-dofus.fr
-                paths:
-                  - path: /
-                    pathType: Prefix
-                    serviceName: nginx
-                    servicePort: 80
-          imagePullSecrets:
-            - name: regcred
-          EOF
-
       # Step to pull the latest Docker image matching the tag and deploy with Helm
       - name: Deploy to Kubernetes using Helm
         run: |
+          TAG=$(git describe --tags --abbrev=0)
           echo "Deploying version $TAG"
           cat values.yaml
           helm upgrade --install erebor ./ops/helm \
             --namespace erebor --create-namespace \
-            -f values.yaml
+            -f values.prod.yaml \
+            --set imagesConfiguration.global.tag=$TAG \
+            --set deployments.app.containers.symfony.config.APP_ENV="${{ vars.APP_ENV }}" \
+            --set deployments.app.containers.symfony.config.APP_SECRET="${{ secrets.APP_SECRET }}" \
+            --set deployments.app.containers.symfony.config.DATABASE_URL="${{ secrets.DATABASE_URL }}" \
+            --set deployments.app.containers.symfony.config.MESSENGER_TRANSPORT_DSN="${{ secrets.MESSENGER_TRANSPORT_DSN }}" \
+            --set deployments.app.containers.symfony.config.MAILER_DSN="${{ secrets.MAILER_DSN }}" \
+            --set deployments.app.containers.symfony.config.CORS_ALLOW_ORIGIN="${{ vars.CORS_ALLOW_ORIGIN }}" \
+            --set deployments.app.containers.symfony.config.JWT_SECRET_KEY="${{ vars.JWT_SECRET_KEY }}" \
+            --set deployments.app.containers.symfony.config.JWT_PUBLIC_KEY="${{ vars.JWT_PUBLIC_KEY }}" \
+            --set deployments.app.containers.symfony.config.JWT_PASSPHRASE="${{ secrets.JWT_PASSPHRASE }}" \
+            --set deployments.app.containers.nginx.config.VITE_API_URL="${{ vars.VITE_API_URL }}"

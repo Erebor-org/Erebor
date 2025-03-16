@@ -7,7 +7,7 @@ fullnameOverride:
 imagesConfiguration:
   global:
     repo:
-    tag: 2025-03-11-v1
+    tag:
   custom:
     symfony:
       repo: ghcr.io/erebor-org/erebor/symfony
@@ -31,7 +31,7 @@ deployments:
             memory: 500Mi
         imagePullPolicy:
         config:
-          VITE_SYMFONY_URL: https://api.erebor-dofus.fr
+          VITE_API_URL:
       symfony:
         resources:
           limits:
@@ -39,18 +39,15 @@ deployments:
             memory: 2Gi
         imagePullPolicy:
         config:
-          APP_SECRET:
-          DATABASE_URL:
-          JWT_PASSPHRASE:
-          APP_ENV: prod
-          MESSENGER_TRANSPORT_DSN: doctrine://default?auto_setup=0
-          MAILER_DSN: null://null
-          CORS_ALLOW_ORIGIN: '^https?://(localhost|127\.0\.0\.1)(:[0-9]+)?$'
-          JWT_SECRET_KEY: "%kernel.project_dir%/config/jwt/private.pem"
-          JWT_PUBLIC_KEY: "%kernel.project_dir%/config/jwt/public.pem"
-        jwt_keys:
-          JWT_SECRET_KEY_BASE64:
-          JWT_PUBLIC_KEY_BASE64:
+          APP_ENV: 
+          APP_SECRET: 
+          DATABASE_URL: 
+          MESSENGER_TRANSPORT_DSN: 
+          MAILER_DSN: 
+          CORS_ALLOW_ORIGIN: 
+          JWT_SECRET_KEY: 
+          JWT_PUBLIC_KEY: 
+          JWT_PASSPHRASE: 
 ### Ingress configuration
 ### Will automatically bind the hosts to the service
 
