@@ -454,7 +454,7 @@ export default {
 
     async fetchNotArchivedCharacters() {
       try {
-        const response = await axios.get('https://api.erebor-dofus.fr/characters');
+        const response = await axios.get('http://localhost:8000/characters');
         const notArchivedCharacters = response.data.filter(character => !character.isArchived);
         this.charactersNotArchived = response.data.filter(character => !character.isArchived);
         return notArchivedCharacters;
@@ -468,7 +468,7 @@ export default {
     },
     async archiveCharacter(characterId) {
       try {
-        await axios.put(`https://api.erebor-dofus.fr/characters/${characterId}/archive`, {
+        await axios.put(`http://localhost:8000/characters/${characterId}/archive`, {
           isArchived: true,
         });
 
@@ -501,7 +501,7 @@ export default {
         }
 
         // Archive the mule in the backend
-        await axios.put(`https://api.erebor-dofus.fr/mule/archive/${muleId}`, {
+        await axios.put(`http://localhost:8000/mule/archive/${muleId}`, {
           isArchived: true,
         });
         // Remove the mule locally
@@ -520,7 +520,7 @@ export default {
     },
     async fetchAllMules() {
       try {
-        const response = await axios.get('https://api.erebor-dofus.fr/mules');
+        const response = await axios.get('http://localhost:8000/mules');
         const mules = response.data.filter(mule => !mule.isArchived);
         this.notArchivedMules = mules.reduce((acc, mule) => {
           const charId = mule.mainCharacter?.id;
@@ -534,7 +534,7 @@ export default {
     },
     async fetchArchivedCharacters() {
       try {
-        const response = await axios.get('https://api.erebor-dofus.fr/characters');
+        const response = await axios.get('http://localhost:8000/characters');
         const archivedCharacters = response.data.filter(character => character.isArchived);
         this.archivedCharacters = archivedCharacters;
         return archivedCharacters;
@@ -545,7 +545,7 @@ export default {
     },
     async unarchiveCharacter(characterId) {
       try {
-        await axios.put(`https://api.erebor-dofus.fr/characters/${characterId}/unarchive`, {
+        await axios.put(`http://localhost:8000/characters/${characterId}/unarchive`, {
           isArchived: false,
         });
 
@@ -585,12 +585,12 @@ export default {
 
       try {
         if (type === 'character') {
-          await axios.put(`https://api.erebor-dofus.fr/characters/${entity.id}/update-pseudo`, {
+          await axios.put(`http://localhost:8000/characters/${entity.id}/update-pseudo`, {
             pseudo: this.editPseudo,
           });
           entity.pseudo = this.editPseudo; // Update locally
         } else if (type === 'mule') {
-          await axios.put(`https://api.erebor-dofus.fr/mules/${entity.id}/update-pseudo`, {
+          await axios.put(`http://localhost:8000/mules/${entity.id}/update-pseudo`, {
             pseudo: this.editPseudo,
           });
           entity.pseudo = this.editPseudo; // Update locally
@@ -663,7 +663,7 @@ export default {
     },
     async updateCharacterClass(characterId, newClass) {
       try {
-        await axios.put(`https://api.erebor-dofus.fr/characters/${characterId}/update-class`, {
+        await axios.put(`http://localhost:8000/characters/${characterId}/update-class`, {
           class: newClass,
         });
 
@@ -685,7 +685,7 @@ export default {
     },
     async updateMuleClass(muleId, newClass) {
       try {
-        await axios.put(`https://api.erebor-dofus.fr/mules/${muleId}/update-class`, {
+        await axios.put(`http://localhost:8000/mules/${muleId}/update-class`, {
           class: newClass,
         });
         // Update the mule's class locally for instant feedback

@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import { useAuthStore } from '@/stores/authStore';
 import PrintMembers from '../views/PrintMembers.vue';
+import Blacklist from '../views/CreateBlacklist.vue';
 import Register from '../views/RegisterPage.vue';
 
 const routes = [
@@ -11,6 +12,7 @@ const routes = [
   },
   { path: '/inscription', name: 'Register', component: Register },
   { path: '/membres', name: 'PrintMembers', component: PrintMembers, meta: { requiresAuth: true } },
+  { path: '/blacklist', name: 'Blacklist', component: Blacklist, meta: { requiresAuth: true } },
 ];
 
 const router = createRouter({

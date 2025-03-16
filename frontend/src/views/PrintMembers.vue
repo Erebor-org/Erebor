@@ -7,7 +7,7 @@
     <Notification ref="notificationRef" />
     <ImportMember
       :showModalMember="showModalMember"
-      :fetchNotArchivedCharacters="fetchNotArchivedCharacters"
+      :fetchNotArchivedCharacters="notArchivedCharacters"
       @close="showModalMember = false"
       @characterAdded="addCharacterToTable"
       @muleAdded="addMuleToTable"
@@ -459,8 +459,10 @@ import axios from 'axios';
 import members_bg from '@/assets/members_bg.webp';
 import ImportMember from '@/components/ImportMember.vue';
 import Notification from '@/components/NotificationCenter.vue';
-
 import { reactive } from 'vue';
+const images = import.meta.glob('@/assets/icon_classe/*.avif', { eager: true });
+
+const API_URL = import.meta.env.VITE_API_URL;
 
 export default {
   components: {
@@ -469,366 +471,60 @@ export default {
   },
   data() {
     return {
-      backgroundImage: members_bg, // Add your medieval-themed background image
-      iconFolder: 'src/assets/icon_classe/', // Folder containing your class icons
+      backgroundImage: members_bg,
+      iconFolder: 'src/assets/icon_classe/',
       searchQuery: '',
-      charactersNotArchived: [], // Holds the list of all characters
+      charactersData: [], // Holds all characters (archived + non-archived),
+      notArchivedCharacters: [],
       showModal: false,
       showModalMule: false,
       showModalMember: false,
       selectedMember: null,
-      editingPseudo: { type: null, id: null }, // Stores the ID of the currently edited character/mule
+      editingPseudo: { type: null, id: null },
       editPseudo: '',
       selectedMule: null,
       showNotification: false,
-      notArchivedMules: {}, // Stores all mules fetched at once, grouped by character ID
+      notArchivedMules: {},
       showMulesModal: false,
       showUnarchivedCharacterModal: false,
       currentCharacter: null,
       currentCharacterId: null,
       currentCharacterMules: [],
-      classDropdownVisible: reactive({}), // Tracks which dropdown is open
-      expandedRows: reactive({}), // Tracks which dropdown is open
-      activeTab: 'active', // Default tab is 'active'
-      archivedCharacters: [], // Holds the list of archived characters
-      archivedSearchQuery: '', // Search query for archived characters
+      classDropdownVisible: reactive({}),
+      expandedRows: reactive({}),
+      activeTab: 'active',
+      archivedSearchQuery: '',
       classes: {
-        sram: '/src/assets/icon_classe/sram.avif',
-        forgelance: '/src/assets/icon_classe/forgelance.avif',
-        cra: '/src/assets/icon_classe/cra.avif',
-        ecaflip: '/src/assets/icon_classe/ecaflip.avif',
-        eniripsa: '/src/assets/icon_classe/eniripsa.avif',
-        enutrof: '/src/assets/icon_classe/enutrof.avif',
-        feca: '/src/assets/icon_classe/feca.avif',
-        eliotrope: '/src/assets/icon_classe/eliotrope.avif',
-        iop: '/src/assets/icon_classe/iop.avif',
-        osamodas: '/src/assets/icon_classe/osamodas.avif',
-        pandawa: '/src/assets/icon_classe/pandawa.avif',
-        roublard: '/src/assets/icon_classe/roublard.avif',
-        sacrieur: '/src/assets/icon_classe/sacrieur.avif',
-        sadida: '/src/assets/icon_classe/sadida.avif',
-        steamer: '/src/assets/icon_classe/steamer.avif',
-        xelor: '/src/assets/icon_classe/xelor.avif',
-        zobal: '/src/assets/icon_classe/zobal.avif',
-        huppermage: '/src/assets/icon_classe/huppermage.avif',
-        ouginak: '/src/assets/icon_classe/ouginak.avif',
+        sram: images['/src/assets/icon_classe/sram.avif'].default,
+        forgelance: images['/src/assets/icon_classe/forgelance.avif'].default,
+        cra: images['/src/assets/icon_classe/cra.avif'].default,
+        ecaflip: images['/src/assets/icon_classe/ecaflip.avif'].default,
+        eniripsa: images['/src/assets/icon_classe/eniripsa.avif'].default,
+        enutrof: images['/src/assets/icon_classe/enutrof.avif'].default,
+        feca: images['/src/assets/icon_classe/feca.avif'].default,
+        eliotrope: images['/src/assets/icon_classe/eliotrope.avif'].default,
+        iop: images['/src/assets/icon_classe/iop.avif'].default,
+        osamodas: images['/src/assets/icon_classe/osamodas.avif'].default,
+        pandawa: images['/src/assets/icon_classe/pandawa.avif'].default,
+        roublard: images['/src/assets/icon_classe/roublard.avif'].default,
+        sacrieur: images['/src/assets/icon_classe/sacrieur.avif'].default,
+        sadida: images['/src/assets/icon_classe/sadida.avif'].default,
+        steamer: images['/src/assets/icon_classe/steamer.avif'].default,
+        xelor: images['/src/assets/icon_classe/xelor.avif'].default,
+        zobal: images['/src/assets/icon_classe/zobal.avif'].default,
+        huppermage: images['/src/assets/icon_classe/huppermage.avif'].default,
+        ouginak: images['/src/assets/icon_classe/ouginak.avif'].default,
       },
     };
   },
-  methods: {
-    toggleExpand(memberId) {
-      this.currentCharacterId = memberId;
-      this.currentCharacterMules = this.filteredMulesByCharacter(memberId);
-      if (this.expandedRows[memberId]) {
-        delete this.expandedRows[memberId]; // Remove the key if it's already expanded
-      } else {
-        this.expandedRows[memberId] = true; // Add the key to expandedRows
-      }
-    },
-
-    async fetchNotArchivedCharacters() {
-      try {
-        const response = await axios.get('https://api.erebor-dofus.fr/characters');
-        const notArchivedCharacters = response.data.filter(character => !character.isArchived);
-        this.charactersNotArchived = response.data.filter(character => !character.isArchived);
-        return notArchivedCharacters;
-      } catch (error) {
-        console.error(
-          'Error fetching not archived characters:',
-          error.response?.data || error.message
-        );
-        console.log('An error occurred while fetching not archived characters.');
-      }
-    },
-    async archiveCharacter(characterId) {
-      try {
-        await axios.put(`https://api.erebor-dofus.fr/characters/${characterId}/archive`, {
-          isArchived: true,
-        });
-
-        // Find the character being archived
-        const archivedCharacter = this.charactersNotArchived.find(char => char.id === characterId);
-
-        if (archivedCharacter) {
-          // Remove from active list
-          this.charactersNotArchived = this.charactersNotArchived.filter(
-            char => char.id !== characterId
-          );
-
-          // Add to archived list
-          this.archivedCharacters.push({ ...archivedCharacter, isArchived: true });
-        }
-
-        this.showModal = false;
-        this.$refs.notificationRef.showNotification(
-          `${archivedCharacter.pseudo} a bien été archivé`
-        );
-      } catch (error) {
-        console.error('Error archiving character:', error.response?.data || error.message);
-        this.$refs.notificationRef.showNotification('Erreur lors de l’archivage du personnage.');
-      }
-    },
-    addCharacterToTable() {
-      this.fetchNotArchivedCharacters();
-
-      this.$refs.notificationRef.showNotification(`Le personnage a bien été ajouté`);
-    },
-    addMuleToTable() {
-      this.fetchAllMules();
-
-      this.$refs.notificationRef.showNotification(`La mule a bien été ajouté`);
-    },
-    async archiveMule(muleId) {
-      try {
-        if (!this.selectedMule || !this.selectedMule.id) {
-          console.error('Selected mule is null or missing an ID.');
-          return;
-        }
-
-        // Archive the mule in the backend
-        await axios.put(`https://api.erebor-dofus.fr/mule/archive/${muleId}`, {
-          isArchived: true,
-        });
-
-        // ✅ Update the state **without refreshing**
-        Object.keys(this.notArchivedMules).forEach(characterId => {
-          this.notArchivedMules[characterId] = this.notArchivedMules[characterId].filter(
-            mule => mule.id !== muleId
-          );
-        });
-
-        this.closeMuleModal();
-
-        // ✅ Show notification
-        const mulePseudo = this.selectedMule.pseudo || 'La mule';
-        this.$refs.notificationRef.showNotification(`${mulePseudo} a bien été archivée.`);
-
-        // Clear selection
-        this.selectedMule = null;
-      } catch (error) {
-        console.error('Error archiving mule:', error.response?.data || error.message);
-        this.$refs.notificationRef.showNotification('Erreur lors de l’archivage.');
-      }
-    },
-    async fetchAllMules() {
-      try {
-        const response = await axios.get('https://api.erebor-dofus.fr/mules');
-        const mules = response.data.filter(mule => !mule.isArchived);
-
-        // ✅ Ensure `notArchivedMules` is always an object
-        this.notArchivedMules = {};
-
-        mules.forEach(mule => {
-          const charId = mule.mainCharacter?.id;
-          if (!this.notArchivedMules[charId]) {
-            this.notArchivedMules[charId] = [];
-          }
-          this.notArchivedMules[charId].push(mule);
-        });
-      } catch (error) {
-        console.error('Error fetching mules:', error);
-      }
-    },
-
-    async fetchArchivedCharacters() {
-      try {
-        const response = await axios.get('https://api.erebor-dofus.fr/characters');
-        const archivedCharacters = response.data.filter(character => character.isArchived);
-        this.archivedCharacters = archivedCharacters;
-        return archivedCharacters;
-      } catch (error) {
-        console.error('Error fetching archived characters:', error.response?.data || error.message);
-        console.log('An error occurred while fetching archived characters.');
-      }
-    },
-    async unarchiveCharacter(characterId) {
-      try {
-        await axios.put(`https://api.erebor-dofus.fr/characters/${characterId}/unarchive`, {
-          isArchived: false,
-        });
-
-        // Find the unarchived character
-        const unarchivedCharacter = this.archivedCharacters.find(char => char.id === characterId);
-
-        if (unarchivedCharacter) {
-          // Remove from archived list
-          this.archivedCharacters = this.archivedCharacters.filter(char => char.id !== characterId);
-
-          // Add back to active characters
-          this.charactersNotArchived.push({ ...unarchivedCharacter, isArchived: false });
-        }
-
-        this.showUnarchivedCharacterModal = false;
-        this.$refs.notificationRef.showNotification('Personnage restauré avec succès !');
-      } catch (error) {
-        console.error('Error unarchiving character:', error.response?.data || error.message);
-        this.$refs.notificationRef.showNotification(
-          'Erreur lors de la restauration du personnage.'
-        );
-      }
-    },
-    startEditingPseudo(id, currentPseudo, type) {
-      if (type === 'character') {
-        this.editingPseudo = { type: 'character', id };
-      } else if (type === 'mule') {
-        this.editingPseudo = { type: 'mule', id };
-      }
-      this.editPseudo = currentPseudo || ''; // Set to the current pseudo or empty if undefined
-      this.$nextTick(() => {
-        const input = this.$refs.editInput;
-        if (input) input.focus(); // Focus the input field
-      });
-    },
-    async savePseudo(entity, type) {
-      console.log('entity', entity);
-      console.log('type', type);
-      console.log('editPseudo', this.editPseudo);
-      if (this.editPseudo.trim() === '') {
-        console.log('Le pseudo ne peut pas être vide.');
-        return;
-      }
-
-      try {
-        if (type === 'character') {
-          await axios.put(`https://api.erebor-dofus.fr/characters/${entity.id}/update-pseudo`, {
-            pseudo: this.editPseudo,
-          });
-          entity.pseudo = this.editPseudo; // Update locally
-        } else if (type === 'mule') {
-          await axios.put(`https://api.erebor-dofus.fr/mules/${entity.id}/update-pseudo`, {
-            pseudo: this.editPseudo,
-          });
-          entity.pseudo = this.editPseudo; // Update locally
-        }
-        this.editingPseudo = { type: null, id: null };
-        this.editPseudo = ''; // Clear the temporary pseudo
-        this.$refs.notificationRef.showNotification('Pseudo mis à jour avec succès !');
-      } catch (error) {
-        console.error(
-          'Erreur lors de la mise à jour du pseudo:',
-          error.response?.data || error.message
-        );
-        console.log('Une erreur est survenue lors de la mise à jour du pseudo.');
-      }
-    },
-    filteredMulesByCharacter(characterId) {
-      return this.notArchivedMules[characterId] || [];
-    },
-    showMules(characterId) {
-      this.currentCharacter = this.charactersNotArchived.find(char => char.id === characterId);
-      this.currentCharacterMules = this.filteredMulesByCharacter(characterId);
-      this.showMulesModal = true;
-    },
-    openModal(member) {
-      this.selectedMember = member;
-      this.showModal = true;
-    },
-    closeModal() {
-      this.showModal = false;
-    },
-    openMuleModal(mule) {
-      this.selectedMule = mule;
-      this.showModalMule = true;
-    },
-    closeMuleModal() {
-      this.selectedMule = null;
-      this.showModalMule = false;
-    },
-    openUnarchivedCharacterModal(character) {
-      console.log('character', character);
-      this.selectedUnarchivedCharacter = character;
-      this.showUnarchivedCharacterModal = true;
-    },
-    closeUnarchivedCharacterModal() {
-      this.selectedUnarchivedCharacter = null;
-      this.showUnarchivedCharacterModal = false;
-    },
-    editMule(mule) {
-      // Handle editing logic, such as opening a modal with mule details
-      console.log('Editing mule:', mule);
-    },
-    toggleClassDropdown(id, type) {
-      const key = `${type}-${id}`;
-      // Close all other dropdowns
-      Object.keys(this.classDropdownVisible).forEach(k => {
-        this.classDropdownVisible[k] = false;
-      });
-      // Toggle the current dropdown
-      this.classDropdownVisible[key] = !this.classDropdownVisible[key];
-    },
-    closeAllDropdowns() {
-      Object.keys(this.classDropdownVisible).forEach(key => {
-        this.classDropdownVisible[key] = false;
-      });
-    },
-    handleClickOutside(event) {
-      const dropdownElements = document.querySelectorAll('.relative.inline-block');
-      let clickedInside = false;
-
-      dropdownElements.forEach(dropdown => {
-        if (dropdown.contains(event.target)) {
-          clickedInside = true;
-        }
-      });
-
-      if (!clickedInside) {
-        this.closeAllDropdowns();
-      }
-    },
-    async updateCharacterClass(characterId, newClass) {
-      try {
-        await axios.put(`https://api.erebor-dofus.fr/characters/${characterId}/update-class`, {
-          class: newClass,
-        });
-
-        // Update the character's class locally
-        const character = this.charactersNotArchived.find(member => member.id === characterId);
-        if (character) {
-          character.class = newClass;
-        }
-
-        // Close all dropdowns
-        this.closeAllDropdowns();
-
-        // Show success notification
-        this.$refs.notificationRef.showNotification('Classe mise à jour avec succès !');
-      } catch (error) {
-        console.error('Erreur lors de la mise à jour de la classe:', error.message);
-        this.$refs.notificationRef.showNotification('Échec de la mise à jour de la classe.');
-      }
-    },
-    async updateMuleClass(muleId, newClass) {
-      try {
-        await axios.put(`https://api.erebor-dofus.fr/mules/${muleId}/update-class`, {
-          class: newClass,
-        });
-        // Update the mule's class locally for instant feedback
-        const mule = this.currentCharacterMules.find(m => m.id === muleId);
-        if (mule) {
-          mule.class = newClass;
-        }
-        this.closeAllDropdowns();
-        this.$refs.notificationRef.showNotification('Mule class updated successfully!');
-      } catch (error) {
-        console.error('Error updating mule class:', error.message);
-        this.$refs.notificationRef.showNotification('Failed to update mule class.');
-      }
-    },
-  },
-  async mounted() {
-    try {
-      await this.fetchNotArchivedCharacters();
-      await this.fetchAllMules(); // Fetch all mules once when the component mounts
-      await this.fetchArchivedCharacters(); // Fetch archived characters
-      document.addEventListener('click', this.handleClickOutside);
-    } catch (error) {
-      console.error('Error during component initialization:', error);
-    }
-  },
-  beforeUnmount() {
-    document.removeEventListener('click', this.handleClickOutside);
-  },
   computed: {
+    // ✅ Use computed properties instead of redundant API calls
+    charactersNotArchived() {
+      return this.charactersData.filter(character => !character.isArchived);
+    },
+    archivedCharacters() {
+      return this.charactersData.filter(character => character.isArchived);
+    },
     currentSearchQuery: {
       get() {
         return this.activeTab === 'active' ? this.searchQuery : this.archivedSearchQuery;
@@ -890,6 +586,221 @@ export default {
           id: member.id,
         }));
     },
+  },
+  methods: {
+    // ✅ Fetch all characters once and store them
+    async fetchCharacters() {
+      console.log(API_URL);
+      try {
+        const response = await axios.get(`${API_URL}/characters/`);
+        this.charactersData = response.data;
+        this.notArchivedCharacters = response.data.filter(character => !character.isArchived);
+      } catch (error) {
+        console.error('Error fetching characters:', error.response?.data || error.message);
+      }
+    },
+
+    // ✅ Archive a character and update state without re-fetching
+    async archiveCharacter(characterId) {
+      try {
+        await axios.put(`${API_URL}/characters/${characterId}/archive`, { isArchived: true });
+
+        // Find and update the character locally
+        const character = this.charactersData.find(c => c.id === characterId);
+        if (character) character.isArchived = true;
+
+        this.showModal = false;
+        this.$refs.notificationRef.showNotification(`${character.pseudo} a bien été archivé`);
+      } catch (error) {
+        console.error('Error archiving character:', error.response?.data || error.message);
+      }
+    },
+
+    // ✅ Unarchive a character and update state without re-fetching
+    async unarchiveCharacter(characterId) {
+      try {
+        await axios.put(`${API_URL}/characters/${characterId}/unarchive`, { isArchived: false });
+
+        // Find and update the character locally
+        const character = this.charactersData.find(c => c.id === characterId);
+        if (character) character.isArchived = false;
+
+        this.showUnarchivedCharacterModal = false;
+        this.$refs.notificationRef.showNotification('Personnage restauré avec succès !');
+      } catch (error) {
+        console.error('Error unarchiving character:', error.response?.data || error.message);
+      }
+    },
+
+    // ✅ Add character and re-fetch all characters
+    async addCharacterToTable() {
+      await this.fetchCharacters();
+      this.$refs.notificationRef.showNotification('Le personnage a bien été ajouté');
+    },
+
+    async addMuleToTable() {
+      await this.fetchAllMules();
+      this.$refs.notificationRef.showNotification('La mule a bien été ajoutée');
+    },
+    async archiveMule(muleId) {
+      try {
+        if (!this.selectedMule || !this.selectedMule.id) {
+          console.error('Selected mule is null or missing an ID.');
+          return;
+        }
+
+        // Archive the mule in the backend
+        await axios.put(`${API_URL}/mule/archive/${muleId}`, {
+          isArchived: true,
+        });
+        // ✅ Update the state **without refreshing**
+        Object.keys(this.notArchivedMules).forEach(characterId => {
+          this.notArchivedMules[characterId] = this.notArchivedMules[characterId].filter(
+            mule => mule.id !== muleId
+          );
+        });
+
+        this.closeMuleModal();
+
+        // ✅ Show notification
+        const mulePseudo = this.selectedMule.pseudo || 'La mule';
+        this.$refs.notificationRef.showNotification(`${mulePseudo} a bien été archivée.`);
+
+        // Clear selection
+        this.selectedMule = null;
+      } catch (error) {
+        console.error('Error archiving mule:', error.response?.data || error.message);
+        this.$refs.notificationRef.showNotification('Erreur lors de l’archivage.');
+      }
+    },
+    async fetchAllMules() {
+      try {
+        const response = await axios.get(`${API_URL}/mules`);
+        const mules = response.data.filter(mule => !mule.isArchived);
+
+        this.notArchivedMules = {};
+        mules.forEach(mule => {
+          const charId = mule.mainCharacter?.id;
+          if (!this.notArchivedMules[charId]) {
+            this.notArchivedMules[charId] = [];
+          }
+          this.notArchivedMules[charId].push(mule);
+        });
+      } catch (error) {
+        console.error('Error fetching mules:', error);
+      }
+    },
+
+    openModal(member) {
+      this.selectedMember = member;
+      this.showModal = true;
+    },
+    closeModal() {
+      this.showModal = false;
+    },
+
+    openMuleModal(mule) {
+      this.selectedMule = mule;
+      this.showModalMule = true;
+    },
+
+    closeMuleModal() {
+      this.selectedMule = null;
+      this.showModalMule = false;
+    },
+    openUnarchivedCharacterModal(character) {
+      this.selectedUnarchivedCharacter = character;
+      this.showUnarchivedCharacterModal = true;
+    },
+    closeUnarchivedCharacterModal() {
+      this.selectedUnarchivedCharacter = null;
+      this.showUnarchivedCharacterModal = false;
+    },
+
+    toggleExpand(memberId) {
+      this.currentCharacterId = memberId;
+      this.currentCharacterMules = this.filteredMulesByCharacter(memberId);
+      this.expandedRows[memberId] = !this.expandedRows[memberId];
+    },
+
+    filteredMulesByCharacter(characterId) {
+      return this.notArchivedMules[characterId] || [];
+    },
+
+    toggleClassDropdown(id, type) {
+      const key = `${type}-${id}`;
+      Object.keys(this.classDropdownVisible).forEach(k => {
+        this.classDropdownVisible[k] = false;
+      });
+      this.classDropdownVisible[key] = !this.classDropdownVisible[key];
+    },
+    closeAllDropdowns() {
+      Object.keys(this.classDropdownVisible).forEach(key => {
+        this.classDropdownVisible[key] = false;
+      });
+    },
+    handleClickOutside(event) {
+      const dropdownElements = document.querySelectorAll('.relative.inline-block');
+      let clickedInside = false;
+
+      dropdownElements.forEach(dropdown => {
+        if (dropdown.contains(event.target)) clickedInside = true;
+      });
+
+      if (!clickedInside) this.closeAllDropdowns();
+    },
+
+    async updateCharacterClass(characterId, newClass) {
+      try {
+        await axios.put(`${API_URL}/characters/${characterId}/update-class`, {
+          class: newClass,
+        });
+
+        // Update the character's class locally
+        const character = this.charactersNotArchived.find(member => member.id === characterId);
+        if (character) {
+          character.class = newClass;
+        }
+
+        // Close all dropdowns
+        this.closeAllDropdowns();
+
+        // Show success notification
+        this.$refs.notificationRef.showNotification('Classe mise à jour avec succès !');
+      } catch (error) {
+        console.error('Erreur lors de la mise à jour de la classe:', error.message);
+        this.$refs.notificationRef.showNotification('Échec de la mise à jour de la classe.');
+      }
+    },
+    async updateMuleClass(muleId, newClass) {
+      try {
+        await axios.put(`${API_URL}/mules/${muleId}/update-class`, {
+          class: newClass,
+        });
+        // Update the mule's class locally for instant feedback
+        const mule = this.currentCharacterMules.find(m => m.id === muleId);
+        if (mule) {
+          mule.class = newClass;
+        }
+        this.closeAllDropdowns();
+        this.$refs.notificationRef.showNotification('Mule class updated successfully!');
+      } catch (error) {
+        console.error('Error updating mule class:', error.message);
+        this.$refs.notificationRef.showNotification('Failed to update mule class.');
+      }
+    },
+  },
+  async mounted() {
+    try {
+      await this.fetchCharacters(); // Fetch all characters once
+      await this.fetchAllMules(); // Fetch mules once
+      document.addEventListener('click', this.handleClickOutside);
+    } catch (error) {
+      console.error('Error during component initialization:', error);
+    }
+  },
+  beforeUnmount() {
+    document.removeEventListener('click', this.handleClickOutside);
   },
 };
 </script>
