@@ -94,7 +94,7 @@
                     <div class="relative inline-block">
                       <button @click="toggleClassDropdown(member.id, 'character')">
                         <img
-                          :src="`${iconFolder}/${member.class}.avif`"
+                          :src="classes[member.class]"
                           alt="Character Class"
                           class="w-10 h-10 cursor-pointer"
                         />
@@ -290,7 +290,7 @@
                 <tr class="transition-all group relative hover:bg-[#f3d9b1]/30">
                   <td class="p-4">
                     <img
-                      :src="`${iconFolder}/${member.class}.avif`"
+                      :src="classes[member.class]"
                       alt="Character Class"
                       class="w-12 h-12 rounded-full mx-auto"
                     />
@@ -845,7 +845,7 @@ export default {
   },
   beforeUnmount() {
     document.removeEventListener('click', this.handleClickOutside);
-  },
+  }
 };
 </script>
 
