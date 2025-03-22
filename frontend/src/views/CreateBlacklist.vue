@@ -218,9 +218,13 @@ export default {
   },
   computed: {
     filteredBlacklist() {
-      return this.blacklist.filter(entry =>
-        entry.pseudo.toLowerCase().includes(this.searchQuery.toLowerCase())
-      );
+      const query = this.searchQuery.toLowerCase();
+      return this.blacklist.filter(entry => {
+        return (
+          (entry.pseudo && entry.pseudo.toLowerCase().includes(query)) ||
+          (entry.ankamaPseudo && entry.ankamaPseudo.toLowerCase().includes(query))
+        );
+      });
     },
   },
   methods: {
