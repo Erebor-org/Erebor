@@ -320,41 +320,6 @@
     <!-- Modal archive character -->
     <div
       v-if="showModal"
-      class="inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50"
-      @click.self="closeModal"
-    >
-      <div class="bg-[#fff5e6] border-4 border-[#b07d46] rounded-lg p-6 w-1/3 relative">
-        <!-- Close Button -->
-        <button
-          class="absolute top-3 right-3 text-[#b02e2e] hover:text-[#942828] font-bold text-lg"
-          @click="closeModal"
-        >
-          &times;
-        </button>
-
-        <h2 class="text-xl font-bold text-[#b02e2e] mb-4">Archiver</h2>
-        <p class="text-lg text-[#b07d46] mb-6">
-          Voulez-vous archiver le joueur <strong>{{ selectedMember.pseudo }}</strong> ?
-        </p>
-        <div class="flex justify-end space-x-4">
-          <button
-            @click="closeModal"
-            class="bg-[#b07d46] text-[#fff5e6] font-bold py-2 px-4 rounded-lg hover:bg-[#9c682e]"
-          >
-            Annuler
-          </button>
-          <button
-            @click="archiveCharacter(selectedMember.id)"
-            class="bg-[#b02e2e] text-[#f3d9b1] font-bold py-2 px-4 rounded-lg hover:bg-[#942828]"
-          >
-            Archiver
-          </button>
-        </div>
-      </div>
-    </div>
-    <!-- Modal archive character -->
-    <div
-      v-if="showModal"
       class="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50"
       @click.self="closeModal"
     >
@@ -660,12 +625,12 @@ export default {
 
       try {
         if (type === 'character') {
-          await axios.put(`http://localhost:8000/characters/${entity.id}/update-pseudo`, {
+          await axios.put(`${API_URL}/characters/${entity.id}/update-pseudo`, {
             pseudo: this.editPseudo,
           });
           entity.pseudo = this.editPseudo; // Update locally
         } else if (type === 'mule') {
-          await axios.put(`http://localhost:8000/mules/${entity.id}/update-pseudo`, {
+          await axios.put(`${API_URL}/mules/${entity.id}/update-pseudo`, {
             pseudo: this.editPseudo,
           });
           entity.pseudo = this.editPseudo; // Update locally
