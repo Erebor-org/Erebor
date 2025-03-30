@@ -72,7 +72,7 @@
       <div class="bg-white border-2 border-[#b07d46] rounded-lg shadow-lg p-8 mb-6">
         <h2 class="text-3xl font-bold text-[#b02e2e] mb-4">Membres actifs</h2>
         <!-- Characters Table -->
-        <div class="overflow-y-auto max-h-96">
+        <div class="overflow-y-auto max-h-96 min-h-96">
           <table class="w-full text-center border-collapse bg-white rounded-lg shadow-lg">
             <thead class="sticky top-0 bg-[#b02e2e] z-10">
               <tr class="text-[#f3d9b1] text-lg">
@@ -89,7 +89,7 @@
                 v-for="({ member, id }, index) in filteredMembers"
                 :key="member.id || index"
               >
-                <tr class="transition-all group relative hover:bg-[#f3d9b1]/30">
+                <tr class="transition-all group relative hover:bg-[#f3d9b1]/30" style="min-height: 120px;">
                   <td class="p-4 relative">
                     <div class="relative inline-block">
                       <button @click="toggleClassDropdown(member.id, 'character')">
@@ -189,7 +189,7 @@
                                 <div class="relative inline-block">
                                   <button @click="toggleClassDropdown(mule.id, 'mule')">
                                     <img
-                                      :src="`${iconFolder}/${mule.class}.avif`"
+                                      :src="classes[mule.class]"
                                       alt="Mule Class"
                                       class="w-8 h-8 cursor-pointer mx-auto"
                                     />
@@ -872,5 +872,9 @@ tbody tr:hover {
 
 .group-hover\:block {
   display: none;
+}
+td {
+  height: auto;
+  vertical-align: top;
 }
 </style>
