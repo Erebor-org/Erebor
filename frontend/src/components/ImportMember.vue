@@ -6,8 +6,7 @@
   >
     <!-- Modal Content -->
     <div
-      style="max-width: 600px; width: 100%"
-      class="bg-[#fff5e6] border-4 border-[#b07d46] rounded-lg shadow-lg p-4 relative w-full max-w-3xl xl:max-w-2xl lg:max-w-lg md:max-w-md sm:max-w-sm"
+      class="w-[80%] max-w-[1000px] bg-[#fff5e6] border-4 border-[#b07d46] rounded-lg shadow-lg p-4 relative max-h-[95vh] overflow-y-auto"
     >
       <!-- Close Button -->
       <button
@@ -45,242 +44,264 @@
 
       <!-- Scrollable Content Area -->
       <div class="px-4">
-        <!-- Main Character Form -->
         <form v-if="activeTab === 'character'" @submit.prevent="submitCharacter()">
-          <h2 class="text-2xl font-bold text-[#b02e2e] mb-4">Personnage Principal</h2>
-          <!-- Pseudo -->
-          <div class="mb-4">
-            <label for="mainPseudo" class="block text-lg font-medium text-[#b07d46] mb-2">
-              Pseudo:
-            </label>
-            <input
-              type="text"
-              id="mainPseudo"
-              v-model="character.pseudo"
-              class="block w-full border-2 border-[#b07d46] bg-[#fffaf0] rounded-lg p-2 text-lg focus:outline-none focus:ring-2 focus:ring-[#f3d9b1]"
-              required
-            />
-            <div v-if="isPseudoInvalid" class="text-[#b02e2e] text-sm font-medium mt-2">
-              "{{ character.pseudo }}" est blacklist d'Erebor.
-            </div>
-          </div>
-          <!-- Pseudo ankama -->
-          <div class="mb-4">
-            <label for="mainPseudo" class="block text-lg font-medium text-[#b07d46] mb-2">
-              Pseudo Ankama:
-            </label>
-            <input
-              type="text"
-              id="ankamaPseudo"
-              v-model="character.ankamaPseudo"
-              class="block w-full border-2 border-[#b07d46] bg-[#fffaf0] rounded-lg p-2 text-lg focus:outline-none focus:ring-2 focus:ring-[#f3d9b1]"
-              required
-            />
+          <h2 class="text-2xl font-bold text-[#b02e2e] mb-6">Personnage Principal</h2>
 
-            <div v-if="isAnkamaPseudoInvalid" class="text-[#b02e2e] text-sm font-medium mt-2">
-              "{{ character.ankamaPseudo }}" est blacklist d'Erebor.
-            </div>
-          </div>
-          <!-- Classe -->
-          <div class="mb-4">
-            <label class="block text-lg font-medium text-[#b07d46] mb-2"
-              >Classe du personnage:</label
-            >
-            <div class="grid grid-cols-7 gap-4">
-              <div
-                v-for="(icon, index) in classes"
-                :key="index"
-                :class="[
-                  'cursor-pointer border-2 rounded-lg p-2',
-                  character.class === index
-                    ? 'border-[#b02e2e] bg-[#f3d9b1]'
-                    : 'border-[#b07d46] bg-[#fffaf0]',
-                ]"
-                @click="((character.class = index), selectClass(index))"
-              >
-                <img :src="icon" alt="Classe" class="w-full h-auto" />
-              </div>
-            </div>
-          </div>
-
-          <div class="mb-4">
-            <label for="mainDate" class="block text-lg font-medium text-[#b07d46] mb-2">
-              Date:
-            </label>
-            <input
-              type="date"
-              id="recruitedAt"
-              name="recruitedAt"
-              v-model="character.recruitedAt"
-              class="block w-full border-2 border-[#b07d46] bg-[#fffaf0] rounded-lg p-2 text-lg focus:outline-none focus:ring-2 focus:ring-[#f3d9b1]"
-              required
-            />
-          </div>
-
-          <!-- Sélectionner un recruteur -->
-          <div class="mb-4">
-            <label for="recruiter" class="block text-lg font-medium text-[#b07d46] mb-2">
-              Sélectionner un recruteur:
-            </label>
-
-            <!-- If recruiter is selected -->
-            <div v-if="character.recruiterId" class="flex items-center gap-4">
-              <img :src="selectedRecruiterIcon" alt="Class Icon" class="w-15 h-15 rounded-full" />
-              <span class="text-lg font-large text-[#b07d46]">{{ selectedRecruiterName }}</span>
-              <button
-                type="button"
-                @click="clearSelectedRecruiter"
-                class="text-red-500 text-lg font-bold focus:outline-none"
-              >
-                &times;
-              </button>
-            </div>
-
-            <!-- If recruiter is not selected -->
-            <div v-else>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Pseudo -->
+            <div>
+              <label for="mainPseudo" class="block text-base font-medium text-[#b07d46] mb-1">
+                Pseudo :
+              </label>
               <input
                 type="text"
-                v-model="recruiterSearchQuery"
-                placeholder="Rechercher un recruteur..."
-                class="block w-full border-2 border-[#b07d46] bg-[#fffaf0] rounded-lg p-2 text-lg mb-2 focus:outline-none focus:ring-2 focus:ring-[#f3d9b1]"
+                id="mainPseudo"
+                v-model="character.pseudo"
+                class="w-full border-2 border-[#b07d46] bg-[#fffaf0] rounded-md p-2 text-base focus:outline-none focus:ring-2 focus:ring-[#f3d9b1]"
+                required
               />
-              <ul
-                class="max-h-20 overflow-y-auto bg-[#fffaf0] border-2 border-[#b07d46] rounded-lg p-2"
+              <div v-if="isPseudoInvalid" class="text-[#b02e2e] text-sm font-medium mt-1">
+                "{{ character.pseudo }}" est blacklist d'Erebor.
+              </div>
+            </div>
+
+            <!-- Pseudo Ankama -->
+            <div>
+              <label for="ankamaPseudo" class="block text-base font-medium text-[#b07d46] mb-1">
+                Pseudo Ankama :
+              </label>
+              <input
+                type="text"
+                id="ankamaPseudo"
+                v-model="character.ankamaPseudo"
+                class="w-full border-2 border-[#b07d46] bg-[#fffaf0] rounded-md p-2 text-base focus:outline-none focus:ring-2 focus:ring-[#f3d9b1]"
+                required
+              />
+              <div v-if="isAnkamaPseudoInvalid" class="text-[#b02e2e] text-sm font-medium mt-1">
+                "{{ character.ankamaPseudo }}" est blacklist d'Erebor.
+              </div>
+            </div>
+
+            <!-- Classe (responsive grid fluide avec icônes plus grandes) -->
+            <div class="md:col-span-2">
+              <label class="block text-base font-medium text-[#b07d46] mb-2"
+                >Classe du personnage :</label
               >
-                <li
-                  v-for="recruiter in filteredRecruiters"
-                  :key="recruiter.id"
-                  @click="selectRecruiter(recruiter)"
-                  class="flex items-center gap-4 p-2 cursor-pointer hover:bg-[#f3d9b1] rounded-lg"
+              <div class="flex flex-wrap gap-3 justify-start">
+                <div
+                  v-for="(icon, index) in classes"
+                  :key="index"
+                  :class="[
+                    'cursor-pointer border-2 rounded-md flex items-center justify-center w-20 h-20',
+                    character.class === index
+                      ? 'border-[#b02e2e] bg-[#f3d9b1]'
+                      : 'border-[#b07d46] bg-[#fffaf0]',
+                  ]"
+                  @click="((character.class = index), selectClass(index))"
                 >
-                  <img :src="classes[recruiter.class]" alt="Classe" class="w-8 h-8" />
-                  <span class="text-lg font-medium text-[#b07d46]">{{ recruiter.pseudo }}</span>
-                </li>
-              </ul>
+                  <img :src="icon" alt="Classe" class="max-h-16 object-contain" />
+                </div>
+              </div>
             </div>
-          </div>
-          <div v-if="errorMessage" class="text-1xl font-bold text-[#b02e2e] mb-6">
-            {{ errorMessage }}
-          </div>
-          <!-- Submit -->
-          <button
-            type="submit"
-            class="w-full bg-[#b02e2e] text-[#f3d9b1] font-bold py-3 px-6 rounded-lg hover:bg-[#942828] focus:ring-4 focus:ring-[#f3d9b1]"
-            :disabled="!character.class"
-          >
-            Importer un personnage principal
-          </button>
-        </form>
 
-        <!-- Mule Character Form -->
-        <form v-else @submit.prevent="submitMuleCharacter">
-          <h2 class="text-2xl font-bold text-[#b02e2e] mb-4">Mule</h2>
-          <!-- Pseudo -->
-          <div class="mb-4">
-            <label for="mulePseudo" class="block text-lg font-medium text-[#b07d46] mb-2">
-              Pseudo:
-            </label>
-            <input
-              type="text"
-              id="mulePseudo"
-              v-model="muleCharacter.pseudo"
-              class="block w-full border-2 border-[#b07d46] bg-[#fffaf0] rounded-lg p-2 text-lg focus:outline-none focus:ring-2 focus:ring-[#f3d9b1]"
-              required
-            />
-            <div v-if="isMulePseudoInvalid" class="text-[#b02e2e] text-sm font-medium mt-2">
-              "{{ muleCharacter.pseudo }}" est blacklist d'Erebor.
+            <!-- Date -->
+            <div>
+              <label for="recruitedAt" class="block text-base font-medium text-[#b07d46] mb-1">
+                Date de recrutement :
+              </label>
+              <input
+                type="date"
+                id="recruitedAt"
+                name="recruitedAt"
+                v-model="character.recruitedAt"
+                class="w-full border-2 border-[#b07d46] bg-[#fffaf0] rounded-md p-2 text-base focus:outline-none focus:ring-2 focus:ring-[#f3d9b1]"
+                required
+              />
             </div>
-          </div>
-          <!-- Pseudo ankama -->
-          <div class="mb-4">
-            <label for="mainPseudo" class="block text-lg font-medium text-[#b07d46] mb-2">
-              Pseudo Ankama
-            </label>
-            <input
-              type="text"
-              id="ankamaPseudo"
-              v-model="muleCharacter.ankamaPseudo"
-              class="block w-full border-2 border-[#b07d46] bg-[#fffaf0] rounded-lg p-2 text-lg focus:outline-none focus:ring-2 focus:ring-[#f3d9b1]"
-              required
-            />
 
-            <div v-if="isMuleAnkamaPseudoInvalid" class="text-[#b02e2e] text-sm font-medium mt-2">
-              "{{ muleCharacter.ankamaPseudo }}" est blacklist d'Erebor.
-            </div>
-          </div>
-          <div class="mb-4">
-            <label class="block text-lg font-medium text-[#b07d46] mb-2">
-              Classe du personnage
-            </label>
-            <div class="grid grid-cols-7 gap-4">
-              <div
-                v-for="(icon, index) in classes"
-                :key="index"
-                :class="[
-                  'cursor-pointer border-2 rounded-lg p-2',
-                  muleCharacter.class === index
-                    ? 'border-[#b02e2e] bg-[#f3d9b1]'
-                    : 'border-[#b07d46] bg-[#fffaf0]',
-                ]"
-                @click="((muleCharacter.class = index), selectClass(index))"
-              >
-                <img :src="icon" alt="Classe" class="w-full h-auto" />
+            <!-- Recruteur -->
+            <div>
+              <label for="recruiter" class="block text-base font-medium text-[#b07d46] mb-1">
+                Recruteur :
+              </label>
+
+              <!-- Si sélectionné -->
+              <div v-if="character.recruiterId" class="flex items-center gap-3">
+                <img :src="selectedRecruiterIcon" alt="Classe" class="w-10 h-10 rounded-full" />
+                <span class="text-base font-semibold text-[#b07d46]">{{
+                  selectedRecruiterName
+                }}</span>
+                <button
+                  type="button"
+                  @click="clearSelectedRecruiter"
+                  class="text-red-500 text-lg font-bold focus:outline-none"
+                >
+                  &times;
+                </button>
+              </div>
+
+              <!-- Si non sélectionné -->
+              <div v-else>
+                <input
+                  type="text"
+                  v-model="recruiterSearchQuery"
+                  placeholder="Rechercher un recruteur..."
+                  class="w-full border-2 border-[#b07d46] bg-[#fffaf0] rounded-md p-2 text-base mb-2 focus:outline-none focus:ring-2 focus:ring-[#f3d9b1]"
+                />
+                <ul
+                  class="max-h-32 overflow-y-auto bg-[#fffaf0] border-2 border-[#b07d46] rounded-md p-2"
+                >
+                  <li
+                    v-for="recruiter in filteredRecruiters"
+                    :key="recruiter.id"
+                    @click="selectRecruiter(recruiter)"
+                    class="flex items-center gap-3 p-2 cursor-pointer hover:bg-[#f3d9b1] rounded-md"
+                  >
+                    <img :src="classes[recruiter.class]" alt="Classe" class="w-7 h-7" />
+                    <span class="text-base text-[#b07d46]">{{ recruiter.pseudo }}</span>
+                  </li>
+                </ul>
               </div>
             </div>
           </div>
 
-          <!-- Select Character with Search and Limited List -->
-          <div class="mb-4">
-            <label for="selectedCharacter" class="block text-lg font-medium text-[#b07d46] mb-2">
-              Personnage Principal :
-            </label>
-            <input
-              v-if="!muleCharacter.linkedCharacterId"
-              type="text"
-              v-model="searchQuery"
-              placeholder="Rechercher un personnage..."
-              class="block w-full border-2 border-[#b07d46] bg-[#fffaf0] rounded-lg p-2 text-lg mb-2 focus:outline-none focus:ring-2 focus:ring-[#f3d9b1]"
-            />
-            <ul
-              v-if="!muleCharacter.linkedCharacterId"
-              class="max-h-20 overflow-y-auto bg-[#fffaf0] border-2 border-[#b07d46] rounded-lg p-2"
-            >
-              <li
-                v-for="character in filteredNotArchivedCharacters"
-                :key="character.id"
-                @click="selectNotArchivedCharacter(character)"
-                class="flex items-center gap-4 p-2 cursor-pointer hover:bg-[#f3d9b1] rounded-lg"
-              >
-                <img :src="classes[character.class]" alt="Classe" class="w-8 h-8" />
-                <span class="text-lg font-medium text-[#b07d46]">{{ character.pseudo }}</span>
-              </li>
-            </ul>
+          <!-- Erreur globale -->
+          <div v-if="errorMessage" class="text-lg font-bold text-[#b02e2e] mt-6">
+            {{ errorMessage }}
           </div>
 
-          <!-- Display Selected Character -->
-          <div v-if="muleCharacter.linkedCharacterId" class="mb-4">
-            <div class="flex items-center gap-4">
-              <img :src="selectedCharacterIcon" alt="Class Icon" class="w-15 h-15 rounded-full" />
-              <span class="text-lg font-large text-[#b07d46]">{{ selectedCharacterName }}</span>
-              <button
-                type="button"
-                @click="clearSelectedCharacter"
-                class="text-red-500 text-lg font-bold focus:outline-none"
+          <!-- Submit -->
+          <div class="mt-6">
+            <button
+              type="submit"
+              class="w-full bg-[#b02e2e] text-[#f3d9b1] font-bold py-3 px-6 rounded-lg hover:bg-[#942828] focus:ring-4 focus:ring-[#f3d9b1]"
+              :disabled="!character.class"
+            >
+              Importer un personnage principal
+            </button>
+          </div>
+        </form>
+
+        <form v-else @submit.prevent="submitMuleCharacter">
+          <h2 class="text-2xl font-bold text-[#b02e2e] mb-6">Mule</h2>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Pseudo -->
+            <div>
+              <label for="mulePseudo" class="block text-base font-medium text-[#b07d46] mb-1">
+                Pseudo :
+              </label>
+              <input
+                type="text"
+                id="mulePseudo"
+                v-model="muleCharacter.pseudo"
+                class="w-full border-2 border-[#b07d46] bg-[#fffaf0] rounded-md p-2 text-base focus:outline-none focus:ring-2 focus:ring-[#f3d9b1]"
+                required
+              />
+              <div v-if="isMulePseudoInvalid" class="text-[#b02e2e] text-sm font-medium mt-1">
+                "{{ muleCharacter.pseudo }}" est blacklist d'Erebor.
+              </div>
+            </div>
+
+            <!-- Pseudo Ankama -->
+            <div>
+              <label for="ankamaPseudo" class="block text-base font-medium text-[#b07d46] mb-1">
+                Pseudo Ankama :
+              </label>
+              <input
+                type="text"
+                id="ankamaPseudo"
+                v-model="muleCharacter.ankamaPseudo"
+                class="w-full border-2 border-[#b07d46] bg-[#fffaf0] rounded-md p-2 text-base focus:outline-none focus:ring-2 focus:ring-[#f3d9b1]"
+                required
+              />
+              <div v-if="isMuleAnkamaPseudoInvalid" class="text-[#b02e2e] text-sm font-medium mt-1">
+                "{{ muleCharacter.ankamaPseudo }}" est blacklist d'Erebor.
+              </div>
+            </div>
+
+            <!-- Classe -->
+            <div class="md:col-span-2">
+              <label class="block text-base font-medium text-[#b07d46] mb-2"
+                >Classe du personnage :</label
               >
-                &times;
-              </button>
+              <div class="flex flex-wrap gap-3 justify-start">
+                <div
+                  v-for="(icon, index) in classes"
+                  :key="index"
+                  :class="[
+                    'cursor-pointer border-2 rounded-md flex items-center justify-center w-20 h-20',
+                    muleCharacter.class === index
+                      ? 'border-[#b02e2e] bg-[#f3d9b1]'
+                      : 'border-[#b07d46] bg-[#fffaf0]',
+                  ]"
+                  @click="((muleCharacter.class = index), selectClass(index))"
+                >
+                  <img :src="icon" alt="Classe" class="max-h-16 object-contain" />
+                </div>
+              </div>
+            </div>
+
+            <!-- Sélection du personnage principal -->
+            <div class="md:col-span-2">
+              <label class="block text-base font-medium text-[#b07d46] mb-2">
+                Personnage Principal :
+              </label>
+
+              <!-- Si non sélectionné -->
+              <div v-if="!muleCharacter.linkedCharacterId">
+                <input
+                  type="text"
+                  v-model="searchQuery"
+                  placeholder="Rechercher un personnage..."
+                  class="w-full border-2 border-[#b07d46] bg-[#fffaf0] rounded-md p-2 text-base mb-2 focus:outline-none focus:ring-2 focus:ring-[#f3d9b1]"
+                />
+                <ul
+                  class="max-h-32 overflow-y-auto bg-[#fffaf0] border-2 border-[#b07d46] rounded-md p-2"
+                >
+                  <li
+                    v-for="character in filteredNotArchivedCharacters"
+                    :key="character.id"
+                    @click="selectNotArchivedCharacter(character)"
+                    class="flex items-center gap-3 p-2 cursor-pointer hover:bg-[#f3d9b1] rounded-md"
+                  >
+                    <img :src="classes[character.class]" alt="Classe" class="w-7 h-7" />
+                    <span class="text-base text-[#b07d46]">{{ character.pseudo }}</span>
+                  </li>
+                </ul>
+              </div>
+
+              <!-- Si sélectionné -->
+              <div v-else class="flex items-center gap-3">
+                <img :src="selectedCharacterIcon" alt="Classe" class="w-10 h-10 rounded-full" />
+                <span class="text-base font-semibold text-[#b07d46]">{{
+                  selectedCharacterName
+                }}</span>
+                <button
+                  type="button"
+                  @click="clearSelectedCharacter"
+                  class="text-red-500 text-lg font-bold focus:outline-none"
+                >
+                  &times;
+                </button>
+              </div>
             </div>
           </div>
-          <div v-if="errorMessageMule" class="text-1xl font-bold text-[#b02e2e] mb-6">
+
+          <!-- Erreur -->
+          <div v-if="errorMessageMule" class="text-lg font-bold text-[#b02e2e] mt-6">
             {{ errorMessageMule }}
           </div>
+
           <!-- Submit -->
-          <button
-            type="submit"
-            class="w-full bg-[#b02e2e] text-[#f3d9b1] font-bold py-3 px-6 rounded-lg hover:bg-[#942828] focus:ring-4 focus:ring-[#f3d9b1]"
-          >
-            Importer une mule
-          </button>
+          <div class="mt-6">
+            <button
+              type="submit"
+              class="w-full bg-[#b02e2e] text-[#f3d9b1] font-bold py-3 px-6 rounded-lg hover:bg-[#942828] focus:ring-4 focus:ring-[#f3d9b1]"
+            >
+              Importer une mule
+            </button>
+          </div>
         </form>
       </div>
     </div>
@@ -300,10 +321,10 @@ export default {
       type: Boolean,
       required: true,
     },
-  fetchNotArchivedCharacters: {
-    type: Array,
-    required: true
-}
+    fetchNotArchivedCharacters: {
+      type: Array,
+      required: true,
+    },
   },
   data() {
     return {
@@ -338,7 +359,7 @@ export default {
       selectedCharacterIcon: '', // Display the icon of the selected character
       showCharacterSelection: false, // Toggle visibility of character selection
       blacklist: [],
-       classes: {
+      classes: {
         sram: images['/src/assets/icon_classe/sram.avif'].default,
         forgelance: images['/src/assets/icon_classe/forgelance.avif'].default,
         cra: images['/src/assets/icon_classe/cra.avif'].default,
@@ -358,21 +379,24 @@ export default {
         zobal: images['/src/assets/icon_classe/zobal.avif'].default,
         huppermage: images['/src/assets/icon_classe/huppermage.avif'].default,
         ouginak: images['/src/assets/icon_classe/ouginak.avif'].default,
-      }
+      },
     };
   },
   methods: {
     isPseudoValid(pseudo) {
       console.log('pseudo', this.blacklist.includes(pseudo.toLowerCase()));
       console.log('bl', this.blacklist);
-      return pseudo && !this.blacklist.some(
-          entry => entry.pseudo.toLowerCase() === pseudo.toLowerCase()
-        );
+      return (
+        pseudo && !this.blacklist.some(entry => entry.pseudo.toLowerCase() === pseudo.toLowerCase())
+      );
     },
     isAnkamaPseudoValid(ankamaPseudo) {
-      return ankamaPseudo && !this.blacklist.some(
+      return (
+        ankamaPseudo &&
+        !this.blacklist.some(
           entry => entry.ankamaPseudo.toLowerCase() === ankamaPseudo.toLowerCase()
-        );
+        )
+      );
     },
 
     resetForm() {
@@ -600,7 +624,8 @@ export default {
       return (
         this.muleCharacter.ankamaPseudo &&
         this.blacklist.some(
-          entry => entry.ankamaPseudo.toLowerCase() === this.muleCharacter.ankamaPseudo.toLowerCase()
+          entry =>
+            entry.ankamaPseudo.toLowerCase() === this.muleCharacter.ankamaPseudo.toLowerCase()
         )
       );
     },
@@ -608,7 +633,7 @@ export default {
 
   mounted() {
     this.fetchRecruiters(); // Fetch characters when the component is mounted
-   // this.loadNotArchivedCharacters();
+    // this.loadNotArchivedCharacters();
     this.fetchBlacklist();
   },
   watch: {
