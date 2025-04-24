@@ -10,10 +10,34 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Contracts\HttpClient\HttpClientInterface;
+
 
 class CharactersController extends AbstractController
-{
+{    
+    private HttpClientInterface $httpClient;
+    public function __construct(HttpClientInterface $httpClient)
+    {
+        $this->httpClient = $httpClient;
+    }
 
+    // dans ton service ou controller
+    public function notifierImport(Characters $character): void
+    {
+       
+        $this->httpClient->request('POST', 'https://n8n.neitosden.fr/webhook/import-notify', [
+            'json' => [
+                'pseudo' => $character->getPseudo(),
+                'pseudo_ankama' => $character->getAnkamaPseudo(),
+                'classe' => $character->getClass(),
+                'recruteur' => $character->getRecruiter() ? [
+                    'id' => $character->getRecruiter()->getId(),
+                    'pseudo' => $character->getRecruiter()->getPseudo(),
+                    'class' => $character->getRecruiter()->getClass(),
+                ] : null
+            ],
+        ]);
+    }
     #[Route('/characters/', name: 'characters_list', methods: ['GET'])]
     public function getAllCharacters(CharactersRepository $repository): JsonResponse
     {
@@ -106,6 +130,8 @@ class CharactersController extends AbstractController
 
         $em->persist($character);
         $em->flush();
+        $this->notifierImport($character);
+
 
         return $this->json($character, 200, [], [
             'groups' => 'characters_list',
