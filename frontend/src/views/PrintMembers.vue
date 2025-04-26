@@ -156,12 +156,20 @@
                     </button>
                   </td>
                   <td class="p-4">
-                    <button
-                      @click="openModal(member)"
-                      class="text-[#b02e2e] hover:text-[#942828] transition-all duration-300"
-                    >
-                      Archiver
-                    </button>
+                    <div class="flex space-x-2 justify-center">
+                      <button
+                        @click="openModal(member)"
+                        class="text-[#b02e2e] hover:text-[#942828] transition-all duration-300"
+                      >
+                        Archiver
+                      </button>
+                      <button
+                        @click="viewWarnings(member.id)"
+                        class="text-[#b07d46] hover:text-[#9c682e] transition-all duration-300"
+                      >
+                        Warnings
+                      </button>
+                    </div>
                   </td>
                 </tr>
                 <!-- Expanded Row -->
@@ -797,6 +805,10 @@ export default {
         console.error('Error updating mule class:', error.message);
         this.$refs.notificationRef.showNotification('Failed to update mule class.');
       }
+    },
+    
+    viewWarnings(characterId) {
+      this.$router.push(`/warnings/${characterId}`);
     },
   },
   async mounted() {
