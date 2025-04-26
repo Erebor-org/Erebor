@@ -98,3 +98,24 @@ imagePullSecrets:
 services:
   nginx:
     port: 80
+
+
+# optional cronjob to backup
+# vars are all set in github repo vars/secrets
+pgbackup:
+  enabled: yes
+  # default schedule is 0 2 * * * (daily at 2AM)
+  schedule:
+  image: ghcr.io/erebor-org/erebor-toolbox:2025-04-26-v1
+  config:
+    DB_HOST:
+    DB_PORT:
+    DB_USER:
+    DB_PASSWORD:
+    DBS_TO_BACKUP:
+    ENCRPYPTION_KEY:
+    S3_URL:
+    S3_BUCKET:
+    S3_ACCESS_KEY:
+    S3_SECRET_KEY:
+    S3_REGION:
