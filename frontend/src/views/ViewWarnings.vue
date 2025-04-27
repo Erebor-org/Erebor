@@ -300,7 +300,7 @@ export default {
       }).format(date);
     },
     goBack() {
-      this.$router.push('/members');
+      this.$router.push('/membres');
     },
     openAddWarningModal() {
       this.newWarning = { description: '' };

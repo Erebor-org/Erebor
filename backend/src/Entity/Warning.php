@@ -27,9 +27,9 @@ class Warning
     #[Assert\Length(max: 1000, maxMessage: "Description cannot be longer than {{ limit }} characters")]
     private string $description;
 
-    #[ORM\ManyToOne(targetEntity: User::class)]
+    #[ORM\ManyToOne(targetEntity: Characters::class)]
     #[ORM\JoinColumn(nullable: true)]
-    private ?User $author = null;
+    private ?Characters $authorCharacter = null;
 
     public function __construct()
     {
@@ -74,14 +74,14 @@ class Warning
         return $this;
     }
 
-    public function getAuthor(): ?User
+    public function getAuthorCharacter(): ?Characters
     {
-        return $this->author;
+        return $this->authorCharacter;
     }
 
-    public function setAuthor(?User $author): self
+    public function setAuthorCharacter(?Characters $authorCharacter): self
     {
-        $this->author = $author;
+        $this->authorCharacter = $authorCharacter;
         return $this;
     }
 }

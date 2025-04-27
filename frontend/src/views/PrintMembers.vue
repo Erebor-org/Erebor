@@ -78,6 +78,7 @@
               <tr class="text-[#f3d9b1] text-lg">
                 <th class="p-4">Classe</th>
                 <th class="p-4">Nom</th>
+                <th class="p-4">Ankama</th>
                 <th class="p-4">Recruteur</th>
                 <th class="p-4">Rang</th>
                 <th class="p-4">Mules</th>
@@ -141,6 +142,9 @@
                         <i class="fas fa-pencil-alt"></i>
                       </span>
                     </div>
+                  </td>
+                  <td class="p-4 text-[#b07d46]">
+                    {{ member.ankamaPseudo }}
                   </td>
                   <td class="p-4 text-[#b07d46]">
                     {{ member?.recruiter?.pseudo || 'No Recruiter' }}

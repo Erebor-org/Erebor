@@ -41,9 +41,10 @@ class WarningController extends AbstractController
                     'id' => $warning->getCharacter()->getId(),
                     'pseudo' => $warning->getCharacter()->getPseudo(),
                 ],
-                'author' => $warning->getAuthor() ? [
-                    'id' => $warning->getAuthor()->getId(),
-                    'username' => $warning->getAuthor()->getUsername(),
+                'authorCharacter' => $warning->getAuthorCharacter() ? [
+                    'id' => $warning->getAuthorCharacter()->getId(),
+                    'pseudo' => $warning->getAuthorCharacter()->getPseudo(),
+                    'class' => $warning->getAuthorCharacter()->getClass(),
                 ] : null,
             ];
         }, $warnings);
@@ -78,18 +79,15 @@ class WarningController extends AbstractController
         $warning->setCharacter($character)
                 ->setDescription($data['description']);
         
-        // Set author to current user if authenticated
-        // $currentUser = $security->getUser();
-        // if ($currentUser) {
-        //     $warning->setAuthor($currentUser);
-        // }
-        // Override with explicit author if provided and user has admin rights
-        // elseif (isset($data['authorId']) && $this->isGranted('ROLE_ADMIN')) {
-        //     $author = $userRepository->find($data['authorId']);
-        //     if ($author) {
-        //         $warning->setAuthor($author);
-        //     }
-        // }
+        // Set author character if provided
+        if (isset($data['authorCharacterId'])) {
+            $authorCharacter = $charactersRepository->find($data['authorCharacterId']);
+            if ($authorCharacter && $authorCharacter->getRank()->getLead()) {
+                $warning->setAuthorCharacter($authorCharacter);
+            } else {
+                return $this->json(['error' => 'Author character must have lead rank'], 400);
+            }
+        }
         
         // Validate warning entity
         $errors = $validator->validate($warning);
@@ -114,9 +112,10 @@ class WarningController extends AbstractController
                 'id' => $warning->getCharacter()->getId(),
                 'pseudo' => $warning->getCharacter()->getPseudo(),
             ],
-            'author' => $warning->getAuthor() ? [
-                'id' => $warning->getAuthor()->getId(),
-                'username' => $warning->getAuthor()->getUsername(),
+            'authorCharacter' => $warning->getAuthorCharacter() ? [
+                'id' => $warning->getAuthorCharacter()->getId(),
+                'pseudo' => $warning->getAuthorCharacter()->getPseudo(),
+                'class' => $warning->getAuthorCharacter()->getClass(),
             ] : null,
         ], 201);
     }
@@ -164,9 +163,10 @@ class WarningController extends AbstractController
                 'id' => $warning->getCharacter()->getId(),
                 'pseudo' => $warning->getCharacter()->getPseudo(),
             ],
-            'author' => $warning->getAuthor() ? [
-                'id' => $warning->getAuthor()->getId(),
-                'username' => $warning->getAuthor()->getUsername(),
+            'authorCharacter' => $warning->getAuthorCharacter() ? [
+                'id' => $warning->getAuthorCharacter()->getId(),
+                'pseudo' => $warning->getAuthorCharacter()->getPseudo(),
+                'class' => $warning->getAuthorCharacter()->getClass(),
             ] : null,
         ]);
     }
