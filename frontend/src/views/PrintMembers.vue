@@ -52,7 +52,7 @@
           :placeholder="
             activeTab === 'active'
               ? 'Rechercher par le nom, le rang, le recruteur..'
-              : 'Search archived characters...'
+              : 'Rechercher des membres archivés..'
           "
           class="w-full md:w-1/2 border-2 border-[#b07d46] bg-[#fffaf0] rounded-full py-2 px-6 text-lg focus:outline-none focus:ring-2 focus:ring-[#f3d9b1] mb-4 md:mb-0"
         />
@@ -82,6 +82,7 @@
                 <th class="p-4">Recruteur</th>
                 <th class="p-4">Rang</th>
                 <th class="p-4">Mules</th>
+                <th class="p-4">Avertissements</th>
                 <th class="p-4">Actions</th>
               </tr>
             </thead>
@@ -90,7 +91,10 @@
                 v-for="({ member, id }, index) in filteredMembers"
                 :key="member.id || index"
               >
-                <tr class="transition-all group relative hover:bg-[#f3d9b1]/30" style="min-height: 120px;">
+                <tr
+                  class="transition-all group relative hover:bg-[#f3d9b1]/30"
+                  style="min-height: 120px"
+                >
                   <td class="p-4 relative">
                     <div class="relative inline-block">
                       <button @click="toggleClassDropdown(member.id, 'character')">
@@ -119,7 +123,7 @@
                     </div>
                   </td>
                   <!-- Pseudo -->
-                  <td class="p-4 text-[#b07d46] font-bold relative">
+                  <td class="p-4 text-[#b07d46] font-bold text-center align-middle relative">
                     <div
                       v-if="editingPseudo.type === 'character' && editingPseudo.id === member.id"
                       @click.stop
@@ -134,7 +138,7 @@
                     </div>
                     <div
                       v-else
-                      class="flex items-center gap-2 cursor-pointer hover:text-[#942828] hover:underline"
+                      class="flex items-center justify-center gap-2 cursor-pointer hover:text-[#942828] hover:underline"
                       @click="startEditingPseudo(member.id, member.pseudo, 'character')"
                     >
                       {{ member.pseudo || 'Unknown' }}
@@ -160,6 +164,14 @@
                     </button>
                   </td>
                   <td class="p-4">
+                    <button
+                      @click="viewWarnings(member.id, member.pseudo)"
+                      class="text-[#b02e2e] font-bold underline hover:text-[#942828] transition-all duration-300"
+                    >
+                      {{ characterWarningCounts[member.id] || 0 }}
+                    </button>
+                  </td>
+                  <td class="p-4">
                     <div class="flex space-x-2 justify-center">
                       <button
                         @click="openModal(member)"
@@ -167,18 +179,12 @@
                       >
                         Archiver
                       </button>
-                      <button
-                        @click="viewWarnings(member.id)"
-                        class="text-[#b07d46] hover:text-[#9c682e] transition-all duration-300"
-                      >
-                        Warnings
-                      </button>
                     </div>
                   </td>
                 </tr>
                 <!-- Expanded Row -->
                 <tr v-if="expandedRows[id]" class="bg-[#ffecd2]">
-                  <td colspan="5" class="p-4">
+                  <td colspan="8" class="p-4">
                     <div class="w-10/12 mx-auto">
                       <div v-if="filteredMulesByCharacter(id).length > 0">
                         <table class="w-full text-center border-collapse">
@@ -471,6 +477,7 @@ export default {
       expandedRows: reactive({}),
       activeTab: 'active',
       archivedSearchQuery: '',
+      warningCharacter: '',
       classes: {
         sram: images['/src/assets/icon_classe/sram.avif'].default,
         forgelance: images['/src/assets/icon_classe/forgelance.avif'].default,
@@ -492,6 +499,8 @@ export default {
         huppermage: images['/src/assets/icon_classe/huppermage.avif'].default,
         ouginak: images['/src/assets/icon_classe/ouginak.avif'].default,
       },
+      characterWarningCounts: {},
+      selectedUnarchivedCharacter: null,
     };
   },
   computed: {
@@ -574,6 +583,28 @@ export default {
         this.notArchivedCharacters = response.data.filter(character => !character.isArchived);
       } catch (error) {
         console.error('Error fetching characters:', error.response?.data || error.message);
+      }
+    },
+
+    // Fetch warning counts for each character
+    async fetchWarningCounts() {
+      try {
+        const response = await axios.get(`${API_URL}/warnings`);
+        const warnings = response.data;
+
+        // Count warnings by character
+        const counts = {};
+        warnings.forEach(warning => {
+          const characterId = warning.character.id;
+          if (!counts[characterId]) {
+            counts[characterId] = 0;
+          }
+          counts[characterId]++;
+        });
+
+        this.characterWarningCounts = counts;
+      } catch (error) {
+        console.error('Error fetching warning counts:', error);
       }
     },
 
@@ -810,15 +841,16 @@ export default {
         this.$refs.notificationRef.showNotification('Failed to update mule class.');
       }
     },
-    
-    viewWarnings(characterId) {
-      this.$router.push(`/warnings/${characterId}`);
+
+    viewWarnings(characterId, member) {
+      this.$router.push(`/warnings/${characterId}/${member}`);
     },
   },
   async mounted() {
     try {
       await this.fetchCharacters(); // Fetch all characters once
       await this.fetchAllMules(); // Fetch mules once
+      await this.fetchWarningCounts();
       document.addEventListener('click', this.handleClickOutside);
     } catch (error) {
       console.error('Error during component initialization:', error);
@@ -826,7 +858,7 @@ export default {
   },
   beforeUnmount() {
     document.removeEventListener('click', this.handleClickOutside);
-  }
+  },
 };
 </script>
 

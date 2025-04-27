@@ -10,33 +10,32 @@
     <div
       class="flex flex-col w-11/12 max-w-7xl bg-white border-2 border-[#b07d46] rounded-lg shadow-lg p-4 mb-6"
     >
-      <h1 class="text-3xl font-bold text-[#b02e2e] mb-4 text-center">
-        Avertissements de {{ characterPseudo }} 
-      </h1>
-
-      <!-- Back Button -->
-      <div class="mb-4">
-        <button
-          @click="goBack"
-          class="bg-[#b07d46] text-[#fff5e6] font-bold py-2 px-4 rounded-lg hover:bg-[#9c682e] transition-all duration-300"
-        >
-          &larr; Retour aux personnages
-        </button>
-      </div>
+      <h1 class="text-3xl font-bold text-[#b02e2e] mb-4 text-center">Gestion des avertissements</h1>
     </div>
 
     <!-- Main Content -->
     <div class="w-11/12 max-w-7xl">
       <!-- Warnings List -->
       <div class="bg-white border-2 border-[#b07d46] rounded-lg shadow-lg p-8 mb-6">
-        <div class="flex justify-between items-center mb-6">
-          <h2 class="text-2xl font-bold text-[#b02e2e]">Avertissements</h2>
-          <button
-            @click="openAddWarningModal"
-            class="bg-[#b02e2e] text-[#f3d9b1] font-bold py-2 px-6 rounded-full hover:bg-[#942828] transition-all duration-300"
-          >
-            Ajouter un avertissement
-          </button>
+        <div class="flex flex-col space-y-4 mb-6">
+          <div class="flex justify-between items-center">
+            <h2 class="text-2xl font-bold text-[#b02e2e]">Tous les avertissements</h2>
+            <button
+              @click="openAddWarningModal"
+              class="bg-[#b02e2e] text-[#f3d9b1] font-bold py-2 px-6 rounded-full hover:bg-[#942828] transition-all duration-300"
+            >
+              Ajouter un avertissement
+            </button>
+          </div>
+
+          <!-- Search Bar -->
+          <div class="w-full">
+            <input
+              v-model="searchQuery"
+              placeholder="Rechercher par pseudo..."
+              class="w-full md:w-1/2 border-2 border-[#b07d46] bg-[#fffaf0] rounded-full py-2 px-6 text-lg focus:outline-none focus:ring-2 focus:ring-[#f3d9b1]"
+            />
+          </div>
         </div>
 
         <!-- Warnings Table -->
@@ -45,6 +44,7 @@
             <thead class="sticky top-0 bg-[#b02e2e] z-10">
               <tr class="text-[#f3d9b1] text-lg">
                 <th class="p-4">Date</th>
+                <th class="p-4">Personnage</th>
                 <th class="p-4">Description</th>
                 <th class="p-4">Auteur</th>
                 <th class="p-4">Actions</th>
@@ -52,40 +52,52 @@
             </thead>
             <tbody>
               <tr
-                v-for="warning in warnings"
+                v-for="warning in displayWarnings"
                 :key="warning.id"
                 class="transition-all hover:bg-[#f3d9b1]/30 border-b border-[#b07d46]/20"
               >
                 <td class="p-4 text-[#b07d46]">
                   {{ formatDate(warning.createdAt) }}
                 </td>
+                <td class="p-4 text-[#b07d46]">
+                  <div class="flex items-center gap-2">
+                    <img :src="getClassIcon(warning.character.class)" alt="Class" class="w-7 h-7" />
+                    <div>
+                      {{ warning.character.pseudo }}
+                    </div>
+                  </div>
+                </td>
                 <td class="p-4 text-[#b07d46] text-left">
                   <div class="max-h-20 overflow-y-auto pr-2">
                     {{ warning.description }}
                   </div>
                 </td>
-                <td class="p-4 text-[#b07d46]">
-                  <div v-if="warning.authorCharacter" class="flex items-center gap-2">
-                    <img :src="getClassIcon(warning.authorCharacter.class)" alt="Class" class="w-7 h-7" />
+                <td class="p-4 text-[#b07d46]" v-if="warning.authorCharacter">
+                  <div class="flex items-center gap-2">
+                    <img
+                      :src="getClassIcon(warning.authorCharacter.class)"
+                      alt="Class"
+                      class="w-7 h-7"
+                    />
                     <div>
                       {{ warning.authorCharacter.pseudo }}
                     </div>
                   </div>
-                  <div v-else>Unknown</div>
                 </td>
+                <td class="p-4 text-[#b07d46]" v-else>Unknown</td>
                 <td class="p-4">
                   <div class="flex justify-center space-x-2">
                     <button
                       @click="openEditWarningModal(warning)"
                       class="bg-[#b07d46] text-white px-2 py-1 rounded hover:bg-[#9c682e] transition-all duration-300 text-xs"
-                      title="Modifier"
+                      title="Edit"
                     >
                       Modifier
                     </button>
                     <button
                       @click="openDeleteWarningModal(warning)"
                       class="bg-[#b02e2e] text-white px-2 py-1 rounded hover:bg-[#942828] transition-all duration-300 text-xs"
-                      title="Supprimer"
+                      title="Delete"
                     >
                       Supprimer
                     </button>
@@ -95,9 +107,7 @@
             </tbody>
           </table>
         </div>
-        <div v-else class="text-center p-8 text-[#b07d46] italic">
-          Aucun avertissement trouvé pour ce personnage.
-        </div>
+        <div v-else class="text-center p-8 text-[#b07d46] italic">Aucun avertissement trouvé.</div>
       </div>
     </div>
 
@@ -118,6 +128,47 @@
         <h3 class="text-xl font-bold text-[#b02e2e] mb-4">Ajouter un Avertissement</h3>
         <form @submit.prevent="addWarning">
           <div class="mb-4">
+            <label for="character" class="block text-[#b07d46] font-bold mb-2">Personnage</label>
+
+            <!-- If character is selected -->
+            <div v-if="newWarning.characterId" class="flex items-center gap-3">
+              <img :src="selectedCharacterIcon" alt="Class" class="w-10 h-10 rounded-full" />
+              <span class="text-base font-semibold text-[#b07d46]">{{
+                selectedCharacterName
+              }}</span>
+              <button
+                type="button"
+                @click="clearSelectedCharacter"
+                class="text-red-500 text-lg font-bold focus:outline-none"
+              >
+                &times;
+              </button>
+            </div>
+
+            <!-- If no character is selected -->
+            <div v-else>
+              <input
+                type="text"
+                v-model="characterSearchQuery"
+                placeholder="Rechercher un personnage..."
+                class="w-full border-2 border-[#b07d46] bg-[#fffaf0] rounded-md p-2 text-base mb-2 focus:outline-none focus:ring-2 focus:ring-[#f3d9b1]"
+              />
+              <ul
+                class="max-h-32 overflow-y-auto bg-[#fffaf0] border-2 border-[#b07d46] rounded-md p-2"
+              >
+                <li
+                  v-for="char in filteredCharacters"
+                  :key="char.id"
+                  @click="selectCharacter(char)"
+                  class="flex items-center gap-3 p-2 cursor-pointer hover:bg-[#f3d9b1] rounded-md"
+                >
+                  <img :src="getClassIcon(char.class)" alt="Class" class="w-7 h-7" />
+                  <span class="text-base text-[#b07d46]">{{ char.pseudo }}</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+          <div class="mb-4">
             <label for="description" class="block text-[#b07d46] font-bold mb-2">Description</label>
             <textarea
               id="description"
@@ -132,8 +183,10 @@
             </div>
           </div>
           <div class="mb-4">
-            <label for="authorCharacter" class="block text-[#b07d46] font-bold mb-2">Personnage Auteur</label>
-            
+            <label for="authorCharacter" class="block text-[#b07d46] font-bold mb-2"
+              >Personnage Auteur</label
+            >
+
             <!-- If author character is selected -->
             <div v-if="newWarning.authorCharacterId" class="flex items-center gap-3">
               <img :src="selectedAuthorIcon" alt="Class" class="w-10 h-10 rounded-full" />
@@ -146,7 +199,7 @@
                 &times;
               </button>
             </div>
-            
+
             <!-- If no author character is selected -->
             <div v-else>
               <input
@@ -165,7 +218,9 @@
                   class="flex items-center gap-3 p-2 cursor-pointer hover:bg-[#f3d9b1] rounded-md"
                 >
                   <img :src="getClassIcon(char.class)" alt="Class" class="w-7 h-7" />
-                  <span class="text-base text-[#b07d46]">{{ char.pseudo }} - {{ char.rank.name }}</span>
+                  <span class="text-base text-[#b07d46]"
+                    >{{ char.pseudo }} - {{ char.rank.name }}</span
+                  >
                 </li>
               </ul>
             </div>
@@ -263,14 +318,14 @@
             @click="closeDeleteWarningModal"
             class="bg-[#b07d46] text-[#fff5e6] font-bold py-2 px-4 rounded-lg hover:bg-[#9c682e]"
           >
-              Annuler
+            Annuler
           </button>
           <button
             @click="deleteWarning"
             class="bg-[#b02e2e] text-[#f3d9b1] font-bold py-2 px-4 rounded-lg hover:bg-[#942828]"
             :disabled="isSubmitting"
           >
-              {{ isSubmitting ? 'Suppression...' : 'Supprimer' }}
+            {{ isSubmitting ? 'Suppression...' : 'Supprimer' }}
           </button>
         </div>
       </div>
@@ -287,32 +342,36 @@ const API_URL = import.meta.env.VITE_API_URL;
 
 export default {
   components: {
-    Notification
+    Notification,
   },
   data() {
     return {
       backgroundImage: members_bg,
-      characterId: null,
-      character: null,
       warnings: [],
+      allCharacters: [],
       leadCharacters: [],
+      searchQuery: '',
+      filteredWarnings: [],
       showAddWarningModal: false,
       showEditWarningModal: false,
       showDeleteWarningModal: false,
       newWarning: {
+        characterId: '',
         description: '',
-        authorCharacterId: ''
+        authorCharacterId: '',
       },
       editWarning: {
         id: null,
-        description: ''
+        description: '',
       },
       selectedWarning: null,
       isSubmitting: false,
+      characterSearchQuery: '',
       authorSearchQuery: '',
+      selectedCharacterName: '',
+      selectedCharacterIcon: '',
       selectedAuthorName: '',
       selectedAuthorIcon: '',
-      characterPseudo: '',
       classIcons: {
         sram: new URL('@/assets/icon_classe/sram.avif', import.meta.url).href,
         forgelance: new URL('@/assets/icon_classe/forgelance.avif', import.meta.url).href,
@@ -333,31 +392,78 @@ export default {
         zobal: new URL('@/assets/icon_classe/zobal.avif', import.meta.url).href,
         huppermage: new URL('@/assets/icon_classe/huppermage.avif', import.meta.url).href,
         ouginak: new URL('@/assets/icon_classe/ouginak.avif', import.meta.url).href,
-      }
+      },
     };
   },
   created() {
-    // Get character ID from route params
-    this.characterId = this.$route.params.id;
-    console.log("id", this.characterId)
-    if (this.characterId) {
-      this.fetchCharacter();
-      this.fetchWarnings();
-      this.fetchLeadCharacters();
-    }
+    this.fetchWarnings();
+    this.fetchCharacters();
+    this.fetchLeadCharacters();
+  },
+  watch: {
+    warnings: {
+      immediate: true,
+      handler() {
+        this.filterWarnings();
+      },
+    },
+    searchQuery() {
+      this.filterWarnings();
+    },
   },
   computed: {
+    // Display filtered warnings based on search query
+    displayWarnings() {
+      if (!this.searchQuery) return this.warnings;
+      return this.filteredWarnings;
+    },
+    filteredCharacters() {
+      if (!this.characterSearchQuery) return this.allCharacters;
+      const query = this.characterSearchQuery.toLowerCase();
+      return this.allCharacters.filter(character => character.pseudo.toLowerCase().includes(query));
+    },
     filteredLeadCharacters() {
       if (!this.authorSearchQuery) return this.leadCharacters;
       const query = this.authorSearchQuery.toLowerCase();
-      return this.leadCharacters.filter(character => 
+      return this.leadCharacters.filter(character =>
         character.pseudo.toLowerCase().includes(query)
       );
-    }
+    },
   },
   methods: {
+    // Filter warnings based on search query
+    filterWarnings() {
+      if (!this.searchQuery || !this.warnings.length) {
+        this.filteredWarnings = this.warnings;
+        return;
+      }
+
+      const query = this.searchQuery.toLowerCase();
+      this.filteredWarnings = this.warnings.filter(warning => {
+        const characterMatch = warning.character.pseudo.toLowerCase().includes(query);
+        const classMatch = warning.character.class.toLowerCase().includes(query);
+        const descriptionMatch = warning.description.toLowerCase().includes(query);
+        const authorMatch = warning.authorCharacter
+          ? warning.authorCharacter.pseudo.toLowerCase().includes(query)
+          : false;
+
+        return characterMatch || classMatch || descriptionMatch || authorMatch;
+      });
+    },
     getClassIcon(className) {
       return this.classIcons[className] || '';
+    },
+    selectCharacter(character) {
+      this.newWarning.characterId = character.id;
+      this.selectedCharacterName = character.pseudo;
+      this.selectedCharacterIcon = this.getClassIcon(character.class);
+      this.characterSearchQuery = '';
+    },
+    clearSelectedCharacter() {
+      this.newWarning.characterId = '';
+      this.selectedCharacterName = '';
+      this.selectedCharacterIcon = '';
+      this.characterSearchQuery = '';
     },
     selectAuthor(character) {
       this.newWarning.authorCharacterId = character.id;
@@ -371,16 +477,40 @@ export default {
       this.selectedAuthorIcon = '';
       this.authorSearchQuery = '';
     },
-    async fetchCharacter() {
-      this.characterPseudo = this.$route.params.pseudo
-    },
     async fetchWarnings() {
       try {
-        const response = await axios.get(`${API_URL}/warnings/character/${this.characterId}`);
-        this.warnings = response.data;
+        const response = await axios.get(`${API_URL}/warnings`);
+        this.warnings = response.data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
       } catch (error) {
         console.error('Error fetching warnings:', error);
-        this.$refs.notificationRef.showNotification('Erreur lors de la récupération des avertissements', 'error');
+        this.$refs.notificationRef.showNotification(
+          'Erreur lors de la récupération des avertissements',
+          'error'
+        );
+      }
+    },
+    async fetchCharacters() {
+      try {
+        const response = await axios.get(`${API_URL}/characters`);
+        this.allCharacters = response.data.filter(char => !char.isArchived);
+      } catch (error) {
+        console.error('Error fetching characters:', error);
+        this.$refs.notificationRef.showNotification(
+          'Erreur lors de la récupération des personnages',
+          'error'
+        );
+      }
+    },
+    async fetchLeadCharacters() {
+      try {
+        const response = await axios.get(`${API_URL}/characters/lead`);
+        this.leadCharacters = response.data;
+      } catch (error) {
+        console.error('Error fetching lead characters:', error);
+        this.$refs.notificationRef.showNotification(
+          'Erreur lors de la récupération des personnages principaux',
+          'error'
+        );
       }
     },
     formatDate(dateString) {
@@ -390,25 +520,14 @@ export default {
         month: '2-digit',
         year: 'numeric',
         hour: '2-digit',
-        minute: '2-digit'
+        minute: '2-digit',
       }).format(date);
     },
-    goBack() {
-      this.$router.push('/membres');
-    },
-    async fetchLeadCharacters() {
-      try {
-        const response = await axios.get(`${API_URL}/characters/lead`);
-        this.leadCharacters = response.data;
-      } catch (error) {
-        console.error('Error fetching lead characters:', error);
-        this.$refs.notificationRef.showNotification('Erreur lors de la récupération des personnages principaux', 'error');
-      }
-    },
     openAddWarningModal() {
-      this.newWarning = { 
+      this.newWarning = {
+        characterId: '',
         description: '',
-        authorCharacterId: ''
+        authorCharacterId: '',
       };
       this.showAddWarningModal = true;
     },
@@ -418,7 +537,7 @@ export default {
     openEditWarningModal(warning) {
       this.editWarning = {
         id: warning.id,
-        description: warning.description
+        description: warning.description,
       };
       this.showEditWarningModal = true;
     },
@@ -434,27 +553,34 @@ export default {
       this.selectedWarning = null;
     },
     async addWarning() {
-      if (!this.newWarning.description.trim() || !this.newWarning.authorCharacterId) {
-        this.$refs.notificationRef.showNotification('La description et l\'auteur sont obligatoires', 'error');
+      if (
+        !this.newWarning.characterId ||
+        !this.newWarning.description ||
+        !this.newWarning.authorCharacterId
+      ) {
+        this.$refs.notificationRef.showNotification('Tous les champs sont obligatoires', 'error');
         return;
       }
 
       this.isSubmitting = true;
       try {
         const response = await axios.post(`${API_URL}/warnings`, {
-          characterId: this.characterId,
+          characterId: this.newWarning.characterId,
           description: this.newWarning.description,
-          authorCharacterId: this.newWarning.authorCharacterId
+          authorCharacterId: this.newWarning.authorCharacterId,
         });
 
         // Add the new warning to the list
         this.warnings.unshift(response.data);
         this.closeAddWarningModal();
         this.$refs.notificationRef.showNotification('Avertissement ajouté avec succès');
+
+        // Refresh warnings to get updated data
+        this.fetchWarnings();
       } catch (error) {
         console.error('Error adding warning:', error);
         this.$refs.notificationRef.showNotification(
-          error.response?.data?.error || 'Erreur lors de l\'ajout de l\'avertissement',
+          error.response?.data?.error || "Erreur lors de l'ajout de l'avertissement",
           'error'
         );
       } finally {
@@ -470,7 +596,7 @@ export default {
       this.isSubmitting = true;
       try {
         const response = await axios.put(`${API_URL}/warnings/${this.editWarning.id}`, {
-          description: this.editWarning.description
+          description: this.editWarning.description,
         });
 
         // Update the warning in the list
@@ -484,7 +610,7 @@ export default {
       } catch (error) {
         console.error('Error updating warning:', error);
         this.$refs.notificationRef.showNotification(
-          error.response?.data?.error || 'Erreur lors de la mise à jour de l\'avertissement',
+          error.response?.data?.error || "Erreur lors de la mise à jour de l'avertissement",
           'error'
         );
       } finally {
@@ -505,14 +631,14 @@ export default {
       } catch (error) {
         console.error('Error deleting warning:', error);
         this.$refs.notificationRef.showNotification(
-          error.response?.data?.error || 'Erreur lors de la suppression de l\'avertissement',
+          error.response?.data?.error || "Erreur lors de la suppression de l'avertissement",
           'error'
         );
       } finally {
         this.isSubmitting = false;
       }
-    }
-  }
+    },
+  },
 };
 </script>
 

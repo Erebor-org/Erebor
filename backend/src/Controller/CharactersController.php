@@ -54,6 +54,7 @@ class CharactersController extends AbstractController
             return [
                 'id' => $character->getId(),
                 'pseudo' => $character->getPseudo(),
+                'ankamaPseudo' => $character->getAnkamaPseudo(),
                 'class' => $character->getClass(),
                 'createdAt' => $character->getRecruitedAt()?->format('Y-m-d'),
                 'isArchived' => $character->isArchived(),
@@ -232,8 +233,8 @@ class CharactersController extends AbstractController
         ], 200);
     }
 
-    #[Route('/characters/{id}', name: 'characters_show', requirements: ['id' => '\d+'], methods: ['GET'])]
-    public function show(RanksRepository $repository, int $id): JsonResponse
+    #[Route('/characters/{id<\d+>}', name: 'characters_show', methods: ['GET'])]
+    public function show(CharactersRepository $repository, int $id): JsonResponse
     {
         $character = $repository->find($id);
     

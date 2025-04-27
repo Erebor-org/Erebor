@@ -7,16 +7,71 @@ use App\Entity\Characters;
 use App\Repository\WarningRepository;
 use App\Repository\CharactersRepository;
 use App\Repository\UserRepository;
+use App\Repository\RanksRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
-// use Symfony\Component\Security\Core\Security;
 
 class WarningController extends AbstractController
 {
+    #[Route('/warnings', name: 'warnings_get_all', methods: ['GET'])]
+    public function getAllWarnings(
+        WarningRepository $warningRepository
+    ): JsonResponse {
+        $warnings = $warningRepository->findAll();
+        
+        // Format the response
+        $formattedWarnings = array_map(function ($warning) {
+            return [
+                'id' => $warning->getId(),
+                'description' => $warning->getDescription(),
+                'createdAt' => $warning->getCreatedAt()->format('Y-m-d H:i:s'),
+                'character' => [
+                    'id' => $warning->getCharacter()->getId(),
+                    'pseudo' => $warning->getCharacter()->getPseudo(),
+                    'class' => $warning->getCharacter()->getClass(),
+                ],
+                'authorCharacter' => $warning->getAuthorCharacter() ? [
+                    'id' => $warning->getAuthorCharacter()->getId(),
+                    'pseudo' => $warning->getAuthorCharacter()->getPseudo(),
+                    'class' => $warning->getAuthorCharacter()->getClass(),
+                ] : null,
+            ];
+        }, $warnings);
+        
+        return $this->json($formattedWarnings);
+    }
+    
+    #[Route('/characters/lead', name: 'characters_with_lead', methods: ['GET'])]
+    public function getCharactersWithLead(
+        CharactersRepository $charactersRepository,
+        RanksRepository $ranksRepository
+    ): JsonResponse {
+        $ranks = $ranksRepository->findBy(['lead' => true]);
+        $characters = [];
+        
+        foreach ($ranks as $rank) {
+            $charactersWithRank = $charactersRepository->findBy(['rank' => $rank, 'isArchived' => false]);
+            $characters = array_merge($characters, $charactersWithRank);
+        }
+        
+        $formattedCharacters = array_map(function ($character) {
+            return [
+                'id' => $character->getId(),
+                'pseudo' => $character->getPseudo(),
+                'class' => $character->getClass(),
+                'rank' => [
+                    'id' => $character->getRank()->getId(),
+                    'name' => $character->getRank()->getName(),
+                ]
+            ];
+        }, $characters);
+        
+        return $this->json($formattedCharacters);
+    }
     #[Route('/warnings/character/{id}', name: 'warnings_by_character', methods: ['GET'])]
     public function getWarningsByCharacter(
         int $id,
@@ -58,14 +113,13 @@ class WarningController extends AbstractController
         EntityManagerInterface $em,
         CharactersRepository $charactersRepository,
         UserRepository $userRepository,
-        ValidatorInterface $validator,
-        // Security $security
+        ValidatorInterface $validator
     ): JsonResponse {
         $data = json_decode($request->getContent(), true);
         
         // Validate required fields
-        if (!isset($data['characterId']) || !isset($data['description'])) {
-            return $this->json(['error' => 'Character ID and description are required'], 400);
+        if (!isset($data['characterId']) || !isset($data['description']) || !isset($data['authorCharacterId'])) {
+            return $this->json(['error' => 'Character ID, author character ID, and description are required'], 400);
         }
         
         // Find character
@@ -74,20 +128,22 @@ class WarningController extends AbstractController
             return $this->json(['error' => 'Character not found'], 404);
         }
         
+        // Find author character
+        $authorCharacter = $charactersRepository->find($data['authorCharacterId']);
+        if (!$authorCharacter) {
+            return $this->json(['error' => 'Author character not found'], 404);
+        }
+        
+        // Validate author character has lead rank
+        if (!$authorCharacter->getRank()->getLead()) {
+            return $this->json(['error' => 'Author character must have lead rank'], 400);
+        }
+        
         // Create warning
         $warning = new Warning();
         $warning->setCharacter($character)
-                ->setDescription($data['description']);
-        
-        // Set author character if provided
-        if (isset($data['authorCharacterId'])) {
-            $authorCharacter = $charactersRepository->find($data['authorCharacterId']);
-            if ($authorCharacter && $authorCharacter->getRank()->getLead()) {
-                $warning->setAuthorCharacter($authorCharacter);
-            } else {
-                return $this->json(['error' => 'Author character must have lead rank'], 400);
-            }
-        }
+                ->setDescription($data['description'])
+                ->setAuthorCharacter($authorCharacter);
         
         // Validate warning entity
         $errors = $validator->validate($warning);
