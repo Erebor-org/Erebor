@@ -5,6 +5,7 @@ namespace App\Entity;
 use App\Repository\CharactersRepository;
 use Doctrine\ORM\Mapping as ORM;
 
+
 #[ORM\Entity(repositoryClass: CharactersRepository::class)]
 #[ORM\Table(name: "characters")]
 class Characters

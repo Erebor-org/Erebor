@@ -3,6 +3,8 @@ import { useAuthStore } from '@/stores/authStore';
 import PrintMembers from '../views/PrintMembers.vue';
 import Blacklist from '../views/CreateBlacklist.vue';
 import Register from '../views/RegisterPage.vue';
+import ViewWarnings from '../views/ViewWarnings.vue';
+import ManageWarnings from '../views/ManageWarnings.vue';
 
 const routes = [
   { path: '/', redirect: () => {
@@ -13,6 +15,8 @@ const routes = [
   { path: '/inscription', name: 'Register', component: Register },
   { path: '/membres', name: 'PrintMembers', component: PrintMembers, meta: { requiresAuth: true } },
   { path: '/blacklist', name: 'Blacklist', component: Blacklist, meta: { requiresAuth: true } },
+  { path: '/warnings/:id/:pseudo', name: 'ViewWarnings', component: ViewWarnings, meta: { requiresAuth: true } },
+  { path: '/warnings-management', name: 'ManageWarnings', component: ManageWarnings, meta: { requiresAuth: true } },
 ];
 
 const router = createRouter({

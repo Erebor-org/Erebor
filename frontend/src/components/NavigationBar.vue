@@ -60,6 +60,7 @@
         <div class="flex items-center space-x-6">
           <button class="text-sm uppercase underline-on-hover" v-if="isLoggedIn"><RouterLink to="/membres">Membres</RouterLink></button>
           <button class="text-sm uppercase underline-on-hover" v-if="isLoggedIn"><RouterLink to="/blacklist">Blacklist</RouterLink></button>
+          <button class="text-sm uppercase underline-on-hover" v-if="isLoggedIn"><RouterLink to="/warnings-management">Avertissements</RouterLink></button>
         </div>
       </div>
     </div>
