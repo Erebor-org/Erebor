@@ -292,7 +292,7 @@ export default {
 
       try {
         // API DELETE request
-        await axios.delete(`http://localhost:8000/blacklist/${member.id}`);
+        await axios.delete(`${API_URL}/blacklist/${member.id}`);
 
         // Remove the entry from the blacklist array
         this.blacklist = this.blacklist.filter(entry => entry.id !== member.id);
