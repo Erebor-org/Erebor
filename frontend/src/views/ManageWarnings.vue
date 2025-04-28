@@ -491,7 +491,7 @@ export default {
     },
     async fetchCharacters() {
       try {
-        const response = await axios.get(`${API_URL}/characters`);
+        const response = await axios.get(`${API_URL}/characters/`);
         this.allCharacters = response.data.filter(char => !char.isArchived);
       } catch (error) {
         console.error('Error fetching characters:', error);
