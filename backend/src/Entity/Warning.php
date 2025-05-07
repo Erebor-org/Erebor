@@ -16,7 +16,7 @@ class Warning
     private ?int $id = null;
 
     #[ORM\ManyToOne(targetEntity: Characters::class)]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\JoinColumn(name: "character_id", referencedColumnName: "id", nullable: false, onDelete: "CASCADE")]
     private Characters $character;
 
     #[ORM\Column(type: 'datetime')]

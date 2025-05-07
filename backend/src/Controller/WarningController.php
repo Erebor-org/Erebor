@@ -14,9 +14,21 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
+use App\Service\NotificationService;
 
 class WarningController extends AbstractController
 {
+
+
+    private NotificationService $notificationService;
+    private WarningRepository $warningRepository;
+
+    public function __construct(NotificationService $notificationService, WarningRepository $warningRepository)
+    {
+        $this->notificationService = $notificationService;
+        $this->warningRepository = $warningRepository;
+    }
+
     #[Route('/warnings', name: 'warnings_get_all', methods: ['GET'])]
     public function getAllWarnings(
         WarningRepository $warningRepository
@@ -158,6 +170,11 @@ class WarningController extends AbstractController
         // Save to database
         $em->persist($warning);
         $em->flush();
+        $totalWarnings = $this->warningRepository->count(['character' => $warning->getCharacter()]);
+        $this->notificationService->notify('warning_added', [
+            'warning' => $warning,
+            'count' => $totalWarnings,
+        ]);
         
         // Return formatted response
         return $this->json([

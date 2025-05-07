@@ -10,9 +10,18 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use App\Service\NotificationService;
 
 class BlacklistController extends AbstractController
 {
+
+    private NotificationService $notificationService;
+
+    public function __construct(NotificationService $notificationService)
+    {
+        $this->notificationService = $notificationService;
+    }
+
     #[Route('/blacklist', name: 'blacklist_get', methods: ['GET'])]
     public function getBlacklist(BlacklistRepository $blacklistRepository): JsonResponse
     {
@@ -33,6 +42,7 @@ class BlacklistController extends AbstractController
 
         $entityManager->persist($blacklist);
         $entityManager->flush();
+        $this->notificationService->notify('blacklist_added', $blacklist);
 
         return $this->json(['message' => 'Blacklist entry created'], Response::HTTP_CREATED);
     }

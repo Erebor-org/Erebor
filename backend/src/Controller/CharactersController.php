@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\Characters;
 use App\Repository\CharactersRepository;
 use App\Repository\RanksRepository; // Ensure this is correctly imported
+use App\Service\NotificationService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -16,28 +17,14 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
 class CharactersController extends AbstractController
 {    
     private HttpClientInterface $httpClient;
-    public function __construct(HttpClientInterface $httpClient)
+    private NotificationService $notificationService;
+
+    public function __construct(HttpClientInterface $httpClient, NotificationService $notificationService)
     {
         $this->httpClient = $httpClient;
+        $this->notificationService = $notificationService;
     }
 
-    // dans ton service ou controller
-    public function notifierImport(Characters $character): void
-    {
-       
-        $this->httpClient->request('POST', 'https://n8n.neitosden.fr/webhook/import-notify', [
-            'json' => [
-                'pseudo' => $character->getPseudo(),
-                'pseudo_ankama' => $character->getAnkamaPseudo(),
-                'classe' => $character->getClass(),
-                'recruteur' => $character->getRecruiter() ? [
-                    'id' => $character->getRecruiter()->getId(),
-                    'pseudo' => $character->getRecruiter()->getPseudo(),
-                    'class' => $character->getRecruiter()->getClass(),
-                ] : null
-            ],
-        ]);
-    }
     #[Route('/characters/', name: 'characters_list', methods: ['GET'])]
     public function getAllCharacters(CharactersRepository $repository): JsonResponse
     {
@@ -131,7 +118,7 @@ class CharactersController extends AbstractController
 
         $em->persist($character);
         $em->flush();
-        $this->notifierImport($character);
+        $this->notificationService->notify('character_import', $character);
 
 
         return $this->json($character, 200, [], [
@@ -222,6 +209,7 @@ class CharactersController extends AbstractController
         // Update the isArchived field
         $character->setIsArchived($data['isArchived']);
         $em->flush();
+        $this->notificationService->notify('archivage_added', $character);
     
         return $this->json([
             'message' => 'Character archive status updated successfully.',
