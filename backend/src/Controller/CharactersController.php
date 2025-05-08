@@ -129,20 +129,12 @@ class CharactersController extends AbstractController
         ]);
     }
 
-
-
-
-
     #[Route('/characters/all', name: 'characters_get_all', methods: ['GET'])]
     public function getAll(CharactersRepository $repository): JsonResponse
     {
         $characters = $repository->findBy([], ['recruitedAt' => 'DESC']); // Tri par date de création descendante
         return $this->json($characters);
     }
-
-
-    
-
     
 
     #[Route('/characters/recruiters', name: 'characters_with_recruiter_rank', methods: ['GET'])]
