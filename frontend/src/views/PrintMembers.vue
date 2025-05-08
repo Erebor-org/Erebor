@@ -9,8 +9,8 @@
       :showModalMember="showModalMember"
       :fetchNotArchivedCharacters="notArchivedCharacters"
       @close="showModalMember = false"
-      @characterAdded="addCharacterToTable"
-      @muleAdded="addMuleToTable"
+      @character-added="addCharacterToTable"
+      @mule-added="addMuleToTable"
     />
     <!-- Space Between Tabs and Content -->
     <div class="my-8"></div>
@@ -87,196 +87,196 @@
               </tr>
             </thead>
             <tbody>
-              <template
+              <!-- Utilisation d'une div avec v-for au lieu de template pour éviter les problèmes de clé -->
+              <tr
                 v-for="({ member, id }, index) in filteredMembers"
                 :key="member.id || index"
+                class="transition-all group relative hover:bg-[#f3d9b1]/30"
+                style="min-height: 120px"
               >
-                <tr
-                  class="transition-all group relative hover:bg-[#f3d9b1]/30"
-                  style="min-height: 120px"
-                >
-                  <td class="p-4 relative">
-                    <div class="relative inline-block">
-                      <button @click="toggleClassDropdown(member.id, 'character')">
-                        <img
-                          :src="classes[member.class]"
-                          alt="Character Class"
-                          class="w-10 h-10 cursor-pointer"
-                        />
-                      </button>
-                      <div
-                        v-if="classDropdownVisible[`character-${member.id}`]"
-                        class="absolute top-12 left-0 z-10 bg-[#fff5e6] border border-[#b07d46] rounded-lg shadow-lg p-2 w-80"
-                      >
-                        <div class="grid grid-cols-4 gap-2 max-h-40 overflow-y-auto">
-                          <div
-                            v-for="(icon, className) in classes"
-                            :key="className"
-                            class="flex flex-col items-center gap-1 cursor-pointer hover:bg-[#f3d9b1] p-2 rounded-lg"
-                            @click="updateCharacterClass(member.id, className)"
-                          >
-                            <img :src="icon" :alt="className" class="w-12 h-12" />
-                            <span class="text-sm text-[#b07d46]">{{ className }}</span>
-                          </div>
+                <td class="p-4 relative">
+                  <div class="relative inline-block">
+                    <button @click="toggleClassDropdown(member.id, 'character')">
+                      <img
+                        :src="classes[member.class]"
+                        alt="Character Class"
+                        class="w-10 h-10 cursor-pointer"
+                      />
+                    </button>
+                    <div
+                      v-if="classDropdownVisible[`character-${member.id}`]"
+                      class="absolute top-12 left-0 z-10 bg-[#fff5e6] border border-[#b07d46] rounded-lg shadow-lg p-2 w-80"
+                    >
+                      <div class="grid grid-cols-4 gap-2 max-h-40 overflow-y-auto">
+                        <div
+                          v-for="(icon, className) in classes"
+                          :key="className"
+                          class="flex flex-col items-center gap-1 cursor-pointer hover:bg-[#f3d9b1] p-2 rounded-lg"
+                          @click="updateCharacterClass(member.id, className)"
+                        >
+                          <img :src="icon" :alt="className" class="w-12 h-12" />
+                          <span class="text-sm text-[#b07d46]">{{ className }}</span>
                         </div>
                       </div>
                     </div>
-                  </td>
-                  <!-- Pseudo -->
-                  <td class="p-4 text-[#b07d46] font-bold text-center align-middle relative">
-                    <div
-                      v-if="editingPseudo.type === 'character' && editingPseudo.id === member.id"
-                      @click.stop
-                    >
-                      <input
-                        v-model="editPseudo"
-                        class="border-2 border-[#b07d46] rounded-lg p-2 w-full focus:ring-2 focus:ring-[#f3d9b1]"
-                        @blur="savePseudo(member, 'character')"
-                        @keydown.enter.prevent="savePseudo(member, 'character')"
-                        ref="editInput"
-                      />
-                    </div>
-                    <div
-                      v-else
-                      class="flex items-center justify-center gap-2 cursor-pointer hover:text-[#942828] hover:underline"
-                      @click="startEditingPseudo(member.id, member.pseudo, 'character')"
-                    >
-                      {{ member.pseudo || 'Unknown' }}
-                      <span class="text-sm text-[#b07d46]">
-                        <i class="fas fa-pencil-alt"></i>
-                      </span>
-                    </div>
-                  </td>
-                  <td class="p-4 text-[#b07d46]">
-                    {{ member.ankamaPseudo }}
-                  </td>
-                  <td class="p-4 text-[#b07d46]">
-                    {{ member?.recruiter?.pseudo || 'No Recruiter' }}
-                  </td>
-                  <td class="p-4 text-[#b07d46]">{{ member?.rank?.name || 'No Rank' }}</td>
-                  <td class="p-4">
+                  </div>
+                </td>
+                <!-- Pseudo -->
+                <td class="p-4 text-[#b07d46] font-bold text-center align-middle relative">
+                  <div
+                    v-if="editingPseudo.type === 'character' && editingPseudo.id === member.id"
+                    @click.stop
+                  >
+                    <input
+                      v-model="editPseudo"
+                      class="border-2 border-[#b07d46] rounded-lg p-2 w-full focus:ring-2 focus:ring-[#f3d9b1]"
+                      @blur="savePseudo(member, 'character')"
+                      @keydown.enter.prevent="savePseudo(member, 'character')"
+                      ref="editInput"
+                    />
+                  </div>
+                  <div
+                    v-else
+                    class="flex items-center justify-center gap-2 cursor-pointer hover:text-[#942828] hover:underline"
+                    @click="startEditingPseudo(member.id, member.pseudo, 'character')"
+                  >
+                    {{ member.pseudo || 'Unknown' }}
+                    <span class="text-sm text-[#b07d46]">
+                      <i class="fas fa-pencil-alt"></i>
+                    </span>
+                  </div>
+                </td>
+                <td class="p-4 text-[#b07d46]">
+                  {{ member.ankamaPseudo }}
+                </td>
+                <td class="p-4 text-[#b07d46]">
+                  {{ member?.recruiter?.pseudo || 'No Recruiter' }}
+                </td>
+                <td class="p-4 text-[#b07d46]">{{ member?.rank?.name || 'No Rank' }}</td>
+                <td class="p-4">
+                  <button
+                    v-if="filteredMulesByCharacter(id).length > 0"
+                    @click="toggleExpand(id)"
+                    class="text-[#b02e2e] font-bold underline hover:text-[#942828] transition-all duration-300"
+                  >
+                    {{ filteredMulesByCharacter(id).length }} mules
+                  </button>
+                </td>
+                <td class="p-4">
+                  <button
+                    @click="viewWarnings(member.id, member.pseudo)"
+                    class="text-[#b02e2e] font-bold underline hover:text-[#942828] transition-all duration-300"
+                  >
+                    {{ characterWarningCounts[member.id] || 0 }}
+                  </button>
+                </td>
+                <td class="p-4">
+                  <div class="flex space-x-2 justify-center">
                     <button
-                      v-if="filteredMulesByCharacter(id).length > 0"
-                      @click="toggleExpand(id)"
-                      class="text-[#b02e2e] font-bold underline hover:text-[#942828] transition-all duration-300"
+                      @click="openModal(member)"
+                      class="text-[#b02e2e] hover:text-[#942828] transition-all duration-300"
                     >
-                      {{ filteredMulesByCharacter(id).length }} mules
+                      Archiver
                     </button>
-                  </td>
-                  <td class="p-4">
-                    <button
-                      @click="viewWarnings(member.id, member.pseudo)"
-                      class="text-[#b02e2e] font-bold underline hover:text-[#942828] transition-all duration-300"
-                    >
-                      {{ characterWarningCounts[member.id] || 0 }}
-                    </button>
-                  </td>
-                  <td class="p-4">
-                    <div class="flex space-x-2 justify-center">
-                      <button
-                        @click="openModal(member)"
-                        class="text-[#b02e2e] hover:text-[#942828] transition-all duration-300"
-                      >
-                        Archiver
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-                <!-- Expanded Row -->
-                <tr v-if="expandedRows[id]" class="bg-[#ffecd2]">
-                  <td colspan="8" class="p-4">
-                    <div class="w-10/12 mx-auto">
-                      <div v-if="filteredMulesByCharacter(id).length > 0">
-                        <table class="w-full text-center border-collapse">
-                          <thead>
-                            <tr class="bg-[#b07d46] text-[#fff5e6]">
-                              <th class="p-2">Classe</th>
-                              <th class="p-2">Pseudo</th>
-                              <th class="p-2">Pseudo Ankama</th>
-                              <th class="p-2">Action</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            <tr
-                              v-for="(mule, muleIndex) in filteredMulesByCharacter(id)"
-                              :key="mule.id || muleIndex"
-                              :class="[muleIndex % 2 === 0 ? 'bg-[#fff5e6]' : 'bg-[#fde1c8]']"
-                              class="hover:bg-[#f3d9b1]"
-                            >
-                              <td class="p-2 relative">
-                                <div class="relative inline-block">
-                                  <button @click="toggleClassDropdown(mule.id, 'mule')">
-                                    <img
-                                      :src="classes[mule.class]"
-                                      alt="Mule Class"
-                                      class="w-8 h-8 cursor-pointer mx-auto"
-                                    />
-                                  </button>
-                                  <div
-                                    v-if="classDropdownVisible[`mule-${mule.id}`]"
-                                    class="absolute top-12 left-0 z-10 bg-[#fff5e6] border border-[#b07d46] rounded-lg shadow-lg p-2 w-80"
-                                  >
-                                    <div class="grid grid-cols-4 gap-2 max-h-40 overflow-y-auto">
-                                      <div
-                                        v-for="(icon, className) in classes"
-                                        :key="className"
-                                        class="flex flex-col items-center gap-1 cursor-pointer hover:bg-[#f3d9b1] p-2 rounded-lg"
-                                        @click="updateMuleClass(mule.id, className)"
-                                      >
-                                        <img :src="icon" :alt="className" class="w-12 h-12" />
-                                        <span class="text-sm text-[#b07d46]">{{ className }}</span>
-                                      </div>
+                  </div>
+                </td>
+              </tr>
+              <!-- Expanded Row - Séparé du v-for principal -->
+              <tr
+                v-for="{ member, id } in filteredMembers.filter(item => expandedRows[item.id])"
+                :key="`expanded-${member.id}`"
+                class="bg-[#ffecd2]"
+              >
+                <td colspan="8" class="p-4">
+                  <div class="w-10/12 mx-auto">
+                    <div v-if="filteredMulesByCharacter(id).length > 0">
+                      <table class="w-full text-center border-collapse">
+                        <thead>
+                          <tr class="bg-[#b07d46] text-[#fff5e6]">
+                            <th class="p-2">Classe</th>
+                            <th class="p-2">Pseudo</th>
+                            <th class="p-2">Pseudo Ankama</th>
+                            <th class="p-2">Action</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr
+                            v-for="(mule, muleIndex) in filteredMulesByCharacter(id)"
+                            :key="mule.id || muleIndex"
+                            :class="[muleIndex % 2 === 0 ? 'bg-[#fff5e6]' : 'bg-[#fde1c8]']"
+                            class="hover:bg-[#f3d9b1]"
+                          >
+                            <td class="p-2 relative">
+                              <div class="relative inline-block">
+                                <button @click="toggleClassDropdown(mule.id, 'mule')">
+                                  <img
+                                    :src="classes[mule.class]"
+                                    alt="Mule Class"
+                                    class="w-8 h-8 cursor-pointer mx-auto"
+                                  />
+                                </button>
+                                <div
+                                  v-if="classDropdownVisible[`mule-${mule.id}`]"
+                                  class="absolute top-12 left-0 z-10 bg-[#fff5e6] border border-[#b07d46] rounded-lg shadow-lg p-2 w-80"
+                                >
+                                  <div class="grid grid-cols-4 gap-2 max-h-40 overflow-y-auto">
+                                    <div
+                                      v-for="(icon, className) in classes"
+                                      :key="className"
+                                      class="flex flex-col items-center gap-1 cursor-pointer hover:bg-[#f3d9b1] p-2 rounded-lg"
+                                      @click="updateMuleClass(mule.id, className)"
+                                    >
+                                      <img :src="icon" :alt="className" class="w-12 h-12" />
+                                      <span class="text-sm text-[#b07d46]">{{ className }}</span>
                                     </div>
                                   </div>
                                 </div>
-                              </td>
-                              <td class="p-2 text-[#b07d46] font-bold relative">
-                                <div
-                                  v-if="
-                                    editingPseudo.type === 'mule' && editingPseudo.id === mule.id
-                                  "
-                                  @click.stop
-                                >
-                                  <input
-                                    v-model="editPseudo"
-                                    class="border-2 border-[#b07d46] rounded-lg p-2 w-full focus:ring-2 focus:ring-[#f3d9b1]"
-                                    @blur="savePseudo(mule, 'mule')"
-                                    @keydown.enter.prevent="savePseudo(mule, 'mule')"
-                                    ref="editInput"
-                                  />
-                                </div>
-                                <div
-                                  v-else
-                                  class="flex items-center gap-2 cursor-pointer hover:text-[#942828] hover:underline"
-                                  @click="startEditingPseudo(mule.id, mule.pseudo, 'mule')"
-                                >
-                                  {{ mule.pseudo }}
-                                  <span class="text-sm text-[#b07d46]">
-                                    <i class="fas fa-pencil-alt"></i>
-                                  </span>
-                                </div>
-                              </td>
-                              <td class="p-2 text-[#b07d46]">{{ mule.ankamaPseudo }}</td>
-                              <td class="p-4 text-[#b07d46]">
-                                <div
-                                  class="cursor-pointer"
-                                  title="Archiver"
-                                  @click="openMuleModal(mule)"
-                                >
-                                  &#x22EE;
-                                </div>
-                              </td>
-                            </tr>
-                          </tbody>
-                        </table>
-                      </div>
-                      <div v-else>
-                        <p class="text-[#b07d46] italic">Pas de mules disponibles.</p>
-                      </div>
+                              </div>
+                            </td>
+                            <td class="p-2 text-[#b07d46] font-bold relative">
+                              <div
+                                v-if="editingPseudo.type === 'mule' && editingPseudo.id === mule.id"
+                                @click.stop
+                              >
+                                <input
+                                  v-model="editPseudo"
+                                  class="border-2 border-[#b07d46] rounded-lg p-2 w-full focus:ring-2 focus:ring-[#f3d9b1]"
+                                  @blur="savePseudo(mule, 'mule')"
+                                  @keydown.enter.prevent="savePseudo(mule, 'mule')"
+                                  ref="editInput"
+                                />
+                              </div>
+                              <div
+                                v-else
+                                class="flex items-center gap-2 cursor-pointer hover:text-[#942828] hover:underline"
+                                @click="startEditingPseudo(mule.id, mule.pseudo, 'mule')"
+                              >
+                                {{ mule.pseudo }}
+                                <span class="text-sm text-[#b07d46]">
+                                  <i class="fas fa-pencil-alt"></i>
+                                </span>
+                              </div>
+                            </td>
+                            <td class="p-2 text-[#b07d46]">{{ mule.ankamaPseudo }}</td>
+                            <td class="p-4 text-[#b07d46]">
+                              <div
+                                class="cursor-pointer"
+                                title="Archiver"
+                                @click="openMuleModal(mule)"
+                              >
+                                &#x22EE;
+                              </div>
+                            </td>
+                          </tr>
+                        </tbody>
+                      </table>
                     </div>
-                  </td>
-                </tr>
-              </template>
+                    <div v-else>
+                      <p class="text-[#b07d46] italic">Pas de mules disponibles.</p>
+                    </div>
+                  </div>
+                </td>
+              </tr>
             </tbody>
           </table>
         </div>
@@ -301,35 +301,34 @@
               </tr>
             </thead>
             <tbody>
-              <template
-                v-for="({ member, id }, index) in filteredArchivedMembers"
+              <tr
+                v-for="({ member }, index) in filteredArchivedMembers"
                 :key="member.id || index"
+                class="transition-all group relative hover:bg-[#f3d9b1]/30"
               >
-                <tr class="transition-all group relative hover:bg-[#f3d9b1]/30">
-                  <td class="p-4">
-                    <img
-                      :src="classes[member.class]"
-                      alt="Character Class"
-                      class="w-12 h-12 rounded-full mx-auto"
-                    />
-                  </td>
-                  <td class="p-4 text-[#b07d46] font-bold">
-                    {{ member.pseudo || 'Unknown' }}
-                  </td>
-                  <td class="p-4 text-[#b07d46]">
-                    {{ member?.recruiter?.pseudo || 'No Recruiter' }}
-                  </td>
-                  <td class="p-4 text-[#b07d46]">{{ member?.rank?.name || 'No Rank' }}</td>
-                  <td class="p-4">
-                    <button
-                      @click="openUnarchivedCharacterModal(member)"
-                      class="bg-[#b02e2e] text-[#f3d9b1] font-bold py-2 px-6 rounded-full hover:bg-[#942828] transition-all duration-300"
-                    >
-                      Unarchive
-                    </button>
-                  </td>
-                </tr>
-              </template>
+                <td class="p-4">
+                  <img
+                    :src="classes[member.class]"
+                    alt="Character Class"
+                    class="w-12 h-12 rounded-full mx-auto"
+                  />
+                </td>
+                <td class="p-4 text-[#b07d46] font-bold">
+                  {{ member.pseudo || 'Unknown' }}
+                </td>
+                <td class="p-4 text-[#b07d46]">
+                  {{ member?.recruiter?.pseudo || 'No Recruiter' }}
+                </td>
+                <td class="p-4 text-[#b07d46]">{{ member?.rank?.name || 'No Rank' }}</td>
+                <td class="p-4">
+                  <button
+                    @click="openUnarchivedCharacterModal(member)"
+                    class="bg-[#b02e2e] text-[#f3d9b1] font-bold py-2 px-6 rounded-full hover:bg-[#942828] transition-all duration-300"
+                  >
+                    Unarchive
+                  </button>
+                </td>
+              </tr>
             </tbody>
           </table>
         </div>
@@ -642,7 +641,16 @@ export default {
 
     // ✅ Add character and re-fetch all characters
     async addCharacterToTable() {
-      await this.fetchCharacters();
+      const response = await axios.get(`${API_URL}/characters/`);
+      this.charactersData = response.data;
+      this.notArchivedCharacters = this.charactersData.filter(character => !character.isArchived);
+
+      // 🔁 mettre à jour les mules depuis charactersData
+      this.notArchivedMules = {};
+      this.notArchivedCharacters.forEach(char => {
+        this.notArchivedMules[char.id] = (char.mules || []).filter(m => !m.isArchived);
+      });
+
       this.$refs.notificationRef.showNotification('Le personnage a bien été ajouté');
     },
     startEditingPseudo(id, currentPseudo, type) {
@@ -689,10 +697,9 @@ export default {
         console.log('Une erreur est survenue lors de la mise à jour du pseudo.');
       }
     },
-
     async addMuleToTable() {
       await this.fetchAllMules();
-      this.$refs.notificationRef.showNotification('La mule a bien été ajoutée');
+      this.$refs.notificationRef.showNotification('Les mules ont été mises à jour');
     },
     async archiveMule(muleId) {
       try {
