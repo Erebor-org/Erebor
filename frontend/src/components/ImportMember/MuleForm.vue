@@ -111,10 +111,6 @@ export default {
     blacklist: {
       type: Array,
       required: true
-    },
-    characterId: {
-      type: Number,
-      required: false
     }
   },
   data() {

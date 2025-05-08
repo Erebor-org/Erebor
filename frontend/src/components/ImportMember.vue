@@ -1,4 +1,3 @@
-<!-- ... -->
 <template>
   <ImportMemberModal
     :showModal="showModalMember"
@@ -14,7 +13,7 @@ import ImportMemberModal from './ImportMember/ImportMemberModal.vue';
 
 export default {
   components: {
-    ImportMemberModal,
+    ImportMemberModal
   },
   props: {
     showModalMember: {
@@ -24,7 +23,7 @@ export default {
     fetchNotArchivedCharacters: {
       type: Array,
       required: true,
-    },
+    }
   },
   methods: {
     closeModal() {
@@ -32,11 +31,11 @@ export default {
     },
     handleCharacterAdded(data) {
       // Passer les données du personnage à la méthode parent pour mettre à jour le compteur de mules
-      this.$emit('character-added', data);
+      this.$emit('characterAdded', data);
     },
     handleMuleAdded() {
-      this.$emit('mule-added');
-    },
-  },
+      this.$emit('muleAdded');
+    }
+  }
 };
 </script>

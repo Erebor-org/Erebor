@@ -55,16 +55,6 @@ class CharactersController extends AbstractController
                     'id' => $character->getRank()->getId(),
                     'name' => $character->getRank()->getName(),
                 ] : null,
-                'mules' => array_map(function ($mule) {
-                    return [
-                        'id' => $mule->getId(),
-                        'pseudo' => $mule->getPseudo(),
-                        'ankamaPseudo' => $mule->getAnkamaPseudo(),
-                        'class' => $mule->getClass(),
-                        'isArchived' => $mule->isArchived()
-                    ];
-                }, $character->getMules()->toArray()),
-                
             ];
         }, $characters);
 
@@ -82,8 +72,7 @@ class CharactersController extends AbstractController
         Request $request,
         EntityManagerInterface $em,
         RanksRepository $ranksRepository,
-        CharactersRepository $charactersRepository,
-        MuleRepository $muleRepository
+        CharactersRepository $charactersRepository
     ): JsonResponse {
         $data = json_decode($request->getContent(), true);
 

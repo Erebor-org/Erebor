@@ -44,7 +44,6 @@
       v-if="showAddMuleForm" 
       :classes="classes" 
       :blacklist="blacklist"
-      :characterId="characterId"
       @add-mule="addMule"
     />
   </div>
@@ -65,10 +64,6 @@ export default {
     blacklist: {
       type: Array,
       required: true
-    },
-    characterId: {
-      type: Number,
-      required: false
     }
   },
   data() {

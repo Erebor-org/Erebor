@@ -40,7 +40,6 @@
             ref="mulesManager"
             :classes="classes" 
             :blacklist="blacklist"
-            :characterId="character.id"
             @update:mules="updateMules"
           />
           
@@ -191,20 +190,17 @@ export default {
           characterData.mules = this.mules;
         }
         
-        let response;
-        // Si l'ID du personnage est fourni, mettre à jour le personnage existant
-        if (this.character.id) {
-          response = await axios.put(`${API_URL}/characters/${this.character.id}`, characterData);
-        } else {
-          // Sinon, créer un nouveau personnage
-          response = await axios.post(`${API_URL}/characters`, characterData);
-        }
+        // API POST request with character and its mules
+        const response = await axios.post(`${API_URL}/characters`, characterData);
+        
+        console.log("Réponse de l'API après création:", response.data);
 
-        // Emit the event to inform the parent about the new character
+        // Emit the event to inform the parent about the new character with all data including mules
         this.$emit('character-added', response.data);
         
         // Emit event for mules if there are any
         if (response.data.mules && response.data.mules.length > 0) {
+          console.log(`Émission de l'événement mule-added avec ${response.data.mules.length} mules`);
           this.$emit('mule-added');
         }
 
