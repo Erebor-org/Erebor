@@ -147,8 +147,8 @@ class CharactersController extends AbstractController
                 // Persister la mule
                 $em->persist($mule);
                 
-                // Send notification for the mule import
-                $this->notificationService->notify('mule_import', $mule);
+                // We don't send mule notification here since this is part of a new character creation
+                // Mule notifications are only sent when adding mules to existing characters (in MuleController)
             }
         }
         

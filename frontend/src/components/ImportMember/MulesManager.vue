@@ -13,7 +13,7 @@
       >
         <div class="flex flex-wrap items-center gap-3">
           <!-- Mule info summary -->
-          <img :src="classes[mule.class]" alt="Classe" class="w-12 h-12 rounded-full" />
+          <img :src="classes[mule.class]" alt="Classe" class="w-8 h-8 rounded-full" />
           <span class="font-semibold text-[#b07d46]">{{ mule.pseudo }}</span>
           <span class="text-sm text-[#b07d46]">({{ mule.ankamaPseudo }})</span>
           
