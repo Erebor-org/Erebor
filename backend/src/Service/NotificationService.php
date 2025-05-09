@@ -5,6 +5,7 @@ namespace App\Service;
 use App\Entity\Characters;
 use App\Entity\Blacklist;
 use App\Entity\Warning;
+use App\Entity\Mule;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 class NotificationService
@@ -15,6 +16,7 @@ class NotificationService
         'blacklist_added' => 'https://n8n.neitosden.fr/webhook/blacklist',
         'warning_added' => 'https://n8n.neitosden.fr/webhook/warning',
         'archivage_added' => 'https://n8n.neitosden.fr/webhook/archivage',
+        'mule_import' => 'https://n8n.neitosden.fr/webhook/mule_import',
     ];
 
     public function __construct(HttpClientInterface $httpClient)
@@ -51,22 +53,62 @@ class NotificationService
             'warning_added' => [
                 'embeds' => [$this->buildWarningAddedEmbed($data['warning'], $data['count'])],
             ],
+            'mule_import' => [
+                'embeds' => [$this->buildMuleImportEmbed($data)],
+            ],
             default => throw new \InvalidArgumentException(sprintf('Unsupported event type: %s', $eventType)),
         };
     }
-
+    
+    private function buildMuleImportEmbed(Mule $mule): array
+    {
+        $mainCharacter = $mule->getMainCharacter();
+        
+        return [
+            'title' => 'Import d\'une mule 🐴',
+            'description' => sprintf(
+                "Mule associée à **%s** :\n\n**Pseudo** : %s\n**Pseudo Ankama** : %s\n**Classe** : %s",
+                $mainCharacter->getPseudo(),
+                $mule->getPseudo(),
+                $mule->getAnkamaPseudo(),
+                $mule->getClass()
+            ),
+            'color' => 16776960, // Jaune
+            'timestamp' => (new \DateTime())->format(\DateTime::ATOM),
+            'footer' => [
+                'text' => 'Système Erebor',
+            ],
+        ];
+    }
     private function buildCharacterImportEmbed(Characters $character): array
     {
         $recruiterPseudo = $character->getRecruiter() ? $character->getRecruiter()->getPseudo() : 'Un recruteur inconnu';
+        
+        // Build mules list
+        $mulesText = "";
+        $mules = $character->getMules();
+        
+        // Force initialization of the collection if it's lazy-loaded
+        $mules->initialize();
+        
+        if ($mules->count() > 0) {
+            $mulesText = "\n\n**Mules** : ";
+            $mulesList = [];
+            foreach ($mules as $mule) {
+                $mulesList[] = sprintf("%s (%s)", $mule->getPseudo(), $mule->getClass());
+            }
+            $mulesText .= implode(", ", $mulesList);
+        }
 
         return [
             'title' => 'Import de personnage ⚔️',
             'description' => sprintf(
-                "**%s** a recruté un nouveau joueur :\n\n**Pseudo** : %s\n**Pseudo Ankama** : %s\n**Classe** : %s",
+                "**%s** a recruté un nouveau joueur :\n\n**Pseudo** : %s\n**Pseudo Ankama** : %s\n**Classe** : %s%s",
                 $recruiterPseudo,
                 $character->getPseudo(),
                 $character->getAnkamaPseudo(),
-                $character->getClass()
+                $character->getClass(),
+                $mulesText
             ),
             'color' => 3066993, // Vert clair
             'timestamp' => (new \DateTime())->format(\DateTime::ATOM),

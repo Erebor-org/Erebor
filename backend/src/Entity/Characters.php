@@ -4,6 +4,8 @@ namespace App\Entity;
 
 use App\Repository\CharactersRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 
 
 #[ORM\Entity(repositoryClass: CharactersRepository::class)]
@@ -33,6 +35,10 @@ class Characters
     #[ORM\OneToMany(mappedBy: 'mainCharacter', targetEntity: Mule::class, cascade: ['persist', 'remove'])]
     private $mules;
 
+    public function __construct()
+    {
+        $this->mules = new ArrayCollection();
+    }
     // Getter and Setter for mules
 
     public function getMules(): Collection

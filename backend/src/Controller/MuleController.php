@@ -11,9 +11,19 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use App\Service\NotificationService;
+use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 class MuleController extends AbstractController
 {
+
+    private NotificationService $notificationService;
+
+    public function __construct(NotificationService $notificationService)
+    {
+        $this->notificationService = $notificationService;
+    }
+
     #[Route('/mules', name: 'mules_list', methods: ['GET'])]
     public function getMules(MuleRepository $repository): JsonResponse
     {
@@ -74,12 +84,12 @@ class MuleController extends AbstractController
         $data = json_decode($request->getContent(), true);
 
         // Validate input
-        if (!isset($data['pseudo'], $data['ankamaPseudo'], $data['class'], $data['mainCharacterId'])) {
+        if (!isset($data['pseudo'], $data['ankamaPseudo'], $data['class'], $data['characterId'])) {
             return $this->json(['error' => 'Missing required fields'], 400);
         }
 
         // Find the main character
-        $mainCharacter = $charactersRepository->find($data['mainCharacterId']);
+        $mainCharacter = $charactersRepository->find($data['characterId']);
         if (!$mainCharacter) {
             return $this->json(['error' => 'Main character not found'], 404);
         }
@@ -94,6 +104,14 @@ class MuleController extends AbstractController
 
         $em->persist($mule);
         $em->flush();
+
+        try {
+            $this->notificationService->notify('mule_import', $mule);
+        } catch (\Exception $e) {
+            // Log the exception
+            // You can also log it using a logger service if available
+            error_log('Error notifying mule import: ' . $e->getMessage());
+        }
 
         return $this->json(['message' => 'Mule created successfully'], 201);
     }

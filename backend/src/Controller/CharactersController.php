@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\Characters;
+use App\Entity\Mule;
 use App\Repository\CharactersRepository;
 use App\Repository\RanksRepository; // Ensure this is correctly imported
 use App\Service\NotificationService;
@@ -30,14 +31,27 @@ class CharactersController extends AbstractController
     {
         // Fetch characters ordered by rank.id
         $characters = $repository->createQueryBuilder('c')
-            ->join('c.rank', 'r') // Join the rank table
-            ->orderBy('r.id', 'ASC') // Order by rank.id ascending
-            ->addOrderBy('c.id', 'ASC') // Optionally order by character.id for consistent results within ranks
+            ->leftJoin('c.rank', 'r')
+            ->leftJoin('c.recruiter', 'recruiter')
+            ->leftJoin('c.mules', 'mules')
+            ->addSelect('r', 'recruiter', 'mules')
+            ->orderBy('r.id', 'ASC')
+            ->addOrderBy('c.id', 'ASC')
             ->getQuery()
             ->getResult();
 
-        // Format the response to include recruiter and rank details
         $formattedCharacters = array_map(function ($character) {
+            $muleList = [];
+            foreach ($character->getMules() as $mule) {
+                $muleList[] = [
+                    'id' => $mule->getId(),
+                    'pseudo' => $mule->getPseudo(),
+                    'ankamaPseudo' => $mule->getAnkamaPseudo(),
+                    'class' => $mule->getClass(),
+                    'isArchived' => $mule->isArchived()
+                ];
+            }
+
             return [
                 'id' => $character->getId(),
                 'pseudo' => $character->getPseudo(),
@@ -54,17 +68,15 @@ class CharactersController extends AbstractController
                     'id' => $character->getRank()->getId(),
                     'name' => $character->getRank()->getName(),
                 ] : null,
+                'mules' => $muleList,
             ];
         }, $characters);
 
         return $this->json($formattedCharacters, 200, [], [
             'groups' => 'characters_list',
-            'circular_reference_handler' => function ($object) {
-                return $object->getId();
-            }
+            'circular_reference_handler' => fn($object) => $object->getId(),
         ]);
     }
-
 
     #[Route('/characters', name: 'characters_create', methods: ['POST'])]
     public function create(
@@ -99,6 +111,7 @@ class CharactersController extends AbstractController
             return $this->json(['error' => 'No suitable rank found'], 404);
         }
 
+        // Créer le personnage principal
         $character = new Characters();
         $character->setUserId($data['userId'] ?? null)
                 ->setPseudo($data['pseudo'])
@@ -107,6 +120,7 @@ class CharactersController extends AbstractController
                 ->setRecruitedAt($recruitedAt)
                 ->setRank($rank)
                 ->setIsArchived($data['isArchived'] ?? false);
+                
         // Handle the Recruiter
         if (isset($data['recruiterId'])) {
             $recruiter = $charactersRepository->find($data['recruiterId']);
@@ -116,17 +130,78 @@ class CharactersController extends AbstractController
             $character->setRecruiter($recruiter);
         }
 
+        // Persister le personnage principal
         $em->persist($character);
+        
+        // Traiter les mules si elles sont présentes
+        if (isset($data['mules']) && is_array($data['mules']) && count($data['mules']) > 0) {
+            foreach ($data['mules'] as $muleData) {
+                // Créer une nouvelle mule
+                $mule = new Mule();
+                $mule->setPseudo($muleData['pseudo'])
+                     ->setAnkamaPseudo($muleData['ankamaPseudo'])
+                     ->setClass($muleData['class'])
+                     ->setIsArchived(false)
+                     ->setMainCharacter($character);
+                
+                // Persister la mule
+                $em->persist($mule);
+                
+                // Send notification for the mule import
+                $this->notificationService->notify('mule_import', $mule);
+            }
+        }
+        
+        // Exécuter les requêtes en base de données
         $em->flush();
+        
+        // Refresh the character entity to ensure all relationships are loaded
+        $em->refresh($character);
+        
+        // Préparer la réponse avec le personnage principal et ses mules
+        $response = [
+            'id' => $character->getId(),
+            'pseudo' => $character->getPseudo(),
+            'ankamaPseudo' => $character->getAnkamaPseudo(),
+            'class' => $character->getClass(),
+            'createdAt' => $character->getRecruitedAt()?->format('Y-m-d'),
+            'isArchived' => $character->isArchived(),
+            'recruiter' => $character->getRecruiter() ? [
+                'id' => $character->getRecruiter()->getId(),
+                'pseudo' => $character->getRecruiter()->getPseudo(),
+                'class' => $character->getRecruiter()->getClass(),
+            ] : null,
+            'rank' => $character->getRank() ? [
+                'id' => $character->getRank()->getId(),
+                'name' => $character->getRank()->getName(),
+            ] : null,
+            'mules' => []
+        ];
+        
+        // Ajouter les mules à la réponse
+        $mules = $character->getMules();
+        if ($mules->count() > 0) {
+            foreach ($mules as $mule) {
+                $response['mules'][] = [
+                    'id' => $mule->getId(),
+                    'pseudo' => $mule->getPseudo(),
+                    'ankamaPseudo' => $mule->getAnkamaPseudo(),
+                    'class' => $mule->getClass(),
+                    'isArchived' => $mule->isArchived()
+                ];
+            }
+        }
+        
+        // Send notification after ensuring all relationships are loaded
         $this->notificationService->notify('character_import', $character);
 
-
-        return $this->json($character, 200, [], [
+        return $this->json($response, 200, [], [
             'groups' => 'characters_list',
             'circular_reference_handler' => function ($object) {
                 return $object->getId();
             }
         ]);
+        
     }
 
     #[Route('/characters/all', name: 'characters_get_all', methods: ['GET'])]

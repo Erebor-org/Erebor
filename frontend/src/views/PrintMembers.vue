@@ -641,8 +641,17 @@ export default {
     },
 
     // ✅ Add character and re-fetch all characters
+    // ✅ Add character and re-fetch all characters
     async addCharacterToTable() {
-      await this.fetchCharacters();
+      const response = await axios.get(`${API_URL}/characters/`);
+      this.charactersData = response.data;
+      this.notArchivedCharacters = this.charactersData.filter(character => !character.isArchived);
+
+      // 🔁 mettre à jour les mules depuis charactersData
+      this.notArchivedMules = {};
+      this.notArchivedCharacters.forEach(char => {
+        this.notArchivedMules[char.id] = (char.mules || []).filter(m => !m.isArchived);
+      });
       this.$refs.notificationRef.showNotification('Le personnage a bien été ajouté');
     },
     startEditingPseudo(id, currentPseudo, type) {
@@ -658,9 +667,6 @@ export default {
       });
     },
     async savePseudo(entity, type) {
-      console.log('entity', entity);
-      console.log('type', type);
-      console.log('editPseudo', this.editPseudo);
       if (this.editPseudo.trim() === '') {
         console.log('Le pseudo ne peut pas être vide.');
         return;
@@ -692,7 +698,7 @@ export default {
 
     async addMuleToTable() {
       await this.fetchAllMules();
-      this.$refs.notificationRef.showNotification('La mule a bien été ajoutée');
+      this.$refs.notificationRef.showNotification('Les mules ont été mises à jour');
     },
     async archiveMule(muleId) {
       try {
@@ -886,6 +892,7 @@ tbody tr:hover {
 .group-hover\:block {
   display: none;
 }
+
 td {
   height: auto;
   vertical-align: top;
