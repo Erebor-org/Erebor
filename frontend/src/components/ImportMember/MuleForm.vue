@@ -1,6 +1,6 @@
 <template>
-  <div class="bg-[#fffaf0] border-2 border-[#b07d46] rounded-md p-4 mb-4">
-    <div class="space-y-4">
+  <div class="bg-[#fffaf0] border-2 border-[#b07d46] rounded-md p-3 mb-3">
+    <div class="space-y-3">
       <!-- Pseudo & Ankama Pseudo -->
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <!-- Pseudo -->
@@ -56,7 +56,7 @@
           Classe du personnage <span class="text-[#b02e2e]">*</span>
         </label>
         <div
-          class="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-7 gap-2 md:gap-3"
+          class="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-7 gap-1 md:gap-2"
         >
           <div
             v-for="(icon, index) in classes"
@@ -64,12 +64,12 @@
             :class="[
               'cursor-pointer border-2 rounded-md flex items-center justify-center aspect-square transition-all',
               mule.class === index
-                ? 'border-[#b02e2e] bg-[#f3d9b1] scale-110 shadow-md'
+                ? 'border-[#b02e2e] bg-[#f3d9b1] scale-100 shadow-md'
                 : 'border-[#b07d46] bg-[#fffaf0] hover:bg-[#f3d9b1] hover:border-[#b02e2e]',
             ]"
             @click="mule.class = index"
           >
-            <img :src="icon" alt="Classe" class="w-full h-full p-1 md:p-2 object-contain" />
+            <img :src="icon" alt="Classe" class="w-8 h-8 object-contain" />
           </div>
         </div>
       </div>

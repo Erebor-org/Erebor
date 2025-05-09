@@ -52,19 +52,19 @@
         <label class="block text-sm md:text-base font-medium text-[#b07d46] mb-2">
           Classe du personnage <span class="text-[#b02e2e]">*</span>
         </label>
-        <div class="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-7 gap-2 md:gap-3">
+        <div class="grid grid-cols-7 sm:grid-cols-9 md:grid-cols-10 lg:grid-cols-12 gap-1">
           <div
             v-for="(icon, index) in classes"
             :key="index"
             :class="[
               'cursor-pointer border-2 rounded-md flex items-center justify-center aspect-square transition-all',
               muleCharacter.class === index
-                ? 'border-[#b02e2e] bg-[#f3d9b1] scale-110 shadow-md'
+                ? 'border-[#b02e2e] bg-[#f3d9b1] scale-100 shadow-md'
                 : 'border-[#b07d46] bg-[#fffaf0] hover:bg-[#f3d9b1] hover:border-[#b02e2e]',
             ]"
             @click="((muleCharacter.class = index), selectClass(index))"
           >
-            <img :src="icon" alt="Classe" class="w-full h-full p-1 md:p-2 object-contain" />
+            <img :src="icon" alt="Classe" class="w-20 h-20 object-contain" />
           </div>
         </div>
       </div>
