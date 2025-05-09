@@ -24,70 +24,112 @@
         </h2>
       </div>
 
+      <!-- Tabs -->
+      <div class="flex border-b border-[#b07d46]">
+        <button 
+          @click="activeTab = 'newCharacter'"
+          :class="[
+            'flex-1 py-2 px-4 text-center font-medium transition-colors',
+            activeTab === 'newCharacter' 
+              ? 'text-[#b02e2e] border-b-2 border-[#b02e2e]' 
+              : 'text-[#b07d46] hover:text-[#b02e2e]'
+          ]"
+        >
+          Nouveau Personnage
+        </button>
+        <button 
+          @click="activeTab = 'addMule'"
+          :class="[
+            'flex-1 py-2 px-4 text-center font-medium transition-colors',
+            activeTab === 'addMule' 
+              ? 'text-[#b02e2e] border-b-2 border-[#b02e2e]' 
+              : 'text-[#b07d46] hover:text-[#b02e2e]'
+          ]"
+        >
+          Ajouter une Mule
+        </button>
+      </div>
+
       <!-- Scrollable Content Area -->
       <div class="p-4 md:p-6 overflow-y-auto">
-        <form @submit.prevent="submitForm">
-          <!-- Main Character Form -->
-          <MainCharacterForm 
-            ref="mainCharacterForm"
-            :classes="classes" 
-            :blacklist="blacklist"
-            @update:character="updateCharacter"
-          />
+        <!-- New Character Tab -->
+        <div v-if="activeTab === 'newCharacter'">
+          <form @submit.prevent="submitForm">
+            <!-- Main Character Form -->
+            <MainCharacterForm 
+              ref="mainCharacterForm"
+              :classes="classes" 
+              :blacklist="blacklist"
+              @update:character="updateCharacter"
+            />
 
-          <!-- Mules Section -->
-          <MulesManager 
-            ref="mulesManager"
-            :classes="classes" 
-            :blacklist="blacklist"
-            @update:mules="updateMules"
-          />
-          
-          <!-- Global error message -->
-          <div
-            v-if="errorMessage"
-            class="mt-4 p-3 bg-[#ffeeee] border-l-4 border-[#b02e2e] text-[#b02e2e] rounded"
-          >
-            <div class="flex items-center">
-              <span class="mr-2 text-xl">⚠️</span>
-              <span class="font-medium">{{ errorMessage }}</span>
-            </div>
-          </div>
-          
-          <!-- Submit Button -->
-          <div class="mt-6">
-            <button
-              type="submit"
-              class="w-full bg-[#b02e2e] text-[#f3d9b1] font-bold py-3 px-6 rounded-lg hover:bg-[#942828] focus:ring-4 focus:ring-[#f3d9b1] transition-colors flex items-center justify-center"
-              :disabled="isSubmitting || !character.class"
-              :class="{ 'opacity-70 cursor-not-allowed': isSubmitting || !character.class }"
+            <!-- Mules Section -->
+            <MulesManager 
+              ref="mulesManager"
+              :classes="classes" 
+              :blacklist="blacklist"
+              @update:mules="updateMules"
+            />
+            
+            <!-- Global error message -->
+            <div
+              v-if="errorMessage"
+              class="mt-4 p-3 bg-[#ffeeee] border-l-4 border-[#b02e2e] text-[#b02e2e] rounded"
             >
-              <span v-if="isSubmitting" class="mr-2">
-                <svg
-                  class="animate-spin h-5 w-5 text-white"
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                >
-                  <circle
-                    class="opacity-25"
-                    cx="12"
-                    cy="12"
-                    r="10"
-                    stroke="currentColor"
-                    stroke-width="4"
-                  ></circle>
-                  <path
-                    class="opacity-75"
-                    fill="currentColor"
-                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                  ></path>
-                </svg>
-              </span>
-              Importer {{ mules.length > 0 ? 'le personnage et ses mules' : 'le personnage' }}
-            </button>
-          </div>
-        </form>
+              <div class="flex items-center">
+                <span class="mr-2 text-xl">⚠️</span>
+                <span class="font-medium">{{ errorMessage }}</span>
+              </div>
+            </div>
+            
+            <!-- Submit Button -->
+            <div class="mt-6">
+              <button
+                type="submit"
+                class="w-full bg-[#b02e2e] text-[#f3d9b1] font-bold py-3 px-6 rounded-lg hover:bg-[#942828] focus:ring-4 focus:ring-[#f3d9b1] transition-colors flex items-center justify-center"
+                :disabled="isSubmitting || !character.class"
+                :class="{ 'opacity-70 cursor-not-allowed': isSubmitting || !character.class }"
+              >
+                <span v-if="isSubmitting" class="mr-2">
+                  <svg
+                    class="animate-spin h-5 w-5 text-white"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      class="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      stroke-width="4"
+                    ></circle>
+                    <path
+                      class="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    ></path>
+                  </svg>
+                </span>
+                Importer {{ mules.length > 0 ? 'le personnage et ses mules' : 'le personnage' }}
+              </button>
+            </div>
+          </form>
+        </div>
+        
+        <!-- Add Mule to Existing Character Tab -->
+        <div v-if="activeTab === 'addMule'">
+          <ExistingCharacterMuleForm
+            ref="existingCharacterMuleForm"
+            :classes="classes"
+            :blacklist="blacklist"
+            :fetchNotArchivedCharacters="fetchNotArchivedCharacters"
+            @mule-added="handleMuleAdded"
+            @close="closeModal"
+          />
+        </div>
+          
       </div>
     </div>
   </div>
@@ -97,6 +139,7 @@
 import axios from 'axios';
 import MainCharacterForm from './MainCharacterForm.vue';
 import MulesManager from './MulesManager.vue';
+import ExistingCharacterMuleForm from './ExistingCharacterMuleForm.vue';
 
 const images = import.meta.glob('@/assets/icon_classe/*.avif', { eager: true });
 const API_URL = import.meta.env.VITE_API_URL;
@@ -104,7 +147,8 @@ const API_URL = import.meta.env.VITE_API_URL;
 export default {
   components: {
     MainCharacterForm,
-    MulesManager
+    MulesManager,
+    ExistingCharacterMuleForm
   },
   props: {
     showModal: {
@@ -118,6 +162,7 @@ export default {
   },
   data() {
     return {
+      activeTab: 'newCharacter',
       errorMessage: '',
       isSubmitting: false,
       character: {
@@ -157,6 +202,10 @@ export default {
   methods: {
     closeModal() {
       this.$emit('close');
+    },
+    
+    handleMuleAdded(muleData) {
+      this.$emit('mule-added', muleData);
     },
     
     updateCharacter(characterData) {

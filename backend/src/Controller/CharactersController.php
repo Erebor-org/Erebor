@@ -31,14 +31,27 @@ class CharactersController extends AbstractController
     {
         // Fetch characters ordered by rank.id
         $characters = $repository->createQueryBuilder('c')
-            ->join('c.rank', 'r') // Join the rank table
-            ->orderBy('r.id', 'ASC') // Order by rank.id ascending
-            ->addOrderBy('c.id', 'ASC') // Optionally order by character.id for consistent results within ranks
+            ->leftJoin('c.rank', 'r')
+            ->leftJoin('c.recruiter', 'recruiter')
+            ->leftJoin('c.mules', 'mules')
+            ->addSelect('r', 'recruiter', 'mules')
+            ->orderBy('r.id', 'ASC')
+            ->addOrderBy('c.id', 'ASC')
             ->getQuery()
             ->getResult();
 
-        // Format the response to include recruiter and rank details
         $formattedCharacters = array_map(function ($character) {
+            $muleList = [];
+            foreach ($character->getMules() as $mule) {
+                $muleList[] = [
+                    'id' => $mule->getId(),
+                    'pseudo' => $mule->getPseudo(),
+                    'ankamaPseudo' => $mule->getAnkamaPseudo(),
+                    'class' => $mule->getClass(),
+                    'isArchived' => $mule->isArchived()
+                ];
+            }
+
             return [
                 'id' => $character->getId(),
                 'pseudo' => $character->getPseudo(),
@@ -55,17 +68,15 @@ class CharactersController extends AbstractController
                     'id' => $character->getRank()->getId(),
                     'name' => $character->getRank()->getName(),
                 ] : null,
+                'mules' => $muleList,
             ];
         }, $characters);
 
         return $this->json($formattedCharacters, 200, [], [
             'groups' => 'characters_list',
-            'circular_reference_handler' => function ($object) {
-                return $object->getId();
-            }
+            'circular_reference_handler' => fn($object) => $object->getId(),
         ]);
     }
-
 
     #[Route('/characters', name: 'characters_create', methods: ['POST'])]
     public function create(
@@ -142,8 +153,7 @@ class CharactersController extends AbstractController
         $em->flush();
         
         // Notification pour le personnage principal
-        //$this->notificationService->notify('character_import', $character);
-
+       
         // Préparer la réponse avec le personnage principal et ses mules
         $response = [
             'id' => $character->getId(),
@@ -177,6 +187,7 @@ class CharactersController extends AbstractController
                 ];
             }
         }
+        //$this->notificationService->notify('character_import', $character);
 
         return $this->json($response, 200, [], [
             'groups' => 'characters_list',
@@ -184,6 +195,7 @@ class CharactersController extends AbstractController
                 return $object->getId();
             }
         ]);
+        
     }
 
     #[Route('/characters/all', name: 'characters_get_all', methods: ['GET'])]

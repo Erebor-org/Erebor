@@ -87,13 +87,14 @@
               </tr>
             </thead>
             <tbody>
-              <!-- Utilisation d'une div avec v-for au lieu de template pour éviter les problèmes de clé -->
-              <tr
+              <template
                 v-for="({ member, id }, index) in filteredMembers"
                 :key="member.id || index"
-                class="transition-all group relative hover:bg-[#f3d9b1]/30"
-                style="min-height: 120px"
               >
+                <tr
+                  class="transition-all group relative hover:bg-[#f3d9b1]/30"
+                  style="min-height: 120px"
+                >
                   <td class="p-4 relative">
                     <div class="relative inline-block">
                       <button @click="toggleClassDropdown(member.id, 'character')">
@@ -180,13 +181,9 @@
                       </button>
                     </div>
                   </td>
-              </tr>
-              <!-- Expanded Row - Séparé du v-for principal -->
-              <tr 
-                v-for="({ member, id }) in filteredMembers.filter(item => expandedRows[item.id])" 
-                :key="`expanded-${member.id}`"
-                class="bg-[#ffecd2]"
-              >
+                </tr>
+                <!-- Expanded Row -->
+                <tr v-if="expandedRows[id]" class="bg-[#ffecd2]">
                   <td colspan="8" class="p-4">
                     <div class="w-10/12 mx-auto">
                       <div v-if="filteredMulesByCharacter(id).length > 0">
@@ -279,6 +276,7 @@
                     </div>
                   </td>
                 </tr>
+              </template>
             </tbody>
           </table>
         </div>
@@ -303,11 +301,11 @@
               </tr>
             </thead>
             <tbody>
-              <tr
-                v-for="({ member }, index) in filteredArchivedMembers"
+              <template
+                v-for="({ member, id }, index) in filteredArchivedMembers"
                 :key="member.id || index"
-                class="transition-all group relative hover:bg-[#f3d9b1]/30"
               >
+                <tr class="transition-all group relative hover:bg-[#f3d9b1]/30">
                   <td class="p-4">
                     <img
                       :src="classes[member.class]"
@@ -330,7 +328,8 @@
                       Unarchive
                     </button>
                   </td>
-              </tr>
+                </tr>
+              </template>
             </tbody>
           </table>
         </div>
@@ -642,30 +641,17 @@ export default {
     },
 
     // ✅ Add character and re-fetch all characters
-    async addCharacterToTable(newCharacterData) {
-      console.log("Nouveau personnage ajouté avec données:", newCharacterData);
-      
-      // Récupérer tous les personnages pour mettre à jour la liste
-      await this.fetchCharacters();
-      
-      // Si le personnage a des mules, les ajouter directement à notArchivedMules
-      if (newCharacterData && newCharacterData.mules && newCharacterData.mules.length > 0) {
-        console.log(`Ajout de ${newCharacterData.mules.length} mules pour le personnage ${newCharacterData.id}`);
-        
-        // S'assurer que notArchivedMules est initialisé pour ce personnage
-        if (!this.notArchivedMules[newCharacterData.id]) {
-          this.notArchivedMules[newCharacterData.id] = [];
-        }
-        
-        // Ajouter les mules directement à notArchivedMules
-        this.notArchivedMules[newCharacterData.id] = [
-          ...this.notArchivedMules[newCharacterData.id] || [],
-          ...newCharacterData.mules
-        ];
-        
-        console.log("État mis à jour des mules:", this.notArchivedMules);
-      }
-      
+    // ✅ Add character and re-fetch all characters
+    async addCharacterToTable() {
+      const response = await axios.get(`${API_URL}/characters/`);
+      this.charactersData = response.data;
+      this.notArchivedCharacters = this.charactersData.filter(character => !character.isArchived);
+
+      // 🔁 mettre à jour les mules depuis charactersData
+      this.notArchivedMules = {};
+      this.notArchivedCharacters.forEach(char => {
+        this.notArchivedMules[char.id] = (char.mules || []).filter(m => !m.isArchived);
+      });
       this.$refs.notificationRef.showNotification('Le personnage a bien été ajouté');
     },
     startEditingPseudo(id, currentPseudo, type) {
@@ -681,9 +667,6 @@ export default {
       });
     },
     async savePseudo(entity, type) {
-      console.log('entity', entity);
-      console.log('type', type);
-      console.log('editPseudo', this.editPseudo);
       if (this.editPseudo.trim() === '') {
         console.log('Le pseudo ne peut pas être vide.');
         return;
@@ -799,7 +782,6 @@ export default {
     },
 
     filteredMulesByCharacter(characterId) {
-      console.log(`Recherche de mules pour le personnage ${characterId}`, this.notArchivedMules[characterId]);
       return this.notArchivedMules[characterId] || [];
     },
 
@@ -910,6 +892,7 @@ tbody tr:hover {
 .group-hover\:block {
   display: none;
 }
+
 td {
   height: auto;
   vertical-align: top;

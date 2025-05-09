@@ -74,12 +74,12 @@ class MuleController extends AbstractController
         $data = json_decode($request->getContent(), true);
 
         // Validate input
-        if (!isset($data['pseudo'], $data['ankamaPseudo'], $data['class'], $data['mainCharacterId'])) {
+        if (!isset($data['pseudo'], $data['ankamaPseudo'], $data['class'], $data['characterId'])) {
             return $this->json(['error' => 'Missing required fields'], 400);
         }
 
         // Find the main character
-        $mainCharacter = $charactersRepository->find($data['mainCharacterId']);
+        $mainCharacter = $charactersRepository->find($data['characterId']);
         if (!$mainCharacter) {
             return $this->json(['error' => 'Main character not found'], 404);
         }
