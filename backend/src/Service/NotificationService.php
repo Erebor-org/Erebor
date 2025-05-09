@@ -5,6 +5,7 @@ namespace App\Service;
 use App\Entity\Characters;
 use App\Entity\Blacklist;
 use App\Entity\Warning;
+use App\Entity\Mule;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 class NotificationService
@@ -64,7 +65,7 @@ class NotificationService
         $mainCharacter = $mule->getMainCharacter();
         
         return [
-            'title' => 'Import de mule 🐴',
+            'title' => 'Import d\'une mule 🐴',
             'description' => sprintf(
                 "Mule associée à **%s** :\n\n**Pseudo** : %s\n**Pseudo Ankama** : %s\n**Classe** : %s",
                 $mainCharacter->getPseudo(),

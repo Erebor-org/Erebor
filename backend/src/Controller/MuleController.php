@@ -11,9 +11,19 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use App\Service\NotificationService;
+use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 class MuleController extends AbstractController
 {
+
+    private NotificationService $notificationService;
+
+    public function __construct(NotificationService $notificationService)
+    {
+        $this->notificationService = $notificationService;
+    }
+
     #[Route('/mules', name: 'mules_list', methods: ['GET'])]
     public function getMules(MuleRepository $repository): JsonResponse
     {
@@ -95,7 +105,13 @@ class MuleController extends AbstractController
         $em->persist($mule);
         $em->flush();
 
-        $this->notificationService->notify('mule_import', $mule);
+        try {
+            $this->notificationService->notify('mule_import', $mule);
+        } catch (\Exception $e) {
+            // Log the exception
+            // You can also log it using a logger service if available
+            error_log('Error notifying mule import: ' . $e->getMessage());
+        }
 
         return $this->json(['message' => 'Mule created successfully'], 201);
     }
