@@ -95,6 +95,8 @@ class MuleController extends AbstractController
         $em->persist($mule);
         $em->flush();
 
+        $this->notificationService->notify('mule_import', $mule);
+
         return $this->json(['message' => 'Mule created successfully'], 201);
     }
 

@@ -146,14 +146,18 @@ class CharactersController extends AbstractController
                 
                 // Persister la mule
                 $em->persist($mule);
+                
+                // Send notification for the mule import
+                $this->notificationService->notify('mule_import', $mule);
             }
         }
         
         // Exécuter les requêtes en base de données
         $em->flush();
         
-        // Notification pour le personnage principal
-       
+        // Refresh the character entity to ensure all relationships are loaded
+        $em->refresh($character);
+        
         // Préparer la réponse avec le personnage principal et ses mules
         $response = [
             'id' => $character->getId(),
@@ -187,7 +191,9 @@ class CharactersController extends AbstractController
                 ];
             }
         }
-        //$this->notificationService->notify('character_import', $character);
+        
+        // Send notification after ensuring all relationships are loaded
+        $this->notificationService->notify('character_import', $character);
 
         return $this->json($response, 200, [], [
             'groups' => 'characters_list',
