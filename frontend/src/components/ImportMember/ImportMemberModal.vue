@@ -90,7 +90,8 @@
           <!-- Submit Button -->
           <div class="mt-6">
             <button
-              type="submit"
+              type="button"
+              @click="submitForm"
               class="w-full bg-[#b02e2e] text-[#f3d9b1] font-bold py-3 px-6 rounded-lg hover:bg-[#942828] focus:ring-4 focus:ring-[#f3d9b1] transition-colors flex items-center justify-center"
               :disabled="isSubmitting || !character.class"
               :class="{ 'opacity-70 cursor-not-allowed': isSubmitting || !character.class }"
@@ -251,11 +252,9 @@ export default {
         // Emit the event to inform the parent about the new character with all data including mules
         this.$emit('character-added', response.data);
         
-        // Emit event for mules if there are any
-        if (response.data.mules && response.data.mules.length > 0) {
-          console.log(`Émission de l'événement mule-added avec ${response.data.mules.length} mules`);
-          this.$emit('mule-added');
-        }
+        // We don't emit mule-added here anymore to avoid multiple notifications
+        // when importing a character with multiple mules
+        // The mule-added event is only emitted from the ExistingCharacterMuleForm component
 
         // Reset form data
         this.$refs.mainCharacterForm.resetForm();
