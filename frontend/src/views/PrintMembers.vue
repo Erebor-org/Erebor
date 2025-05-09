@@ -92,96 +92,98 @@
                 :key="member.id || index"
               >
                 <tr
-                  class="transition-all group relative hover:bg-[#f3d9b1]/30"
-                  style="min-height: 120px"
-                >
-                  <td class="p-4 relative">
-                    <div class="relative inline-block">
-                      <button @click="toggleClassDropdown(member.id, 'character')">
-                        <img
-                          :src="classes[member.class]"
-                          alt="Character Class"
-                          class="w-10 h-10 cursor-pointer"
-                        />
-                      </button>
+              class="transition-all group relative hover:bg-[#f3d9b1]/30"
+              style="min-height: 120px"
+            >
+              <td class="p-4 relative text-center align-middle">
+                <div class="relative inline-block">
+                  <button @click="toggleClassDropdown(member.id, 'character')">
+                    <img
+                      :src="classes[member.class]"
+                      alt="Character Class"
+                      class="w-14 h-14 cursor-pointer mx-auto"
+                    />
+                  </button>
+                  <div
+                    v-if="classDropdownVisible[`character-${member.id}`]"
+                    class="absolute top-12 left-0 z-10 bg-[#fff5e6] border border-[#b07d46] rounded-lg shadow-lg p-2 w-80"
+                  >
+                    <div class="grid grid-cols-4 gap-2 max-h-40 overflow-y-auto">
                       <div
-                        v-if="classDropdownVisible[`character-${member.id}`]"
-                        class="absolute top-12 left-0 z-10 bg-[#fff5e6] border border-[#b07d46] rounded-lg shadow-lg p-2 w-80"
+                        v-for="(icon, className) in classes"
+                        :key="className"
+                        class="flex flex-col items-center gap-1 cursor-pointer hover:bg-[#f3d9b1] p-2 rounded-lg"
+                        @click="updateCharacterClass(member.id, className)"
                       >
-                        <div class="grid grid-cols-4 gap-2 max-h-40 overflow-y-auto">
-                          <div
-                            v-for="(icon, className) in classes"
-                            :key="className"
-                            class="flex flex-col items-center gap-1 cursor-pointer hover:bg-[#f3d9b1] p-2 rounded-lg"
-                            @click="updateCharacterClass(member.id, className)"
-                          >
-                            <img :src="icon" :alt="className" class="w-12 h-12" />
-                            <span class="text-sm text-[#b07d46]">{{ className }}</span>
-                          </div>
-                        </div>
+                        <img :src="icon" :alt="className" class="w-12 h-12 mx-auto" />
+                        <span class="text-sm text-[#b07d46]">{{ className }}</span>
                       </div>
                     </div>
-                  </td>
-                  <!-- Pseudo -->
-                  <td class="p-4 text-[#b07d46] font-bold text-center align-middle relative">
-                    <div
-                      v-if="editingPseudo.type === 'character' && editingPseudo.id === member.id"
-                      @click.stop
-                    >
-                      <input
-                        v-model="editPseudo"
-                        class="border-2 border-[#b07d46] rounded-lg p-2 w-full focus:ring-2 focus:ring-[#f3d9b1]"
-                        @blur="savePseudo(member, 'character')"
-                        @keydown.enter.prevent="savePseudo(member, 'character')"
-                        ref="editInput"
-                      />
-                    </div>
-                    <div
-                      v-else
-                      class="flex items-center justify-center gap-2 cursor-pointer hover:text-[#942828] hover:underline"
-                      @click="startEditingPseudo(member.id, member.pseudo, 'character')"
-                    >
-                      {{ member.pseudo || 'Unknown' }}
-                      <span class="text-sm text-[#b07d46]">
-                        <i class="fas fa-pencil-alt"></i>
-                      </span>
-                    </div>
-                  </td>
-                  <td class="p-4 text-[#b07d46]">
-                    {{ member.ankamaPseudo }}
-                  </td>
-                  <td class="p-4 text-[#b07d46]">
-                    {{ member?.recruiter?.pseudo || 'No Recruiter' }}
-                  </td>
-                  <td class="p-4 text-[#b07d46]">{{ member?.rank?.name || 'No Rank' }}</td>
-                  <td class="p-4">
-                    <button
-                      v-if="filteredMulesByCharacter(id).length > 0"
-                      @click="toggleExpand(id)"
-                      class="text-[#b02e2e] font-bold underline hover:text-[#942828] transition-all duration-300"
-                    >
-                      {{ filteredMulesByCharacter(id).length }} mules
-                    </button>
-                  </td>
-                  <td class="p-4">
-                    <button
-                      @click="viewWarnings(member.id, member.pseudo)"
-                      class="text-[#b02e2e] font-bold underline hover:text-[#942828] transition-all duration-300"
-                    >
-                      {{ characterWarningCounts[member.id] || 0 }}
-                    </button>
-                  </td>
-                  <td class="p-4">
-                    <div class="flex space-x-2 justify-center">
-                      <button
-                        @click="openModal(member)"
-                        class="text-[#b02e2e] hover:text-[#942828] transition-all duration-300"
-                      >
-                        Archiver
-                      </button>
-                    </div>
-                  </td>
-                </tr>
+                  </div>
+                </div>
+              </td>
+              <!-- Pseudo -->
+              <td class="p-4 text-[#b07d46] font-bold text-center align-middle">
+                <div
+                  v-if="editingPseudo.type === 'character' && editingPseudo.id === member.id"
+                  @click.stop
+                >
+                  <input
+                    v-model="editPseudo"
+                    class="border-2 border-[#b07d46] rounded-lg p-2 w-full focus:ring-2 focus:ring-[#f3d9b1]"
+                    @blur="savePseudo(member, 'character')"
+                    @keydown.enter.prevent="savePseudo(member, 'character')"
+                    ref="editInput"
+                  />
+                </div>
+                <div
+                  v-else
+                  class="flex items-center justify-center gap-2 cursor-pointer hover:text-[#942828] hover:underline"
+                  @click="startEditingPseudo(member.id, member.pseudo, 'character')"
+                >
+                  {{ member.pseudo || 'Unknown' }}
+                  <span class="text-sm text-[#b07d46]">
+                    <i class="fas fa-pencil-alt"></i>
+                  </span>
+                </div>
+              </td>
+              <td class="p-4 text-[#b07d46] text-center align-middle">
+                {{ member.ankamaPseudo }}
+              </td>
+              <td class="p-4 text-[#b07d46] text-center align-middle">
+                {{ member?.recruiter?.pseudo || 'No Recruiter' }}
+              </td>
+              <td class="p-4 text-[#b07d46] text-center align-middle">
+                {{ member?.rank?.name || 'No Rank' }}
+              </td>
+              <td class="p-4 text-center align-middle">
+                <button
+                  v-if="filteredMulesByCharacter(id).length > 0"
+                  @click="toggleExpand(id)"
+                  class="text-[#b02e2e] font-bold underline hover:text-[#942828] transition-all duration-300"
+                >
+                  {{ filteredMulesByCharacter(id).length }} mules
+                </button>
+              </td>
+              <td class="p-4 text-center align-middle">
+                <button
+                  @click="viewWarnings(member.id, member.pseudo)"
+                  class="text-[#b02e2e] font-bold underline hover:text-[#942828] transition-all duration-300"
+                >
+                  {{ characterWarningCounts[member.id] || 0 }}
+                </button>
+              </td>
+              <td class="p-4 text-center align-middle">
+                <div class="flex space-x-2 justify-center">
+                  <button
+                    @click="openModal(member)"
+                    class="text-[#b02e2e] hover:text-[#942828] transition-all duration-300"
+                  >
+                    Archiver
+                  </button>
+                </div>
+              </td>
+            </tr>
                 <!-- Expanded Row -->
                 <tr v-if="expandedRows[id]" class="bg-[#ffecd2]">
                   <td colspan="8" class="p-4">

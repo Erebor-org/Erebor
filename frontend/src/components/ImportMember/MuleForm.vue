@@ -69,7 +69,7 @@
             ]"
             @click="mule.class = index"
           >
-            <img :src="icon" alt="Classe" class="w-8 h-8 object-contain" />
+            <img :src="icon" alt="Classe" class="w-16 h-16 object-contain" />
           </div>
         </div>
       </div>
