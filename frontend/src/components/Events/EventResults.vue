@@ -1,35 +1,62 @@
 <template>
-  <div class="bg-gray-800 rounded-lg p-6 shadow-lg">
-    <h2 class="text-2xl font-bold text-white mb-6">Résultats</h2>
-    
+  <div class="bg-white border-2 border-[#b07d46] rounded-lg p-6 shadow-lg">
+    <h2 class="text-2xl font-bold text-[#b02e2e] mb-6">Résultats</h2>
+
     <div v-if="error" class="bg-red-500 text-white p-3 rounded-md mb-4">
       {{ error }}
     </div>
-    
+
     <div v-if="isLoading" class="text-center py-8">
-      <div class="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-[#93a402]"></div>
-      <p class="mt-2 text-gray-400">Chargement des résultats...</p>
+      <div
+        class="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-[#b02e2e]"
+      ></div>
+      <p class="mt-2 text-[#b07d46]">Chargement des résultats...</p>
     </div>
-    
+
     <div v-else-if="participations.length === 0" class="text-center py-8">
-      <p class="text-gray-400">Aucun résultat disponible pour cet événement</p>
+      <p class="text-[#b07d46]">Aucun résultat disponible pour cet événement</p>
     </div>
-    
+
     <div v-else>
       <div class="overflow-x-auto">
-        <table class="min-w-full bg-gray-900 rounded-lg overflow-hidden">
+        <table class="min-w-full bg-white rounded-lg overflow-hidden">
           <thead>
-            <tr>
-              <th class="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Position</th>
-              <th class="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Personnage</th>
-              <th class="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Classe</th>
-              <th class="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Points</th>
+            <tr class="bg-[#b02e2e]">
+              <th
+                class="px-4 py-3 text-left text-xs font-medium text-[#f3d9b1] uppercase tracking-wider"
+              >
+                Position
+              </th>
+              <th
+                class="px-4 py-3 text-left text-xs font-medium text-[#f3d9b1] uppercase tracking-wider"
+              >
+                Personnage
+              </th>
+              <th
+                class="px-4 py-3 text-left text-xs font-medium text-[#f3d9b1] uppercase tracking-wider"
+              >
+                Classe
+              </th>
+              <th
+                class="px-4 py-3 text-left text-xs font-medium text-[#f3d9b1] uppercase tracking-wider"
+              >
+                Points
+              </th>
             </tr>
           </thead>
-          <tbody class="divide-y divide-gray-700">
-            <tr v-for="participation in participations" :key="participation.id">
+          <tbody class="divide-y divide-[#b07d46]/20">
+            <tr
+              v-for="participation in participations"
+              :key="participation.id"
+              class="hover:bg-[#f3d9b1]/30"
+            >
               <td class="px-4 py-4 whitespace-nowrap">
-                <div :class="['inline-flex items-center justify-center w-8 h-8 rounded-full text-sm font-bold', getPositionColor(participation.position)]">
+                <div
+                  :class="[
+                    'inline-flex items-center justify-center w-8 h-8 rounded-full text-sm font-bold',
+                    getPositionColor(participation.position),
+                  ]"
+                >
                   {{ participation.position }}
                 </div>
               </td>
@@ -46,14 +73,10 @@
                     class="w-14 h-14 cursor-pointer mx-auto"
                   />
                 </div>
-                <div v-else class="text-gray-400">
-                  Position {{ participation.position }}
-                </div>
+                <div v-else class="text-[#b07d46]">Position {{ participation.position }}</div>
               </td>
               <td class="px-4 py-4 whitespace-nowrap">
-                <div class="text-[#93a402] font-bold">
-                  {{ participation.points }} pts
-                </div>
+                <div class="text-[#93a402] font-bold">{{ participation.points }} pts</div>
               </td>
             </tr>
           </tbody>
@@ -70,12 +93,16 @@ export default {
   props: {
     eventId: {
       type: [Number, String],
-      required: true
-    }
+      required: true,
+    },
+    refreshKey: {
+      type: Number,
+      required: true,
+    },
   },
   data() {
     const images = import.meta.glob('@/assets/icon_classe/*.avif', { eager: true });
-    
+
     return {
       API_URL: import.meta.env.VITE_API_URL,
       participations: [],
@@ -101,23 +128,25 @@ export default {
         zobal: images['/src/assets/icon_classe/zobal.avif'].default,
         huppermage: images['/src/assets/icon_classe/huppermage.avif'].default,
         ouginak: images['/src/assets/icon_classe/ouginak.avif'].default,
-      }
+      },
     };
   },
   methods: {
     async loadParticipations() {
       if (!this.eventId) return;
-      
+
       try {
         this.isLoading = true;
         this.error = null;
-        
-        const response = await axios.get(`${this.API_URL}/event-participations/event/${this.eventId}`);
+
+        const response = await axios.get(
+          `${this.API_URL}/event-participations/event/${this.eventId}`
+        );
         this.participations = response.data;
-        
+
         // Debug the response
         console.log('Participations loaded:', this.participations);
-        
+
         this.isLoading = false;
       } catch (err) {
         console.error('Error loading participations:', err);
@@ -127,7 +156,7 @@ export default {
     },
     getClassIcon(characterClass) {
       if (!characterClass) return this.classes['sram']; // Default to Sram if class is null/undefined
-      
+
       const normalizedClass = characterClass.toLowerCase();
       return this.classes[normalizedClass] || this.classes['sram']; // Default to Sram if class not found
     },
@@ -135,8 +164,8 @@ export default {
       if (position === 1) return 'bg-yellow-500 text-black';
       if (position === 2) return 'bg-gray-400 text-black';
       if (position === 3) return 'bg-amber-700 text-white';
-      return 'bg-gray-700';
-    }
+      return 'bg-[#b07d46]/20 text-[#b07d46]';
+    },
   },
   mounted() {
     this.loadParticipations();
@@ -144,7 +173,10 @@ export default {
   watch: {
     eventId() {
       this.loadParticipations();
-    }
-  }
+    },
+    refreshKey() {
+      this.loadParticipations(); // 👈 call the data reload when key changes
+    },
+  },
 };
 </script>

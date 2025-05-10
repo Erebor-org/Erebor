@@ -125,7 +125,7 @@
       </div>
       
       <!-- Event results -->
-      <EventResults :eventId="eventId" />
+      <EventResults :eventId="eventId" :refreshKey="resultsKey" />
       
       <!-- Delete confirmation modal -->
       <div v-if="showDeleteConfirm" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -197,7 +197,8 @@ export default {
       showDeleteConfirm: false,
       showCompleteConfirm: false,
       showParticipationForm: false,
-      showEditModal: false
+      showEditModal: false,
+      resultsKey: 0
     };
   },
   computed: {
@@ -287,6 +288,7 @@ export default {
     handleParticipationsAdded() {
       this.loadEvent();
       this.showParticipationForm = false;
+      this.resultsKey++; // 👈 force child to reload data
     },
     handleEventUpdate(updatedEvent) {
       this.event = updatedEvent;

@@ -164,10 +164,16 @@ class EventParticipationController extends AbstractController
             return $this->json(['error' => 'Event not found'], Response::HTTP_NOT_FOUND);
         }
         
-        // Remove existing participations for this event
+        // Get existing participations for this event
         $existingParticipations = $entityManager->getRepository(EventParticipation::class)->findBy(['event' => $event]);
+        $existingCharacterIds = [];
+        
+        // Create a map of existing character IDs to avoid duplicates
         foreach ($existingParticipations as $existingParticipation) {
-            $entityManager->remove($existingParticipation);
+            $character = $existingParticipation->getCharacter();
+            if ($character) {
+                $existingCharacterIds[$character->getId()] = true;
+            }
         }
         
         $createdParticipations = [];
@@ -178,9 +184,15 @@ class EventParticipationController extends AbstractController
                 continue; // Skip invalid entries
             }
             
-            $character = $charactersRepository->find($participationData['characterId']);
+            $characterId = $participationData['characterId'];
+            $character = $charactersRepository->find($characterId);
             if (!$character) {
                 continue; // Skip if character not found
+            }
+            
+            // Skip if this character already has a participation for this event
+            if (isset($existingCharacterIds[$characterId])) {
+                continue;
             }
             
             $position = (int) $participationData['position'];
@@ -194,6 +206,9 @@ class EventParticipationController extends AbstractController
             
             $entityManager->persist($participation);
             $createdParticipations[] = $participation;
+            
+            // Add to existing character IDs to prevent duplicates in the same batch
+            $existingCharacterIds[$characterId] = true;
         }
         
         $entityManager->flush();

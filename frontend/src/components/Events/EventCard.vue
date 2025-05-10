@@ -1,5 +1,5 @@
 <template>
-  <div class="bg-gray-800 rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300 flex flex-col h-full">
+  <div class="bg-[#1f2937] border-2 border-[#1f2937] rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300 flex flex-col h-full">
     <!-- Event Image -->
     <div class="relative h-48 overflow-hidden">
       <img 
@@ -9,25 +9,25 @@
         class="w-full h-full object-cover"
       />
       <div v-else class="w-full h-full bg-gray-700 flex items-center justify-center">
-        <span class="text-gray-400 text-lg">No Image</span>
+        <span class="text-white text-lg">Pas d'image</span>
       </div>
       
       <!-- Status Badge -->
       <div 
         v-if="event.isCompleted" 
-        class="absolute top-2 right-2 bg-red-500 text-white px-2 py-1 rounded-md text-xs font-bold"
+        class="absolute top-2 right-2 bg-red-600 text-white px-2 py-1 rounded-md text-xs font-bold"
       >
         Terminé
       </div>
       <div 
         v-else-if="isUpcoming" 
-        class="absolute top-2 right-2 bg-green-500 text-white px-2 py-1 rounded-md text-xs font-bold"
+        class="absolute top-2 right-2 bg-[#93a402] text-white px-2 py-1 rounded-md text-xs font-bold"
       >
         À venir
       </div>
       <div 
         v-else 
-        class="absolute top-2 right-2 bg-yellow-500 text-white px-2 py-1 rounded-md text-xs font-bold"
+        class="absolute top-2 right-2 bg-blue-600 text-white px-2 py-1 rounded-md text-xs font-bold"
       >
         En cours
       </div>
@@ -37,7 +37,7 @@
     <div class="p-4 flex-grow">
       <h3 class="text-xl font-bold text-white mb-2">{{ event.title }}</h3>
       <p class="text-gray-300 text-sm mb-4">{{ formattedDate }}</p>
-      <p class="text-gray-400 line-clamp-3">{{ event.description }}</p>
+      <p class="text-gray-300 line-clamp-3">{{ event.description }}</p>
     </div>
     
     <!-- Actions -->
@@ -45,14 +45,14 @@
       <div class="flex justify-between">
         <button 
           @click="viewEvent" 
-          class="bg-[#93a402] hover:bg-[#7a8a02] text-white px-4 py-2 rounded-md text-sm font-medium transition-colors duration-300"
+          class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-full text-sm font-medium transition-colors duration-300"
         >
           Voir
         </button>
         <button 
           v-if="!event.isCompleted" 
           @click="editEvent" 
-          class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors duration-300"
+          class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-full text-sm font-medium transition-colors duration-300"
         >
           Modifier
         </button>
