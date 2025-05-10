@@ -5,6 +5,7 @@ import Blacklist from '../views/CreateBlacklist.vue';
 import Register from '../views/RegisterPage.vue';
 import ViewWarnings from '../views/ViewWarnings.vue';
 import ManageWarnings from '../views/ManageWarnings.vue';
+import Statistiques from '../views/Statistiques.vue';
 
 const routes = [
   { path: '/', redirect: () => {
@@ -17,6 +18,7 @@ const routes = [
   { path: '/blacklist', name: 'Blacklist', component: Blacklist, meta: { requiresAuth: true } },
   { path: '/warnings/:id/:pseudo', name: 'ViewWarnings', component: ViewWarnings, meta: { requiresAuth: true } },
   { path: '/warnings-management', name: 'ManageWarnings', component: ManageWarnings, meta: { requiresAuth: true } },
+  { path: '/statistiques', name: 'Statistiques', component: Statistiques, meta: { requiresAuth: true } },
 ];
 
 const router = createRouter({
