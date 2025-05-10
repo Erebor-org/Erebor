@@ -21,9 +21,6 @@ class EventRepository extends ServiceEntityRepository
         parent::__construct($registry, Event::class);
     }
 
-    /**
-     * Find all events ordered by date (newest first)
-     */
     public function findAllOrderedByDate(): array
     {
         return $this->createQueryBuilder('e')
@@ -32,9 +29,6 @@ class EventRepository extends ServiceEntityRepository
             ->getResult();
     }
 
-    /**
-     * Find upcoming events (events with a date in the future)
-     */
     public function findUpcomingEvents(): array
     {
         return $this->createQueryBuilder('e')
@@ -45,9 +39,6 @@ class EventRepository extends ServiceEntityRepository
             ->getResult();
     }
 
-    /**
-     * Find past events (events with a date in the past)
-     */
     public function findPastEvents(): array
     {
         return $this->createQueryBuilder('e')
@@ -58,25 +49,12 @@ class EventRepository extends ServiceEntityRepository
             ->getResult();
     }
 
-    /**
-     * Find completed events (events marked as completed)
-     */
     public function findCompletedEvents(): array
     {
         return $this->createQueryBuilder('e')
             ->where('e.isCompleted = :completed')
             ->setParameter('completed', true)
             ->orderBy('e.eventDate', 'DESC')
-            ->getQuery()
-            ->getResult();
-    }
-    public function findAllWithParticipants(): array
-    {
-        return $this->createQueryBuilder('e')
-            ->addSelect('p', 'c')
-            ->leftJoin('e.participations', 'p')
-            ->leftJoin('p.character', 'c')
-            ->orderBy('e.eventDate', 'ASC')
             ->getQuery()
             ->getResult();
     }

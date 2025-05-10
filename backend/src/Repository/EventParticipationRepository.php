@@ -23,9 +23,6 @@ class EventParticipationRepository extends ServiceEntityRepository
         parent::__construct($registry, EventParticipation::class);
     }
 
-    /**
-     * Find all participations for a specific event ordered by position
-     */
     public function findByEventOrderedByPosition(Event $event): array
     {
         return $this->createQueryBuilder('p')
@@ -38,9 +35,6 @@ class EventParticipationRepository extends ServiceEntityRepository
             ->getResult();
     }
 
-    /**
-     * Find all participations for a specific character
-     */
     public function findByCharacter(Characters $character): array
     {
         return $this->createQueryBuilder('p')
@@ -51,9 +45,6 @@ class EventParticipationRepository extends ServiceEntityRepository
             ->getResult();
     }
 
-    /**
-     * Get ladder standings (total points per character)
-     */
     public function getLadderStandings(): array
     {
         $conn = $this->getEntityManager()->getConnection();
@@ -77,34 +68,5 @@ class EventParticipationRepository extends ServiceEntityRepository
         $result = $stmt->executeQuery();
         
         return $result->fetchAllAssociative();
-    }
-
-    /**
-     * Get character's best result
-     */
-    public function getCharacterBestResult(Characters $character): ?array
-    {
-        return $this->createQueryBuilder('p')
-            ->andWhere('p.character = :character')
-            ->setParameter('character', $character)
-            ->orderBy('p.points', 'DESC')
-            ->setMaxResults(1)
-            ->getQuery()
-            ->getOneOrNullResult();
-    }
-
-    /**
-     * Get total points for a character
-     */
-    public function getTotalPointsForCharacter(Characters $character): int
-    {
-        $result = $this->createQueryBuilder('p')
-            ->select('SUM(p.points) as total_points')
-            ->andWhere('p.character = :character')
-            ->setParameter('character', $character)
-            ->getQuery()
-            ->getSingleScalarResult();
-            
-        return (int)$result;
     }
 }

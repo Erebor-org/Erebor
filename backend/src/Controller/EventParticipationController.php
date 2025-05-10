@@ -4,8 +4,10 @@ namespace App\Controller;
 
 use App\Entity\Event;
 use App\Entity\EventParticipation;
+use App\Entity\Characters;
 use App\Repository\CharactersRepository;
 use App\Repository\EventParticipationRepository;
+use App\Repository\EventRepository;
 use App\Service\EventScoringService;
 use App\Service\NotificationService;
 use Doctrine\ORM\EntityManagerInterface;
@@ -15,7 +17,6 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
-#[Route('/event-participations')]
 class EventParticipationController extends AbstractController
 {
     private EventScoringService $scoringService;
@@ -28,49 +29,33 @@ class EventParticipationController extends AbstractController
         $this->scoringService = $scoringService;
         $this->notificationService = $notificationService;
     }
-    
-    private function notify($message) {
-        $this->notificationService->notify('participation_added', [
-            'message' => $message,
-        ]);
-    }
 
-    #[Route('', methods: ['GET'])]
+    #[Route('/event-participations', methods: ['GET'])]
     public function getAllParticipations(EventParticipationRepository $repository): JsonResponse
     {
         $participations = $repository->findAll();
-        
         return $this->json($participations, Response::HTTP_OK, [], ['groups' => 'participation:read']);
     }
 
-    #[Route('/event/{id}', methods: ['GET'])]
-    public function getParticipationsByEvent(Event $event, EntityManagerInterface $entityManager): JsonResponse
+    #[Route('/event-participations/event/{id}', methods: ['GET'])]
+    public function getParticipationsByEvent(Event $event, EventParticipationRepository $repository): JsonResponse
     {
-        $participations = $entityManager->getRepository(EventParticipation::class)
-            ->createQueryBuilder('p')
-            ->where('p.event = :event')
-            ->setParameter('event', $event)
-            ->leftJoin('p.character', 'c')
-            ->addSelect('c')
-            ->orderBy('p.position', 'ASC')
-            ->getQuery()
-            ->getResult();
-        
+        $participations = $repository->findByEventOrderedByPosition($event);
         return $this->json($participations, Response::HTTP_OK, [], ['groups' => 'participation:read']);
     }
 
-    #[Route('/ladder', methods: ['GET'])]
+    #[Route('/event-participations/ladder', methods: ['GET'])]
     public function getLadderStandings(EventParticipationRepository $repository): JsonResponse
     {
         $standings = $repository->getLadderStandings();
-        
         return $this->json($standings, Response::HTTP_OK);
     }
 
-    #[Route('', methods: ['POST'])]
+    #[Route('/event-participations', methods: ['POST'])]
     public function createParticipation(
         Request $request, 
         EntityManagerInterface $entityManager,
+        EventRepository $eventRepository,
         CharactersRepository $charactersRepository
     ): JsonResponse
     {
@@ -82,7 +67,7 @@ class EventParticipationController extends AbstractController
         }
         
         // Get event and character
-        $event = $entityManager->getRepository(Event::class)->find($data['eventId']);
+        $event = $eventRepository->find($data['eventId']);
         $character = $charactersRepository->find($data['characterId']);
         
         if (!$event || !$character) {
@@ -113,21 +98,14 @@ class EventParticipationController extends AbstractController
         $entityManager->persist($participation);
         $entityManager->flush();
         
-       // $this->notificationService->createNotification(
-        //    sprintf('%s a été ajouté à l\'événement %s en position %d', 
-        //        $character->getPseudo(), 
-         //       $event->getTitle(), 
-        //        $position
-        //    )
-       // );
-        
         return $this->json($participation, Response::HTTP_CREATED, [], ['groups' => 'participation:read']);
     }
 
-    #[Route('/batch', methods: ['POST'])]
+    #[Route('/event-participations/batch', methods: ['POST'])]
     public function createBatchParticipations(
         Request $request, 
         EntityManagerInterface $entityManager,
+        EventRepository $eventRepository,
         CharactersRepository $charactersRepository
     ): JsonResponse
     {
@@ -139,7 +117,7 @@ class EventParticipationController extends AbstractController
         }
         
         // Get event
-        $event = $entityManager->getRepository(Event::class)->find($data['eventId']);
+        $event = $eventRepository->find($data['eventId']);
         if (!$event) {
             return $this->json(['error' => 'Event not found'], Response::HTTP_NOT_FOUND);
         }
@@ -178,13 +156,10 @@ class EventParticipationController extends AbstractController
         
         $entityManager->flush();
         
-        // Notification
-        // $this->notify(sprintf('Résultats ajoutés pour l\'événement %s', $event->getTitle()));
-        
         return $this->json($createdParticipations, Response::HTTP_CREATED, [], ['groups' => 'participation:read']);
     }
 
-    #[Route('/{id}', methods: ['DELETE'])]
+    #[Route('/event-participations/{id}', methods: ['DELETE'])]
     public function deleteParticipation(
         EventParticipation $participation, 
         EntityManagerInterface $entityManager
@@ -196,7 +171,7 @@ class EventParticipationController extends AbstractController
         return $this->json(null, Response::HTTP_NO_CONTENT);
     }
 
-    #[Route('/character/{id}', methods: ['GET'])]
+    #[Route('/event-participations/character/{id}', methods: ['GET'])]
     public function getParticipationsByCharacter(
         int $id, 
         CharactersRepository $charactersRepository,

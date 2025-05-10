@@ -13,65 +13,55 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\Security\Http\Attribute\IsGranted;
-use Symfony\Component\Serializer\SerializerInterface;
 
-#[Route('/events')]
 class EventController extends AbstractController
 {
-    private NotificationService $notificationService;
     private FileUploadService $fileUploadService;
-    private SerializerInterface $serializer;
+    private NotificationService $notificationService;
 
     public function __construct(
-        NotificationService $notificationService,
         FileUploadService $fileUploadService,
-        SerializerInterface $serializer
+        NotificationService $notificationService
     ) {
-        $this->notificationService = $notificationService;
         $this->fileUploadService = $fileUploadService;
-        $this->serializer = $serializer;
+        $this->notificationService = $notificationService;
     }
 
-    #[Route('', methods: ['GET'])]
+    #[Route('/events', methods: ['GET'])]
     public function getAllEvents(EventRepository $repository): JsonResponse
     {
-        $events = $repository->findAllWithParticipants();
-
+        $events = $repository->findAllOrderedByDate();
         return $this->json($events, Response::HTTP_OK, [], ['groups' => 'event:read']);
     }
 
-    #[Route('/upcoming', methods: ['GET'])]
+    #[Route('/events/upcoming', methods: ['GET'])]
     public function getUpcomingEvents(EventRepository $repository): JsonResponse
     {
         $events = $repository->findUpcomingEvents();
-        
         return $this->json($events, Response::HTTP_OK, [], ['groups' => 'event:read']);
     }
 
-    #[Route('/past', methods: ['GET'])]
+    #[Route('/events/past', methods: ['GET'])]
     public function getPastEvents(EventRepository $repository): JsonResponse
     {
         $events = $repository->findPastEvents();
-        
         return $this->json($events, Response::HTTP_OK, [], ['groups' => 'event:read']);
     }
 
-    #[Route('/completed', methods: ['GET'])]
+    #[Route('/events/completed', methods: ['GET'])]
     public function getCompletedEvents(EventRepository $repository): JsonResponse
     {
         $events = $repository->findCompletedEvents();
-        
         return $this->json($events, Response::HTTP_OK, [], ['groups' => 'event:read']);
     }
 
-    #[Route('/{id}', methods: ['GET'])]
+    #[Route('/events/{id}', methods: ['GET'])]
     public function getEvent(Event $event): JsonResponse
     {
         return $this->json($event, Response::HTTP_OK, [], ['groups' => 'event:read']);
     }
 
-#[Route('', methods: ['POST'])]
+    #[Route('/events', methods: ['POST'])]
     public function createEvent(Request $request, EntityManagerInterface $entityManager): JsonResponse
     {
         $data = json_decode($request->request->get('data'), true);
@@ -102,15 +92,10 @@ class EventController extends AbstractController
         $entityManager->persist($event);
         $entityManager->flush();
         
-        // Send notification
-     //   $this->notificationService->notify('event_created', [
-     //       'message' => 'Nouvel événement créé: ' . $event->getTitle(),
-      //  ]);
-        
         return $this->json($event, Response::HTTP_CREATED, [], ['groups' => 'event:read']);
     }
 
-#[Route('/{id}', methods: ['PUT'])]
+    #[Route('/events/{id}', methods: ['PUT'])]
     public function updateEvent(Request $request, Event $event, EntityManagerInterface $entityManager): JsonResponse
     {
         // Try to get data from FormData first
@@ -154,15 +139,10 @@ class EventController extends AbstractController
         
         $entityManager->flush();
         
-        // Send notification
-       // $this->notificationService->notify('event_updated', [
-         //'message' => 'Événement mis à jour: ' . $event->getTitle(),
-       // ]);
-        
         return $this->json($event, Response::HTTP_OK, [], ['groups' => 'event:read']);
     }
 
-#[Route('/{id}', methods: ['DELETE'])]
+    #[Route('/events/{id}', methods: ['DELETE'])]
     public function deleteEvent(Event $event, EntityManagerInterface $entityManager): JsonResponse
     {
         // Delete image if exists
@@ -170,27 +150,17 @@ class EventController extends AbstractController
             $this->fileUploadService->deleteFile($event->getImageFilename());
         }
         
-        $eventTitle = $event->getTitle();
-        
         $entityManager->remove($event);
         $entityManager->flush();
-        
-      //  $this->notificationService->notify('event_deleted', [
-      //      'message' => 'Événement supprimé: ' . $eventTitle,
-      //  ]);
         
         return $this->json(null, Response::HTTP_NO_CONTENT);
     }
 
-#[Route('/{id}/complete', methods: ['PATCH'])]
+    #[Route('/events/{id}/complete', methods: ['PATCH'])]
     public function completeEvent(Event $event, EntityManagerInterface $entityManager): JsonResponse
     {
         $event->setIsCompleted(true);
         $entityManager->flush();
-        
-      //  $this->notificationService->notify('event_terminated', [
-       //     'message' => 'Événement terminé: ' . $event->getTitle(),
-        //]);
         
         return $this->json($event, Response::HTTP_OK, [], ['groups' => 'event:read']);
     }

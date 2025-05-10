@@ -122,34 +122,9 @@ class Event
         return $this;
     }
 
-    /**
-     * @return Collection<int, EventParticipation>
-     */
     public function getParticipations(): Collection
     {
         return $this->participations;
-    }
-
-    public function addParticipation(EventParticipation $participation): self
-    {
-        if (!$this->participations->contains($participation)) {
-            $this->participations->add($participation);
-            $participation->setEvent($this);
-        }
-
-        return $this;
-    }
-
-    public function removeParticipation(EventParticipation $participation): self
-    {
-        if ($this->participations->removeElement($participation)) {
-            // set the owning side to null (unless already changed)
-            if ($participation->getEvent() === $this) {
-                $participation->setEvent(null);
-            }
-        }
-
-        return $this;
     }
 
     public function getOrganizer(): ?Characters

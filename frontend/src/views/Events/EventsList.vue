@@ -120,14 +120,14 @@ export default {
         this.error = null;
         
         const [allEvents, upcoming, past] = await Promise.all([
-          this.fetchEvents(),
-          this.fetchUpcomingEvents(),
-          this.fetchPastEvents()
+          axios.get(`${API_URL}/events`),
+          axios.get(`${API_URL}/events/upcoming`),
+          axios.get(`${API_URL}/events/past`)
         ]);
         
-        this.events = allEvents;
-        this.upcomingEvents = upcoming;
-        this.pastEvents = past;
+        this.events = allEvents.data;
+        this.upcomingEvents = upcoming.data;
+        this.pastEvents = past.data;
         
         this.isLoading = false;
       } catch (err) {
@@ -135,21 +135,6 @@ export default {
         this.error = 'Erreur lors du chargement des événements';
         this.isLoading = false;
       }
-    },
-    
-    async fetchEvents() {
-      const response = await axios.get(`${API_URL}/events`);
-      return response.data;
-    },
-    
-    async fetchUpcomingEvents() {
-      const response = await axios.get(`${API_URL}/events/upcoming`);
-      return response.data;
-    },
-    
-    async fetchPastEvents() {
-      const response = await axios.get(`${API_URL}/events/past`);
-      return response.data;
     },
     
     createEvent() {

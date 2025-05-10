@@ -56,7 +56,6 @@ class EventParticipation
     public function setEvent(?Event $event): self
     {
         $this->event = $event;
-
         return $this;
     }
 
@@ -68,7 +67,6 @@ class EventParticipation
     public function setCharacter(?Characters $character): self
     {
         $this->character = $character;
-
         return $this;
     }
 
@@ -80,7 +78,6 @@ class EventParticipation
     public function setPosition(int $position): self
     {
         $this->position = $position;
-
         return $this;
     }
 
@@ -92,7 +89,6 @@ class EventParticipation
     public function setPoints(int $points): self
     {
         $this->points = $points;
-
         return $this;
     }
 
@@ -104,7 +100,6 @@ class EventParticipation
     public function setCreatedAt(\DateTimeInterface $createdAt): self
     {
         $this->createdAt = $createdAt;
-
         return $this;
     }
 }

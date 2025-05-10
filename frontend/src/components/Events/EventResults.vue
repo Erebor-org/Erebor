@@ -110,15 +110,7 @@ export default {
         this.error = null;
         
         const response = await axios.get(`${this.API_URL}/event-participations/event/${this.eventId}`);
-        const data = response.data;
-        
-        // Fetch character data for each participation
-        for (const participation of data) {
-          const characterResponse = await axios.get(`${this.API_URL}/characters/${participation.characterId}`);
-          participation.character = characterResponse.data;
-        }
-        
-        this.participations = data;
+        this.participations = response.data;
         
         this.isLoading = false;
       } catch (err) {
