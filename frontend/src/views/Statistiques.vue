@@ -17,25 +17,25 @@
     <div class="w-11/12 max-w-7xl bg-white border-2 border-[#b07d46] rounded-lg shadow-lg p-4 mb-6">
       <div class="flex justify-center mb-4">
         <div class="inline-flex rounded-md shadow-sm" role="group">
-          <button
-            @click="filter = 'global'"
+          <button 
+            @click="filter = 'global'" 
             :class="[
               'px-4 py-2 text-sm font-medium border border-[#b07d46]',
-              filter === 'global'
-                ? 'bg-[#b07d46] text-white'
-                : 'bg-white text-[#b07d46] hover:bg-[#f3d9b1]',
+              filter === 'global' 
+                ? 'bg-[#b07d46] text-white' 
+                : 'bg-white text-[#b07d46] hover:bg-[#f3d9b1]'
             ]"
             class="rounded-l-lg"
           >
             Global
           </button>
-          <button
-            @click="filter = 'byRole'"
+          <button 
+            @click="filter = 'byRole'" 
             :class="[
               'px-4 py-2 text-sm font-medium border border-b border-[#b07d46]',
-              filter === 'byRole'
-                ? 'bg-[#b07d46] text-white'
-                : 'bg-white text-[#b07d46] hover:bg-[#f3d9b1]',
+              filter === 'byRole' 
+                ? 'bg-[#b07d46] text-white' 
+                : 'bg-white text-[#b07d46] hover:bg-[#f3d9b1]'
             ]"
             class="rounded-r-lg"
           >
@@ -45,8 +45,8 @@
       </div>
 
       <div v-if="filter === 'byRole'" class="mb-4">
-        <select
-          v-model="selectedRole"
+        <select 
+          v-model="selectedRole" 
           class="w-full md:w-1/3 mx-auto block border-2 border-[#b07d46] bg-[#fffaf0] rounded-md p-2 text-base focus:outline-none focus:ring-2 focus:ring-[#f3d9b1]"
         >
           <option value="">Sélectionner un rôle</option>
@@ -62,47 +62,53 @@
 
     <!-- Statistics Content -->
     <div v-else-if="statistics" class="w-11/12 max-w-7xl">
-      <!-- Main Stats Cards -->
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-        <!-- Total Characters (excluding mules) -->
-        <div class="bg-white border-2 border-[#b07d46] rounded-lg shadow-lg p-6">
-          <h2 class="text-xl font-bold text-[#b02e2e] mb-4">Personnages Principaux</h2>
-          <div class="flex items-center justify-between">
-            <div class="text-4xl font-bold text-[#b07d46]">{{ statistics.totalCharacters }}</div>
-            <div class="text-5xl text-[#b07d46]">
-              <i class="fas fa-user"></i>
-            </div>
+      <!-- Character Stats -->
+      <div class="bg-white border-2 border-[#b07d46] rounded-lg shadow-lg p-6 mb-8">
+        <h2 class="text-xl font-bold text-[#b02e2e] mb-4">Statistiques des Personnages</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="flex items-center justify-between bg-gray-100 p-2 rounded">
+            <span class="text-[#b07d46] font-semibold">Personnages Principaux</span>
+            <span class="text-[#b07d46]">{{ statistics.totalCharacters }}</span>
+          </div>
+          <div class="flex items-center justify-between bg-gray-100 p-2 rounded">
+            <span class="text-[#b07d46] font-semibold">Total Personnages</span>
+            <span class="text-[#b07d46]">{{ statistics.totalCharactersIncludingMules }}</span>
           </div>
         </div>
+      </div>
 
-        <!-- Total Characters (including mules) -->
-        <div class="bg-white border-2 border-[#b07d46] rounded-lg shadow-lg p-6">
-          <h2 class="text-xl font-bold text-[#b02e2e] mb-4">Total Personnages</h2>
-          <div class="flex items-center justify-between">
-            <div class="text-4xl font-bold text-[#b07d46]">
-              {{ statistics.totalCharactersIncludingMules }}
-            </div>
-            <div class="text-5xl text-[#b07d46]">
-              <i class="fas fa-users"></i>
-            </div>
+      <!-- Booty Distribution -->
+      <div class="bg-white border-2 border-[#b07d46] rounded-lg shadow-lg p-6 mb-8">
+        <h2 class="text-xl font-bold text-[#b02e2e] mb-4">Butins</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div v-for="(count, level) in statistics.bootyCounts" :key="level" class="flex items-center justify-between bg-gray-100 p-2 rounded">
+            <span class="text-[#b07d46] font-semibold">{{ level }}</span>
+            <span class="text-[#b07d46]">{{ count }} </span>
           </div>
         </div>
+      </div>
 
-        <!-- Booty Distribution -->
-        <div class="bg-white border-2 border-[#b07d46] rounded-lg shadow-lg p-6 mb-8">
-          <h2 class="text-xl font-bold text-[#b02e2e] mb-4">Butins</h2>
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div
-              v-for="(count, level) in statistics.bootyCounts"
-              :key="level"
-              class="flex items-center justify-between bg-gray-100 p-2 rounded"
-            >
-              <span class="text-[#b07d46] font-semibold">{{ level }}</span>
-              <span class="text-[#b07d46]">{{ count }} personnages</span>
+      <!-- Class Distribution Chart -->
+      <div class="bg-white border-2 border-[#b07d46] rounded-lg shadow-lg p-6 mb-8">
+        <h2 class="text-xl font-bold text-[#b02e2e] mb-4">Répartition des Classes</h2>
+        <div class="flex flex-col md:flex-row items-center">
+          <div class="w-full md:w-1/2 h-80">
+            <canvas ref="classChart"></canvas>
+          </div>
+          <div class="w-full md:w-1/2 mt-4 md:mt-0 md:pl-6">
+            <div class="grid grid-cols-2 gap-2">
+              <div v-for="(percentage, className) in statistics.classDistribution" :key="className" class="flex items-center">
+                <div 
+                  class="w-4 h-4 rounded-full mr-2" 
+                  :style="{ backgroundColor: getClassColor(className) }"
+                ></div>
+                <span class="text-sm text-[#b07d46]">{{ className }}: {{ percentage }}%</span>
+              </div>
             </div>
           </div>
         </div>
       </div>
+
       <!-- Member Roles Distribution -->
       <div class="bg-white border-2 border-[#b07d46] rounded-lg shadow-lg p-6 mb-8">
         <h2 class="text-xl font-bold text-[#b02e2e] mb-4">Répartition des Rôles</h2>
@@ -112,16 +118,12 @@
           </div>
           <div class="w-full md:w-1/2 mt-4 md:mt-0 md:pl-6">
             <div class="grid grid-cols-1 gap-2">
-              <div
-                v-for="(count, role) in statistics.memberRolesDistribution"
-                :key="role"
-                class="flex items-center justify-between"
-              >
+              <div v-for="(count, role) in statistics.memberRolesDistribution" :key="role" class="flex items-center justify-between">
                 <span class="text-[#b07d46]">{{ role }}</span>
                 <div class="flex items-center">
                   <div class="w-32 bg-gray-200 rounded-full h-2.5 mr-2">
-                    <div
-                      class="bg-[#b07d46] h-2.5 rounded-full"
+                    <div 
+                      class="bg-[#b07d46] h-2.5 rounded-full" 
                       :style="{ width: `${(count / statistics.totalCharacters) * 100}%` }"
                     ></div>
                   </div>
@@ -151,12 +153,7 @@
                 <td class="p-3 border-b border-[#b07d46]/20">{{ data.name }}</td>
                 <td class="p-3 border-b border-[#b07d46]/20">
                   <div class="flex items-center">
-                    <img
-                      v-if="data.class"
-                      :src="getClassIcon(data.class)"
-                      alt="Class"
-                      class="w-6 h-6 mr-2"
-                    />
+                    <img v-if="data.class" :src="getClassIcon(data.class)" alt="Class" class="w-6 h-6 mr-2" />
                     <span>{{ data.class }}</span>
                   </div>
                 </td>
@@ -164,8 +161,8 @@
                 <td class="p-3 border-b border-[#b07d46]/20">
                   <div class="flex items-center">
                     <div class="w-full bg-gray-200 rounded-full h-2.5 mr-2">
-                      <div
-                        class="bg-[#b07d46] h-2.5 rounded-full"
+                      <div 
+                        class="bg-[#b07d46] h-2.5 rounded-full" 
                         :style="{ width: `${data.percentage}%` }"
                       ></div>
                     </div>
@@ -177,38 +174,10 @@
           </table>
         </div>
       </div>
-
-      <!-- Class Distribution Chart -->
-      <div class="bg-white border-2 border-[#b07d46] rounded-lg shadow-lg p-6 mb-8">
-        <h2 class="text-xl font-bold text-[#b02e2e] mb-4">Répartition des Classes</h2>
-        <div class="flex flex-col md:flex-row items-center">
-          <div class="w-full md:w-1/2 h-80">
-            <canvas ref="classChart"></canvas>
-          </div>
-          <div class="w-full md:w-1/2 mt-4 md:mt-0 md:pl-6">
-            <div class="grid grid-cols-2 gap-2">
-              <div
-                v-for="(percentage, className) in statistics.classDistribution"
-                :key="className"
-                class="flex items-center"
-              >
-                <div
-                  class="w-4 h-4 rounded-full mr-2"
-                  :style="{ backgroundColor: getClassColor(className) }"
-                ></div>
-                <span class="text-sm text-[#b07d46]">{{ className }}: {{ percentage }}%</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
     </div>
 
     <!-- No Data Message -->
-    <div
-      v-else
-      class="w-11/12 max-w-7xl bg-white border-2 border-[#b07d46] rounded-lg shadow-lg p-8 text-center"
-    >
+    <div v-else class="w-11/12 max-w-7xl bg-white border-2 border-[#b07d46] rounded-lg shadow-lg p-8 text-center">
       <p class="text-xl text-[#b07d46]">Aucune donnée statistique disponible.</p>
     </div>
   </div>
@@ -225,7 +194,7 @@ const API_URL = import.meta.env.VITE_API_URL;
 export default {
   name: 'GuildStatistics',
   components: {
-    Notification,
+    Notification
   },
   data() {
     return {
@@ -286,24 +255,19 @@ export default {
   computed: {
     recruiterData() {
       if (!this.statistics || !this.statistics.recruiterPerformance) return [];
-
-      const totalRecruits = Object.values(this.statistics.recruiterPerformance).reduce(
-        (sum, count) => sum + count,
-        0
-      );
-
-      return Object.entries(this.statistics.recruiterPerformance)
-        .map(([name, count]) => {
-          const recruiter = this.recruiters.find(r => r.pseudo === name);
-          return {
-            name,
-            class: recruiter ? recruiter.class : '',
-            count,
-            percentage: totalRecruits > 0 ? Math.round((count / totalRecruits) * 100) : 0,
-          };
-        })
-        .sort((a, b) => b.count - a.count);
-    },
+      
+      const totalRecruits = Object.values(this.statistics.recruiterPerformance).reduce((sum, count) => sum + count, 0);
+      
+      return Object.entries(this.statistics.recruiterPerformance).map(([name, count]) => {
+        const recruiter = this.recruiters.find(r => r.pseudo === name);
+        return {
+          name,
+          class: recruiter ? recruiter.class : '',
+          count,
+          percentage: totalRecruits > 0 ? Math.round((count / totalRecruits) * 100) : 0
+        };
+      }).sort((a, b) => b.count - a.count);
+    }
   },
   watch: {
     filter() {
@@ -323,7 +287,7 @@ export default {
       this.$nextTick(() => {
         this.renderCharts();
       });
-    },
+    }
   },
   mounted() {
     this.fetchRoles();
@@ -343,10 +307,7 @@ export default {
         this.roles = response.data;
       } catch (error) {
         console.error('Error fetching roles:', error);
-        this.$refs.notificationRef?.showNotification(
-          'Erreur lors de la récupération des rôles',
-          'error'
-        );
+        this.$refs.notificationRef?.showNotification('Erreur lors de la récupération des rôles', 'error');
       }
     },
     async fetchRecruiters() {
@@ -355,38 +316,32 @@ export default {
         this.recruiters = response.data;
       } catch (error) {
         console.error('Error fetching recruiters:', error);
-        this.$refs.notificationRef?.showNotification(
-          'Erreur lors de la récupération des recruteurs',
-          'error'
-        );
+        this.$refs.notificationRef?.showNotification('Erreur lors de la récupération des recruteurs', 'error');
       }
     },
     async fetchStatistics() {
       this.loading = true;
       try {
         let params = { filter: this.filter };
-
+        
         if (this.filter === 'byRole' && this.selectedRole) {
           params.roleId = this.selectedRole;
         } else if (this.filter === 'byRecruiter' && this.selectedRecruiter) {
           params.recruiterId = this.selectedRecruiter;
         }
-
+        
         const response = await axios.get(`${API_URL}/statistics`, { params });
         this.statistics = response.data;
       } catch (error) {
         console.error('Error fetching statistics:', error);
-        this.$refs.notificationRef?.showNotification(
-          'Erreur lors de la récupération des statistiques',
-          'error'
-        );
+        this.$refs.notificationRef?.showNotification('Erreur lors de la récupération des statistiques', 'error');
       } finally {
         this.loading = false;
       }
     },
     renderCharts() {
       if (!this.statistics) return;
-
+      
       this.renderClassChart();
       this.renderRolesChart();
     },
@@ -394,44 +349,52 @@ export default {
       if (this.classChart) {
         this.classChart.destroy();
       }
-
+      
       const ctx = this.$refs.classChart?.getContext('2d');
       if (!ctx || !this.statistics.classDistribution) return;
-
+      
       const labels = Object.keys(this.statistics.classDistribution);
       const data = Object.values(this.statistics.classDistribution);
       const backgroundColor = labels.map(className => this.getClassColor(className));
-
+      
       this.classChart = new Chart(ctx, {
         type: 'pie',
         data: {
           labels,
-          datasets: [
-            {
-              data,
-              backgroundColor,
-              borderColor: '#ffffff',
-              borderWidth: 1,
-            },
-          ],
+          datasets: [{
+            data,
+            backgroundColor,
+            borderColor: '#ffffff',
+            borderWidth: 1
+          }]
         },
         options: {
           responsive: true,
           maintainAspectRatio: false,
           plugins: {
             legend: {
-              display: false,
+              display: false
             },
             tooltip: {
               callbacks: {
-                label: function (context) {
+                label: function(context) {
                   return `${context.label}: ${context.raw}%`;
-                },
-              },
-            },
-          },
-        },
+                }
+              }
+            }
+          }
+        }
       });
+    },
+    getRoleColors(count) {
+      const colors = [];
+      for (let i = 0; i < count; i++) {
+        const hue = ((i * 360) / count) % 360;
+        const saturation = 65;
+        const lightness = 50;
+        colors.push(`hsl(${hue}, ${saturation}%, ${lightness}%)`);
+      }
+      return colors;
     },
     renderRolesChart() {
       if (this.rolesChart) {
@@ -444,63 +407,49 @@ export default {
       const labels = Object.keys(this.statistics.memberRolesDistribution);
       const data = Object.values(this.statistics.memberRolesDistribution);
 
-      // Generate colors with different shades of brown
-      const generateColors = count => {
-        const colors = [];
-        for (let i = 0; i < count; i++) {
-          const hue = ((i * 360) / count) % 360; // Équilibre les couleurs autour du cercle
-          const saturation = 65; // Assez vif mais pas trop flashy
-          const lightness = 50; // Bonne visibilité
-          colors.push(`hsl(${hue}, ${saturation}%, ${lightness}%)`);
-        }
-        return colors;
-      };
-
-      const backgroundColor = generateColors(labels.length);
+      const backgroundColor = this.getRoleColors(labels.length);
 
       this.rolesChart = new Chart(ctx, {
         type: 'doughnut',
         data: {
           labels,
-          datasets: [
-            {
-              data,
-              backgroundColor,
-              borderColor: '#ffffff',
-              borderWidth: 1,
-            },
-          ],
+          datasets: [{
+            data,
+            backgroundColor,
+            borderColor: '#ffffff',
+            borderWidth: 1
+          }]
         },
         options: {
           responsive: true,
           maintainAspectRatio: false,
           plugins: {
             legend: {
-              display: false,
+              display: false
             },
             tooltip: {
               callbacks: {
-                label: function (context) {
+                label: function(context) {
                   return `${context.label}: ${context.raw}`;
-                },
-              },
-            },
-          },
-        },
+                }
+              }
+            }
+          }
+        }
       });
-    },
-  },
+    }
+  }
 };
 </script>
 
 <style scoped>
 .fas.fa-user::before {
-  content: '👤';
+  content: "👤";
 }
 .fas.fa-users::before {
-  content: '👥';
+  content: "👥";
 }
 .fas.fa-treasure-chest::before {
-  content: '🏆';
+  content: "🏆";
 }
 </style>
