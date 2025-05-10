@@ -1,6 +1,18 @@
 <template>
-  <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-    <div class="bg-[#fff5e6] border-4 border-[#b07d46] rounded-lg p-6 max-w-md w-full">
+  <div 
+    class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+    @click.self="cancel"
+  >
+    <div class="bg-[#fff5e6] border-4 border-[#b07d46] rounded-lg p-6 max-w-md w-full relative">
+      <button 
+        type="button"
+        @click="cancel"
+        class="absolute top-2 right-2 bg-[#b02e2e] hover:bg-[#942828] text-white p-1 rounded-full"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
       <h3 class="text-xl font-bold text-[#b02e2e] mb-4">Modifier l'événement</h3>
       <form @submit.prevent="handleSubmit">
         <div>
@@ -86,114 +98,93 @@
   </div>
 </template>
 
-<script>
+<script setup>
 import axios from 'axios';
+import { onMounted, ref, computed } from 'vue';
 
-export default {
-  props: {
-    event: {
-      type: Object,
-      required: true
-    }
-  },
-  data() {
-    return {
-      API_URL: import.meta.env.VITE_API_URL,
-      isLoading: false,
-      error: null,
-      updatedEvent: { ...this.event },
-      imagePreview: null,
-      newImage: null
-    };
-  },
-  computed: {
-    currentEventDate: function() {
-      return new Date(this.event.eventDate).toISOString().slice(0, 16);
-    }
-  },
-  mounted() {
-    // Set image preview if event has an image
-    if (this.event.imageFilename) {
-      this.imagePreview = `${this.API_URL}/uploads/events/${this.event.imageFilename}`;
-    }
-    // Format event date
-    this.updatedEvent.eventDate = new Date(this.event.eventDate).toISOString().slice(0, 16);
-  },
-  methods: {
-    handleImageChange(e) {
-      const file = e.target.files[0];
-      if (!file) return;
-      
-      this.newImage = file;
-      
-      // Create preview
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        this.imagePreview = e.target.result;
-      };
-      reader.readAsDataURL(file);
-    },
-    removeImage() {
-      this.newImage = null;
-      this.imagePreview = null;
-      
-      // Reset file input
-      const fileInput = document.getElementById('event-image');
-      if (fileInput) {
-        fileInput.value = '';
-      }
-    },
-    async handleSubmit() {
-      try {
-        this.isLoading = true;
-        this.error = null;
-        
-        console.log('Submitting event update...');
-        
-        const updatedData = {
-          title: this.updatedEvent.title,
-          description: this.updatedEvent.description,
-        };
-
-        // Only add eventDate if it has changed
-        if (this.updatedEvent.eventDate !== this.event.eventDate) {
-          updatedData.eventDate = this.updatedEvent.eventDate;
-        }
-
-        let response;
-
-        if (this.newImage) {
-          // Use FormData for image upload
-          const formData = new FormData();
-          formData.append('data', JSON.stringify(updatedData, null, 2));
-          
-          formData.append('image', this.newImage);
-          
-          console.log('Using FormData for image upload');
-          
-          response = await axios.patch(`${this.API_URL}/events/${this.event.id}`, formData);
-        } else {
-          // Use JSON for regular updates
-          console.log('Using JSON for regular updates');
-          
-          response = await axios.patch(`${this.API_URL}/events/${this.event.id}`, updatedData);
-        }
-        
-        console.log('Response:', response.data);
-        
-        // Emit the updated event to the parent component
-        this.$emit('update', response.data);
-        this.$emit('close');
-        this.isLoading = false;
-      } catch (err) {
-        console.error('Error updating event:', err);
-        this.error = 'Erreur lors de la mise à jour de l\'événement';
-        this.isLoading = false;
-      }
-    },
-    cancel() {
-      this.$emit('close');
-    }
+const props = defineProps({
+  event: {
+    type: Object,
+    required: true
   }
+});
+
+const emit = defineEmits(['update', 'close']);
+
+const API_URL = import.meta.env.VITE_API_URL;
+const isLoading = ref(false);
+const error = ref(null);
+const updatedEvent = ref({ ...props.event });
+const imagePreview = ref(null);
+const newImage = ref(null);
+
+const currentEventDate = computed(() => {
+  return new Date(props.event.eventDate).toISOString().slice(0, 16);
+});
+
+onMounted(() => {
+  if (props.event.imageFilename) {
+    imagePreview.value = `${API_URL}/uploads/events/${props.event.imageFilename}`;
+  }
+  updatedEvent.value.eventDate = new Date(props.event.eventDate).toISOString().slice(0, 16);
+});
+
+const handleImageChange = (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  newImage.value = file;
+
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    imagePreview.value = e.target.result;
+  };
+  reader.readAsDataURL(file);
+};
+
+const removeImage = () => {
+  newImage.value = null;
+  imagePreview.value = null;
+
+  const fileInput = document.getElementById('event-image');
+  if (fileInput) fileInput.value = '';
+};
+
+const handleSubmit = async () => {
+  try {
+    isLoading.value = true;
+    error.value = null;
+
+    const updatedData = {
+      title: updatedEvent.value.title,
+      description: updatedEvent.value.description,
+    };
+
+    if (updatedEvent.value.eventDate !== props.event.eventDate) {
+      updatedData.eventDate = updatedEvent.value.eventDate;
+    }
+
+    let response;
+
+    if (newImage.value) {
+      const formData = new FormData();
+      formData.append('data', JSON.stringify(updatedData, null, 2));
+      formData.append('image', newImage.value);
+      response = await axios.patch(`${API_URL}/events/${props.event.id}`, formData);
+    } else {
+      response = await axios.patch(`${API_URL}/events/${props.event.id}`, updatedData);
+    }
+
+    emit('update', response.data);
+    emit('close');
+    isLoading.value = false;
+  } catch (err) {
+    console.error('Error updating event:', err);
+    error.value = 'Erreur lors de la mise à jour de l\'événement';
+    isLoading.value = false;
+  }
+};
+
+const cancel = () => {
+  emit('close');
 };
 </script>
