@@ -54,8 +54,12 @@
         <div class="flex items-center space-x-6">
           <nav class="flex items-center space-x-4">
             <button class="text-sm uppercase underline-on-hover">Annonce</button>
-            <button class="text-sm uppercase underline-on-hover">Ladders</button>
-            <button class="text-sm uppercase underline-on-hover">Events</button>
+            <button class="text-sm uppercase underline-on-hover">
+              <RouterLink to="/ladder">Ladder</RouterLink>
+            </button>
+            <button class="text-sm uppercase underline-on-hover">
+              <RouterLink to="/events">Events</RouterLink>
+            </button>
           </nav>
         </div>
 
