@@ -1,136 +1,3 @@
-<script setup>
-import { ref, onMounted, computed } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
-import { fetchEventById, createEvent, updateEvent } from '@/services/eventServices';
-
-const route = useRoute();
-const router = useRouter();
-
-const isEditMode = computed(() => route.name === 'EventEdit');
-const eventId = computed(() => route.params.id);
-
-const event = ref({
-  title: '',
-  description: '',
-  eventDate: new Date().toISOString().slice(0, 16),
-  image: null
-});
-
-const imagePreview = ref(null);
-const isLoading = ref(false);
-const error = ref(null);
-const success = ref(null);
-
-onMounted(async () => {
-  if (isEditMode.value) {
-    try {
-      isLoading.value = true;
-      
-      const data = await fetchEventById(eventId.value);
-      
-      event.value = {
-        title: data.title,
-        description: data.description,
-        eventDate: new Date(data.eventDate).toISOString().slice(0, 16),
-        image: null
-      };
-      
-      if (data.imageFilename) {
-        imagePreview.value = `http://localhost:8000/uploads/events/${data.imageFilename}`;
-      }
-      
-      isLoading.value = false;
-    } catch (err) {
-      console.error('Error loading event:', err);
-      error.value = 'Erreur lors du chargement de l\'événement';
-      isLoading.value = false;
-    }
-  }
-});
-
-const handleImageChange = (e) => {
-  const file = e.target.files[0];
-  if (!file) return;
-  
-  event.value.image = file;
-  
-  // Create preview
-  const reader = new FileReader();
-  reader.onload = (e) => {
-    imagePreview.value = e.target.result;
-  };
-  reader.readAsDataURL(file);
-};
-
-const removeImage = () => {
-  event.value.image = null;
-  imagePreview.value = null;
-  
-  // Reset file input
-  const fileInput = document.getElementById('event-image');
-  if (fileInput) {
-    fileInput.value = '';
-  }
-};
-
-const validateForm = () => {
-  if (!event.value.title.trim()) {
-    error.value = 'Le titre est requis';
-    return false;
-  }
-  
-  if (!event.value.description.trim()) {
-    error.value = 'La description est requise';
-    return false;
-  }
-  
-  if (!event.value.eventDate) {
-    error.value = 'La date est requise';
-    return false;
-  }
-  
-  return true;
-};
-
-const handleSubmit = async () => {
-  error.value = null;
-  success.value = null;
-  
-  if (!validateForm()) return;
-  
-  try {
-    isLoading.value = true;
-    
-    if (isEditMode.value) {
-      await updateEvent(eventId.value, event.value);
-      success.value = 'Événement mis à jour avec succès';
-    } else {
-      const newEvent = await createEvent(event.value);
-      success.value = 'Événement créé avec succès';
-      
-      // Redirect to event details after a short delay
-      setTimeout(() => {
-        router.push(`/events/${newEvent.id}`);
-      }, 1500);
-    }
-    
-    isLoading.value = false;
-  } catch (err) {
-    console.error('Error saving event:', err);
-    error.value = 'Erreur lors de l\'enregistrement de l\'événement';
-    isLoading.value = false;
-  }
-};
-
-const cancelForm = () => {
-  if (isEditMode.value) {
-    router.push(`/events/${eventId.value}`);
-  } else {
-    router.push('/events');
-  }
-};
-</script>
-
 <template>
   <div class="container mx-auto px-4 py-8">
     <div class="max-w-3xl mx-auto">
@@ -257,3 +124,137 @@ const cancelForm = () => {
     </div>
   </div>
 </template>
+
+<script setup>
+import { ref, onMounted, computed } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+import { fetchEventById, createEvent, updateEvent } from '@/services/eventServices';
+
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+const route = useRoute();
+const router = useRouter();
+
+const isEditMode = computed(() => route.name === 'EventEdit');
+const eventId = computed(() => route.params.id);
+
+const event = ref({
+  title: '',
+  description: '',
+  eventDate: new Date().toISOString().slice(0, 16),
+  image: null
+});
+
+const imagePreview = ref(null);
+const isLoading = ref(false);
+const error = ref(null);
+const success = ref(null);
+
+onMounted(async () => {
+  if (isEditMode.value) {
+    try {
+      isLoading.value = true;
+      
+      const data = await fetchEventById(eventId.value);
+      
+      event.value = {
+        title: data.title,
+        description: data.description,
+        eventDate: new Date(data.eventDate).toISOString().slice(0, 16),
+        image: null
+      };
+      
+      if (data.imageFilename) {
+        imagePreview.value = `${API_URL}/uploads/events/${data.imageFilename}`;
+      }
+      
+      isLoading.value = false;
+    } catch (err) {
+      console.error('Error loading event:', err);
+      error.value = 'Erreur lors du chargement de l\'événement';
+      isLoading.value = false;
+    }
+  }
+});
+
+const handleImageChange = (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  
+  event.value.image = file;
+  
+  // Create preview
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    imagePreview.value = e.target.result;
+  };
+  reader.readAsDataURL(file);
+};
+
+const removeImage = () => {
+  event.value.image = null;
+  imagePreview.value = null;
+  
+  // Reset file input
+  const fileInput = document.getElementById('event-image');
+  if (fileInput) {
+    fileInput.value = '';
+  }
+};
+
+const validateForm = () => {
+  if (!event.value.title.trim()) {
+    error.value = 'Le titre est requis';
+    return false;
+  }
+  
+  if (!event.value.description.trim()) {
+    error.value = 'La description est requise';
+    return false;
+  }
+  
+  if (!event.value.eventDate) {
+    error.value = 'La date est requise';
+    return false;
+  }
+  
+  return true;
+};
+
+const handleSubmit = async () => {
+  error.value = null;
+  success.value = null;
+  
+  if (!validateForm()) return;
+  
+  try {
+    isLoading.value = true;
+    
+    if (isEditMode.value) {
+      await updateEvent(eventId.value, event.value);
+      success.value = 'Événement mis à jour avec succès';
+    } else {
+      const newEvent = await createEvent(event.value);
+      success.value = 'Événement créé avec succès';
+      
+      // Redirect to event details after a short delay
+      setTimeout(() => {
+        router.push(`/events/${newEvent.id}`);
+      }, 1500);
+    }
+    
+    isLoading.value = false;
+  } catch (err) {
+    console.error('Error saving event:', err);
+    error.value = 'Erreur lors de l\'enregistrement de l\'événement';
+    isLoading.value = false;
+  }
+};
+
+const cancelForm = () => {
+  if (isEditMode.value) {
+    router.push(`/events/${eventId.value}`);
+  } else {
+    router.push('/events');
+  }
+};
+</script>

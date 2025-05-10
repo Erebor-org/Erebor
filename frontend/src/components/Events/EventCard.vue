@@ -1,52 +1,3 @@
-<script setup>
-import { computed } from 'vue';
-import { useRouter } from 'vue-router';
-
-const props = defineProps({
-  event: {
-    type: Object,
-    required: true
-  },
-  showActions: {
-    type: Boolean,
-    default: true
-  }
-});
-
-const router = useRouter();
-
-const formattedDate = computed(() => {
-  if (!props.event.eventDate) return '';
-  const date = new Date(props.event.eventDate);
-  return date.toLocaleDateString('fr-FR', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit'
-  });
-});
-
-const isUpcoming = computed(() => {
-  if (!props.event.eventDate) return false;
-  const eventDate = new Date(props.event.eventDate);
-  return eventDate > new Date();
-});
-
-const viewEvent = () => {
-  router.push(`/events/${props.event.id}`);
-};
-
-const editEvent = () => {
-  router.push(`/events/${props.event.id}/edit`);
-};
-
-const imageUrl = computed(() => {
-  if (!props.event.imageFilename) return null;
-  return `http://localhost:8000/uploads/events/${props.event.imageFilename}`;
-});
-</script>
-
 <template>
   <div class="bg-gray-800 rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300 flex flex-col h-full">
     <!-- Event Image -->
@@ -109,3 +60,54 @@ const imageUrl = computed(() => {
     </div>
   </div>
 </template>
+
+<script setup>
+import { computed } from 'vue';
+import { useRouter } from 'vue-router';
+
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+
+const props = defineProps({
+  event: {
+    type: Object,
+    required: true
+  },
+  showActions: {
+    type: Boolean,
+    default: true
+  }
+});
+
+const router = useRouter();
+
+const formattedDate = computed(() => {
+  if (!props.event.eventDate) return '';
+  const date = new Date(props.event.eventDate);
+  return date.toLocaleDateString('fr-FR', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  });
+});
+
+const isUpcoming = computed(() => {
+  if (!props.event.eventDate) return false;
+  const eventDate = new Date(props.event.eventDate);
+  return eventDate > new Date();
+});
+
+const viewEvent = () => {
+  router.push(`/events/${props.event.id}`);
+};
+
+const editEvent = () => {
+  router.push(`/events/${props.event.id}/edit`);
+};
+
+const imageUrl = computed(() => {
+  if (!props.event.imageFilename) return null;
+  return `${API_URL}/uploads/events/${props.event.imageFilename}`;
+});
+</script>

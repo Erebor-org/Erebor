@@ -26,9 +26,9 @@ const routes = [
   
   // Event system routes
   { path: '/events', name: 'EventsList', component: EventsList, meta: { requiresAuth: true } },
-  { path: '/events/:id', name: 'EventDetails', component: EventDetails, meta: { requiresAuth: true } },
   { path: '/events/create', name: 'EventCreate', component: EventForm, meta: { requiresAuth: true } },
   { path: '/events/:id/edit', name: 'EventEdit', component: EventForm, meta: { requiresAuth: true }, props: true },
+  { path: '/events/:id', name: 'EventDetails', component: EventDetails, meta: { requiresAuth: true } },
   { path: '/ladder', name: 'LadderPage', component: LadderPage, meta: { requiresAuth: true } },
 ];
 

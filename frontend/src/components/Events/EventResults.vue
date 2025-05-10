@@ -1,3 +1,59 @@
+<template>
+  <div class="bg-gray-800 rounded-lg p-6 shadow-lg">
+    <h2 class="text-2xl font-bold text-white mb-6">Résultats</h2>
+    
+    <div v-if="error" class="bg-red-500 text-white p-3 rounded-md mb-4">
+      {{ error }}
+    </div>
+    
+    <div v-if="isLoading" class="text-center py-8">
+      <div class="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-[#93a402]"></div>
+      <p class="mt-2 text-gray-400">Chargement des résultats...</p>
+    </div>
+    
+    <div v-else-if="participations.length === 0" class="text-center py-8">
+      <p class="text-gray-400">Aucun résultat disponible pour cet événement</p>
+    </div>
+    
+    <div v-else>
+      <div class="overflow-x-auto">
+        <table class="min-w-full bg-gray-900 rounded-lg overflow-hidden">
+          <thead>
+            <tr>
+              <th class="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Position</th>
+              <th class="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Personnage</th>
+              <th class="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Classe</th>
+              <th class="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Points</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-700">
+            <tr v-for="participation in participations" :key="participation.id">
+              <td class="px-4 py-4 whitespace-nowrap">
+                <div :class="['inline-flex items-center justify-center w-8 h-8 rounded-full text-sm font-bold', getPositionColor(participation.position)]">
+                  {{ participation.position }}
+                </div>
+              </td>
+              <td class="px-4 py-4 whitespace-nowrap text-white">
+                {{ participation.character.pseudo }}
+              </td>
+              <td class="px-4 py-4 whitespace-nowrap">
+                <span :class="['px-2 py-1 rounded-md text-xs font-medium text-white', getClassColor(participation.character.class)]">
+                  {{ participation.character.class }}
+                </span>
+              </td>
+              <td class="px-4 py-4 whitespace-nowrap">
+                <div class="text-[#93a402] font-bold">
+                  {{ participation.points }} pts
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</template>
+
 <script setup>
 import { ref, onMounted, watch } from 'vue';
 import { fetchEventParticipations } from '@/services/eventServices';
@@ -71,59 +127,3 @@ const getPositionColor = (position) => {
   return 'bg-gray-700';
 };
 </script>
-
-<template>
-  <div class="bg-gray-800 rounded-lg p-6 shadow-lg">
-    <h2 class="text-2xl font-bold text-white mb-6">Résultats</h2>
-    
-    <div v-if="error" class="bg-red-500 text-white p-3 rounded-md mb-4">
-      {{ error }}
-    </div>
-    
-    <div v-if="isLoading" class="text-center py-8">
-      <div class="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-[#93a402]"></div>
-      <p class="mt-2 text-gray-400">Chargement des résultats...</p>
-    </div>
-    
-    <div v-else-if="participations.length === 0" class="text-center py-8">
-      <p class="text-gray-400">Aucun résultat disponible pour cet événement</p>
-    </div>
-    
-    <div v-else>
-      <div class="overflow-x-auto">
-        <table class="min-w-full bg-gray-900 rounded-lg overflow-hidden">
-          <thead>
-            <tr>
-              <th class="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Position</th>
-              <th class="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Personnage</th>
-              <th class="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Classe</th>
-              <th class="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Points</th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-gray-700">
-            <tr v-for="participation in participations" :key="participation.id">
-              <td class="px-4 py-4 whitespace-nowrap">
-                <div :class="['inline-flex items-center justify-center w-8 h-8 rounded-full text-sm font-bold', getPositionColor(participation.position)]">
-                  {{ participation.position }}
-                </div>
-              </td>
-              <td class="px-4 py-4 whitespace-nowrap text-white">
-                {{ participation.character.pseudo }}
-              </td>
-              <td class="px-4 py-4 whitespace-nowrap">
-                <span :class="['px-2 py-1 rounded-md text-xs font-medium text-white', getClassColor(participation.character.class)]">
-                  {{ participation.character.class }}
-                </span>
-              </td>
-              <td class="px-4 py-4 whitespace-nowrap">
-                <div class="text-[#93a402] font-bold">
-                  {{ participation.points }} pts
-                </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </div>
-</template>

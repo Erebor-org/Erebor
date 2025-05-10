@@ -1,64 +1,3 @@
-<script setup>
-import { ref, onMounted } from 'vue';
-import { useRouter } from 'vue-router';
-import { fetchEvents, fetchUpcomingEvents, fetchPastEvents } from '@/services/eventServices';
-import EventCard from '@/components/Events/EventCard.vue';
-
-const router = useRouter();
-const events = ref([]);
-const upcomingEvents = ref([]);
-const pastEvents = ref([]);
-const isLoading = ref(false);
-const error = ref(null);
-const activeTab = ref('all'); // 'all', 'upcoming', 'past'
-
-const loadEvents = async () => {
-  try {
-    isLoading.value = true;
-    error.value = null;
-    
-    const [allEvents, upcoming, past] = await Promise.all([
-      fetchEvents(),
-      fetchUpcomingEvents(),
-      fetchPastEvents()
-    ]);
-    
-    events.value = allEvents;
-    upcomingEvents.value = upcoming;
-    pastEvents.value = past;
-    
-    isLoading.value = false;
-  } catch (err) {
-    console.error('Error loading events:', err);
-    error.value = 'Erreur lors du chargement des événements';
-    isLoading.value = false;
-  }
-};
-
-onMounted(() => {
-  loadEvents();
-});
-
-const createEvent = () => {
-  router.push('/events/create');
-};
-
-const displayedEvents = () => {
-  switch (activeTab.value) {
-    case 'upcoming':
-      return upcomingEvents.value;
-    case 'past':
-      return pastEvents.value;
-    default:
-      return events.value;
-  }
-};
-
-const setTab = (tab) => {
-  activeTab.value = tab;
-};
-</script>
-
 <template>
   <div class="container mx-auto px-4 py-8">
     <div class="flex justify-between items-center mb-8">
@@ -138,3 +77,64 @@ const setTab = (tab) => {
     </div>
   </div>
 </template>
+
+<script setup>
+import { ref, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
+import { fetchEvents, fetchUpcomingEvents, fetchPastEvents } from '@/services/eventServices';
+import EventCard from '@/components/Events/EventCard.vue';
+
+const router = useRouter();
+const events = ref([]);
+const upcomingEvents = ref([]);
+const pastEvents = ref([]);
+const isLoading = ref(false);
+const error = ref(null);
+const activeTab = ref('all'); // 'all', 'upcoming', 'past'
+
+const loadEvents = async () => {
+  try {
+    isLoading.value = true;
+    error.value = null;
+    
+    const [allEvents, upcoming, past] = await Promise.all([
+      fetchEvents(),
+      fetchUpcomingEvents(),
+      fetchPastEvents()
+    ]);
+    
+    events.value = allEvents;
+    upcomingEvents.value = upcoming;
+    pastEvents.value = past;
+    
+    isLoading.value = false;
+  } catch (err) {
+    console.error('Error loading events:', err);
+    error.value = 'Erreur lors du chargement des événements';
+    isLoading.value = false;
+  }
+};
+
+onMounted(() => {
+  loadEvents();
+});
+
+const createEvent = () => {
+  router.push('/events/create');
+};
+
+const displayedEvents = () => {
+  switch (activeTab.value) {
+    case 'upcoming':
+      return upcomingEvents.value;
+    case 'past':
+      return pastEvents.value;
+    default:
+      return events.value;
+  }
+};
+
+const setTab = (tab) => {
+  activeTab.value = tab;
+};
+</script>

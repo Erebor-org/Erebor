@@ -1,21 +1,3 @@
-<script setup>
-  import { useAuthStore } from '@/stores/authStore';
-  import { computed } from 'vue';
-  import { useRouter } from 'vue-router';
-  const authStore = useAuthStore();
-  const router = useRouter();
-  const logout = () => {
-    authStore.logout();
-    router.push('/');
-  };
-  const isAdmin = computed(() => {
-    return user.value?.roles?.includes('ROLE_ADMIN');
-  });
-
-  const isLoggedIn = computed(() => authStore.token !== null);
-  const user = computed(() => authStore.user);
-
-</script>
 <template>
   <div class="text-white grid">
     <!-- Dofus Logo Positioned Independently -->
@@ -75,20 +57,27 @@
   </div>
 </template>
 
-<script>
+<script setup>
+import { useAuthStore } from '@/stores/authStore';
+import { computed } from 'vue';
+import { useRouter } from 'vue-router';
 import erebor_logo from '@/assets/erebor_logo.png';
 import dofus_logo from '@/assets/logo_dofus_good_quality.webp';
 import profile_icon from '@/assets/profile_icon.png';
-export default {
-  name: "NavigationBar",
-  data() {
-    return {
-      erebor_logo,
-      dofus_logo,
-      profile_icon
-    };
-  },
+
+const authStore = useAuthStore();
+const router = useRouter();
+
+const logout = () => {
+  authStore.logout();
+  router.push('/');
 };
+
+const isLoggedIn = computed(() => authStore.token !== null);
+const user = computed(() => authStore.user);
+const isAdmin = computed(() => {
+  return user.value?.roles?.includes('ROLE_ADMIN');
+});
 </script>
 
 <style scoped>

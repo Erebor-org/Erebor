@@ -1,124 +1,3 @@
-<script setup>
-import { ref, onMounted, computed } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
-import { fetchEventById, deleteEvent, completeEvent } from '@/services/eventServices';
-import EventResults from '@/components/Events/EventResults.vue';
-import ParticipationForm from '@/components/Events/ParticipationForm.vue';
-
-const route = useRoute();
-const router = useRouter();
-const event = ref(null);
-const isLoading = ref(false);
-const error = ref(null);
-const showDeleteConfirm = ref(false);
-const showCompleteConfirm = ref(false);
-const showParticipationForm = ref(false);
-
-const eventId = computed(() => route.params.id);
-
-const loadEvent = async () => {
-  try {
-    isLoading.value = true;
-    error.value = null;
-    
-    const data = await fetchEventById(eventId.value);
-    event.value = data;
-    
-    isLoading.value = false;
-  } catch (err) {
-    console.error('Error loading event:', err);
-    error.value = 'Erreur lors du chargement de l\'événement';
-    isLoading.value = false;
-  }
-};
-
-onMounted(() => {
-  loadEvent();
-});
-
-const formattedDate = computed(() => {
-  if (!event.value?.eventDate) return '';
-  const date = new Date(event.value.eventDate);
-  return date.toLocaleDateString('fr-FR', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit'
-  });
-});
-
-const isUpcoming = computed(() => {
-  if (!event.value?.eventDate) return false;
-  const eventDate = new Date(event.value.eventDate);
-  return eventDate > new Date();
-});
-
-const imageUrl = computed(() => {
-  if (!event.value?.imageFilename) return null;
-  return `http://localhost:8000/uploads/events/${event.value.imageFilename}`;
-});
-
-const editEvent = () => {
-  router.push(`/events/${eventId.value}/edit`);
-};
-
-const confirmDelete = () => {
-  showDeleteConfirm.value = true;
-};
-
-const cancelDelete = () => {
-  showDeleteConfirm.value = false;
-};
-
-const confirmComplete = () => {
-  showCompleteConfirm.value = true;
-};
-
-const cancelComplete = () => {
-  showCompleteConfirm.value = false;
-};
-
-const handleDelete = async () => {
-  try {
-    isLoading.value = true;
-    
-    await deleteEvent(eventId.value);
-    
-    router.push('/events');
-  } catch (err) {
-    console.error('Error deleting event:', err);
-    error.value = 'Erreur lors de la suppression de l\'événement';
-    isLoading.value = false;
-  }
-};
-
-const handleComplete = async () => {
-  try {
-    isLoading.value = true;
-    showCompleteConfirm.value = false;
-    
-    const updatedEvent = await completeEvent(eventId.value);
-    event.value = updatedEvent;
-    
-    isLoading.value = false;
-  } catch (err) {
-    console.error('Error completing event:', err);
-    error.value = 'Erreur lors de la complétion de l\'événement';
-    isLoading.value = false;
-  }
-};
-
-const toggleParticipationForm = () => {
-  showParticipationForm.value = !showParticipationForm.value;
-};
-
-const handleParticipationsAdded = () => {
-  loadEvent();
-  showParticipationForm.value = false;
-};
-</script>
-
 <template>
   <div class="container mx-auto px-4 py-8">
     <div v-if="error" class="bg-red-500 text-white p-4 rounded-md mb-6">
@@ -287,3 +166,125 @@ const handleParticipationsAdded = () => {
     </template>
   </div>
 </template>
+
+<script setup>
+import { ref, onMounted, computed } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+import { fetchEventById, deleteEvent, completeEvent } from '@/services/eventServices';
+import EventResults from '@/components/Events/EventResults.vue';
+import ParticipationForm from '@/components/Events/ParticipationForm.vue';
+
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+const route = useRoute();
+const router = useRouter();
+const event = ref(null);
+const isLoading = ref(false);
+const error = ref(null);
+const showDeleteConfirm = ref(false);
+const showCompleteConfirm = ref(false);
+const showParticipationForm = ref(false);
+
+const eventId = computed(() => route.params.id);
+
+const loadEvent = async () => {
+  try {
+    isLoading.value = true;
+    error.value = null;
+    
+    const data = await fetchEventById(eventId.value);
+    event.value = data;
+    
+    isLoading.value = false;
+  } catch (err) {
+    console.error('Error loading event:', err);
+    error.value = 'Erreur lors du chargement de l\'événement';
+    isLoading.value = false;
+  }
+};
+
+onMounted(() => {
+  loadEvent();
+});
+
+const formattedDate = computed(() => {
+  if (!event.value?.eventDate) return '';
+  const date = new Date(event.value.eventDate);
+  return date.toLocaleDateString('fr-FR', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  });
+});
+
+const isUpcoming = computed(() => {
+  if (!event.value?.eventDate) return false;
+  const eventDate = new Date(event.value.eventDate);
+  return eventDate > new Date();
+});
+
+const imageUrl = computed(() => {
+  if (!event.value?.imageFilename) return null;
+  return `${API_URL}/uploads/events/${event.value.imageFilename}`;
+});
+
+const editEvent = () => {
+  router.push(`/events/${eventId.value}/edit`);
+};
+
+const confirmDelete = () => {
+  showDeleteConfirm.value = true;
+};
+
+const cancelDelete = () => {
+  showDeleteConfirm.value = false;
+};
+
+const confirmComplete = () => {
+  showCompleteConfirm.value = true;
+};
+
+const cancelComplete = () => {
+  showCompleteConfirm.value = false;
+};
+
+const handleDelete = async () => {
+  try {
+    isLoading.value = true;
+    
+    await deleteEvent(eventId.value);
+    
+    router.push('/events');
+  } catch (err) {
+    console.error('Error deleting event:', err);
+    error.value = 'Erreur lors de la suppression de l\'événement';
+    isLoading.value = false;
+  }
+};
+
+const handleComplete = async () => {
+  try {
+    isLoading.value = true;
+    showCompleteConfirm.value = false;
+    
+    const updatedEvent = await completeEvent(eventId.value);
+    event.value = updatedEvent;
+    
+    isLoading.value = false;
+  } catch (err) {
+    console.error('Error completing event:', err);
+    error.value = 'Erreur lors de la complétion de l\'événement';
+    isLoading.value = false;
+  }
+};
+
+const toggleParticipationForm = () => {
+  showParticipationForm.value = !showParticipationForm.value;
+};
+
+const handleParticipationsAdded = () => {
+  loadEvent();
+  showParticipationForm.value = false;
+};
+</script>

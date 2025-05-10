@@ -135,72 +135,60 @@
   </div>
 </template>
 
-<script>
+<script setup>
 import { ref, onMounted } from 'vue';
 import { fetchLadderStandings } from '@/services/eventServices';
 
-export default {
-  setup() {
-    const standings = ref([]);
-    const isLoading = ref(false);
-    const error = ref(null);
+const standings = ref([]);
+const isLoading = ref(false);
+const error = ref(null);
 
-    onMounted(async () => {
-      try {
-        isLoading.value = true;
-        error.value = null;
-        
-        const data = await fetchLadderStandings();
-        standings.value = data;
-        
-        isLoading.value = false;
-      } catch (err) {
-        console.error('Error loading ladder standings:', err);
-        error.value = 'Erreur lors du chargement du classement';
-        isLoading.value = false;
-      }
-    });
-
-    const getClassColor = (characterClass) => {
-      const classColors = {
-        'Cra': 'bg-green-700',
-        'Ecaflip': 'bg-red-700',
-        'Eliotrope': 'bg-purple-700',
-        'Eniripsa': 'bg-pink-700',
-        'Enutrof': 'bg-yellow-700',
-        'Feca': 'bg-blue-700',
-        'Forgelance': 'bg-orange-700',
-        'Huppermage': 'bg-indigo-700',
-        'Iop': 'bg-red-800',
-        'Osamodas': 'bg-green-800',
-        'Pandawa': 'bg-blue-800',
-        'Roublard': 'bg-yellow-800',
-        'Sacrieur': 'bg-red-900',
-        'Sadida': 'bg-green-900',
-        'Sram': 'bg-gray-700',
-        'Steamer': 'bg-orange-800',
-        'Xelor': 'bg-purple-800',
-        'Zobal': 'bg-indigo-800'
-      };
-      
-      return classColors[characterClass] || 'bg-gray-700';
-    };
-
-    const getRankColor = (rank) => {
-      if (rank === 1) return 'bg-yellow-500 text-black';
-      if (rank === 2) return 'bg-gray-400 text-black';
-      if (rank === 3) return 'bg-amber-700 text-white';
-      if (rank <= 10) return 'bg-blue-700 text-white';
-      return 'bg-gray-700';
-    };
-
-    return {
-      standings,
-      isLoading,
-      error,
-      getClassColor,
-      getRankColor
-    };
+onMounted(async () => {
+  try {
+    isLoading.value = true;
+    error.value = null;
+    
+    const data = await fetchLadderStandings();
+    standings.value = data;
+    
+    isLoading.value = false;
+  } catch (err) {
+    console.error('Error loading ladder standings:', err);
+    error.value = 'Erreur lors du chargement du classement';
+    isLoading.value = false;
   }
-}
+});
+
+const getClassColor = (characterClass) => {
+  const classColors = {
+    'Cra': 'bg-green-700',
+    'Ecaflip': 'bg-red-700',
+    'Eliotrope': 'bg-purple-700',
+    'Eniripsa': 'bg-pink-700',
+    'Enutrof': 'bg-yellow-700',
+    'Feca': 'bg-blue-700',
+    'Forgelance': 'bg-orange-700',
+    'Huppermage': 'bg-indigo-700',
+    'Iop': 'bg-red-800',
+    'Osamodas': 'bg-green-800',
+    'Pandawa': 'bg-blue-800',
+    'Roublard': 'bg-yellow-800',
+    'Sacrieur': 'bg-red-900',
+    'Sadida': 'bg-green-900',
+    'Sram': 'bg-gray-700',
+    'Steamer': 'bg-orange-800',
+    'Xelor': 'bg-purple-800',
+    'Zobal': 'bg-indigo-800'
+  };
+  
+  return classColors[characterClass] || 'bg-gray-700';
+};
+
+const getRankColor = (rank) => {
+  if (rank === 1) return 'bg-yellow-500 text-black';
+  if (rank === 2) return 'bg-gray-400 text-black';
+  if (rank === 3) return 'bg-amber-700 text-white';
+  if (rank <= 10) return 'bg-blue-700 text-white';
+  return 'bg-gray-700';
+};
 </script>
