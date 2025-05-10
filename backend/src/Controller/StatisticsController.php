@@ -55,6 +55,9 @@ class StatisticsController extends AbstractController
             ->setParameter('isArchived', false)
             ->setParameter('muleIsArchived', false);
 
+        // Count active mules
+        $totalMules = count($mulesQueryBuilder->getQuery()->getResult());
+
         // Apply filters to mules query
         if ($filter === 'byRole' && $roleId) {
             $mulesQueryBuilder->andWhere('c.rank = :rankId')
@@ -74,9 +77,11 @@ class StatisticsController extends AbstractController
         // Calculate booty counts (B2, B3, B4, etc.)
         $bootyCounts = [];
         foreach ($characters as $character) {
-            $muleCount = count(array_filter($character->getMules()->toArray(), function($mule) {
+            // Count active mules for booty distribution
+            $activeMules = $character->getMules()->filter(function($mule) {
                 return !$mule->isArchived();
-            }));
+            });
+            $muleCount = count($activeMules);
             
             $bootyLevel = 'B' . ($muleCount + 1);
             if (!isset($bootyCounts[$bootyLevel])) {

@@ -10,7 +10,7 @@
     <div
       class="flex flex-col w-11/12 max-w-7xl bg-white border-2 border-[#b07d46] rounded-lg shadow-lg p-4 mb-6"
     >
-      <h1 class="text-3xl font-bold text-[#b02e2e] mb-4 text-center">Statistiques de la Guilde</h1>
+      <h1 class="text-3xl font-bold text-[#b02e2e] mb-4 text-center">Statistiques de la guilde</h1>
     </div>
 
     <!-- Filter Section -->
@@ -85,14 +85,14 @@
     <div v-else-if="statistics" class="w-11/12 max-w-7xl">
       <!-- Character Stats -->
       <div class="bg-white border-2 border-[#b07d46] rounded-lg shadow-lg p-6 mb-8">
-        <h2 class="text-xl font-bold text-[#b02e2e] mb-4">Statistiques des Personnages</h2>
+        <h2 class="text-xl font-bold text-[#b02e2e] mb-4">Statistiques des personnages</h2>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div class="flex items-center justify-between bg-gray-100 p-2 rounded">
-            <span class="text-[#b07d46] font-semibold">Personnages Principaux</span>
+            <span class="text-[#b07d46] font-semibold">Personnages principaux</span>
             <span class="text-[#b07d46]">{{ statistics.totalCharacters }}</span>
           </div>
           <div class="flex items-center justify-between bg-gray-100 p-2 rounded">
-            <span class="text-[#b07d46] font-semibold">Total Personnages</span>
+            <span class="text-[#b07d46] font-semibold">Total personnages</span>
             <span class="text-[#b07d46]">{{ statistics.totalCharactersIncludingMules }}</span>
           </div>
         </div>
@@ -108,31 +108,9 @@
           </div>
         </div>
       </div>
-
-      <!-- Class Distribution Chart -->
-      <div class="bg-white border-2 border-[#b07d46] rounded-lg shadow-lg p-6 mb-8">
-        <h2 class="text-xl font-bold text-[#b02e2e] mb-4">Répartition des Classes</h2>
-        <div class="flex flex-col md:flex-row items-center">
-          <div class="w-full md:w-1/2 h-80">
-            <canvas ref="classChart"></canvas>
-          </div>
-          <div class="w-full md:w-1/2 mt-4 md:mt-0 md:pl-6">
-            <div class="grid grid-cols-2 gap-2">
-              <div v-for="(percentage, className) in statistics.classDistribution" :key="className" class="flex items-center">
-                <div 
-                  class="w-4 h-4 rounded-full mr-2" 
-                  :style="{ backgroundColor: getClassColor(className) }"
-                ></div>
-                <span class="text-sm text-[#b07d46]">{{ className }}: {{ percentage }}%</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
       <!-- Member Roles Distribution -->
       <div class="bg-white border-2 border-[#b07d46] rounded-lg shadow-lg p-6 mb-8">
-        <h2 class="text-xl font-bold text-[#b02e2e] mb-4">Répartition des Rôles</h2>
+        <h2 class="text-xl font-bold text-[#b02e2e] mb-4">Répartition des rôles</h2>
         <div class="flex flex-col md:flex-row items-center">
           <div class="w-full md:w-1/2 h-80">
             <canvas ref="rolesChart"></canvas>
@@ -156,26 +134,47 @@
         </div>
       </div>
 
+      <!-- Class Distribution Chart -->
+      <div class="bg-white border-2 border-[#b07d46] rounded-lg shadow-lg p-6 mb-8">
+        <h2 class="text-xl font-bold text-[#b02e2e] mb-4">Répartition des classes</h2>
+        <div class="flex flex-col md:flex-row items-center">
+          <div class="w-full md:w-1/2 h-80">
+            <canvas ref="classChart"></canvas>
+          </div>
+          <div class="w-full md:w-1/2 mt-4 md:mt-0 md:pl-6">
+            <div class="grid grid-cols-2 gap-2">
+              <div v-for="(percentage, className) in statistics.classDistribution" :key="className" class="flex items-center">
+                <div 
+                  class="w-4 h-4 rounded-full mr-2" 
+                  :style="{ backgroundColor: getClassColor(className) }"
+                ></div>
+                <span class="text-sm text-[#b07d46]">{{ className }}: {{ percentage }}%</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      
+
       <!-- Recruiter Performance -->
       <div class="bg-white border-2 border-[#b07d46] rounded-lg shadow-lg p-6 mb-8">
-        <h2 class="text-xl font-bold text-[#b02e2e] mb-4">Performance des Recruteurs</h2>
+        <h2 class="text-xl font-bold text-[#b02e2e] mb-4">Performance des recruteurs</h2>
         <div class="overflow-x-auto">
           <table class="w-full text-left border-collapse">
             <thead>
               <tr class="bg-[#f3d9b1]">
                 <th class="p-3 border-b-2 border-[#b07d46]">Recruteur</th>
-                <th class="p-3 border-b-2 border-[#b07d46]">Classe</th>
                 <th class="p-3 border-b-2 border-[#b07d46]">Recrues</th>
                 <th class="p-3 border-b-2 border-[#b07d46]">Pourcentage</th>
               </tr>
             </thead>
             <tbody>
               <tr v-for="(data, index) in recruiterData" :key="index" class="hover:bg-[#f3d9b1]/30">
-                <td class="p-3 border-b border-[#b07d46]/20">{{ data.name }}</td>
                 <td class="p-3 border-b border-[#b07d46]/20">
                   <div class="flex items-center">
                     <img v-if="data.class" :src="getClassIcon(data.class)" alt="Class" class="w-6 h-6 mr-2" />
-                    <span>{{ data.class }}</span>
+                    <span>{{ data.name }}</span>
                   </div>
                 </td>
                 <td class="p-3 border-b border-[#b07d46]/20">{{ data.count }}</td>
