@@ -1,5 +1,8 @@
 <template>
-  <div class="bg-[#1f2937] border-2 border-[#1f2937] rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300 flex flex-col h-full">
+  <div 
+    class="bg-[#1f2937] border-2 border-[#1f2937] rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300 flex flex-col h-full cursor-pointer"
+    @click="viewEvent"
+  >
     <!-- Event Image -->
     <div class="relative h-48 overflow-hidden">
       <img 
@@ -44,14 +47,14 @@
     <div v-if="showActions" class="p-4 border-t border-gray-700">
       <div class="flex justify-between">
         <button 
-          @click="viewEvent" 
+          @click.stop="viewEvent" 
           class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-full text-sm font-medium transition-colors duration-300"
         >
           Voir
         </button>
         <button 
           v-if="!event.isCompleted" 
-          @click="editEvent" 
+          @click.stop="editEvent" 
           class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-full text-sm font-medium transition-colors duration-300"
         >
           Modifier
