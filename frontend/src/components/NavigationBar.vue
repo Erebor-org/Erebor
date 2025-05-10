@@ -64,6 +64,7 @@
           <button class="text-sm uppercase underline-on-hover" v-if="isLoggedIn && isAdmin"><RouterLink to="/membres">Membres</RouterLink></button>
           <button class="text-sm uppercase underline-on-hover" v-if="isLoggedIn && isAdmin"><RouterLink to="/blacklist">Blacklist</RouterLink></button>
           <button class="text-sm uppercase underline-on-hover" v-if="isLoggedIn && isAdmin"><RouterLink to="/warnings-management">Avertissements</RouterLink></button>
+          <button class="text-sm uppercase underline-on-hover" v-if="isLoggedIn && isAdmin"><RouterLink to="/statistiques">Statistiques</RouterLink></button>
         </div>
       </div>
     </div>
