@@ -15,7 +15,7 @@
       <select 
         v-model="selectedEventId"
         class="w-full bg-gray-700 text-white border border-gray-600 rounded-md p-2"
-        :disabled="props.eventId || isLoading"
+        :disabled="eventId || isLoading"
       >
         <option value="" disabled>Sélectionner un événement</option>
         <option v-for="event in events" :key="event.id" :value="event.id">
@@ -108,124 +108,144 @@
   </div>
 </template>
 
-<script setup>
-import { ref, onMounted, computed } from 'vue';
-import { fetchEvents } from '@/services/eventServices';
-import { addBatchParticipations } from '@/services/eventServices';
-const API_URL = import.meta.env.VITE_API_URL;
+<script>
+import axios from 'axios';
 
-const props = defineProps({
-  eventId: {
-    type: [Number, String],
-    default: null
-  }
-});
-
-const emit = defineEmits(['participationsAdded']);
-
-const events = ref([]);
-const characters = ref([]);
-const selectedEventId = ref(props.eventId || '');
-const participations = ref([]);
-const isLoading = ref(false);
-const errorMessage = ref('');
-const successMessage = ref('');
-
-// Formula 1 scoring system
-const scoringSystem = {
-  1: 25,
-  2: 18,
-  3: 15,
-  4: 12,
-  5: 10,
-  6: 8,
-  7: 6,
-  8: 4,
-  9: 2,
-  10: 1
-};
-
-const maxPosition = computed(() => {
-  return Math.max(...Object.keys(scoringSystem).map(Number));
-});
-
-onMounted(async () => {
-  try {
-    isLoading.value = true;
-    
-    // Fetch events
-    const eventsData = await fetchEvents();
-    events.value = eventsData.filter(event => !event.isCompleted);
-    
-    // Fetch characters
-    const response = await fetch(`${API_URL}/characters`);
-    const data = await response.json();
-    characters.value = data.filter(char => !char.isArchived);
-    
-    isLoading.value = false;
-  } catch (error) {
-    console.error('Error loading data:', error);
-    errorMessage.value = 'Erreur lors du chargement des données';
-    isLoading.value = false;
-  }
-});
-
-const addParticipationRow = () => {
-  participations.value.push({
-    characterId: '',
-    position: '',
-    points: 0
-  });
-};
-
-const removeParticipationRow = (index) => {
-  participations.value.splice(index, 1);
-};
-
-const updatePoints = (participation) => {
-  const position = parseInt(participation.position);
-  participation.points = scoringSystem[position] || 0;
-};
-
-const submitParticipations = async () => {
-  if (!selectedEventId.value) {
-    errorMessage.value = 'Veuillez sélectionner un événement';
-    return;
-  }
-  
-  if (participations.value.length === 0) {
-    errorMessage.value = 'Veuillez ajouter au moins une participation';
-    return;
-  }
-  
-  // Validate participations
-  for (const participation of participations.value) {
-    if (!participation.characterId || !participation.position) {
-      errorMessage.value = 'Veuillez remplir tous les champs';
-      return;
+export default {
+  props: {
+    eventId: {
+      type: [Number, String],
+      default: null
     }
-  }
-  
-  try {
-    isLoading.value = true;
-    errorMessage.value = '';
+  },
+  data() {
+    return {
+      API_URL: import.meta.env.VITE_API_URL,
+      events: [],
+      characters: [],
+      selectedEventId: this.eventId || '',
+      participations: [],
+      isLoading: false,
+      errorMessage: '',
+      successMessage: '',
+      // Formula 1 scoring system
+      scoringSystem: {
+        1: 25,
+        2: 18,
+        3: 15,
+        4: 12,
+        5: 10,
+        6: 8,
+        7: 6,
+        8: 4,
+        9: 2,
+        10: 1
+      }
+    };
+  },
+  computed: {
+    maxPosition() {
+      return Math.max(...Object.keys(this.scoringSystem).map(Number));
+    }
+  },
+  methods: {
+    async fetchEvents() {
+      try {
+        const response = await axios.get(`${this.API_URL}/events`);
+        return response.data;
+      } catch (error) {
+        console.error('Error fetching events:', error);
+        throw error;
+      }
+    },
+    async addBatchParticipations(eventId, participations) {
+      try {
+        const response = await axios.post(`${this.API_URL}/event-participations/batch`, {
+          eventId,
+          participations
+        });
+        
+        return response.data;
+      } catch (error) {
+        console.error('Error adding batch participations:', error);
+        throw error;
+      }
+    },
+    addParticipationRow() {
+      this.participations.push({
+        characterId: '',
+        position: '',
+        points: 0
+      });
+    },
+    removeParticipationRow(index) {
+      this.participations.splice(index, 1);
+    },
+    updatePoints(participation) {
+      const position = parseInt(participation.position);
+      participation.points = this.scoringSystem[position] || 0;
+    },
+    async submitParticipations() {
+      if (!this.selectedEventId) {
+        this.errorMessage = 'Veuillez sélectionner un événement';
+        return;
+      }
+      
+      if (this.participations.length === 0) {
+        this.errorMessage = 'Veuillez ajouter au moins une participation';
+        return;
+      }
+      
+      // Validate participations
+      for (const participation of this.participations) {
+        if (!participation.characterId || !participation.position) {
+          this.errorMessage = 'Veuillez remplir tous les champs';
+          return;
+        }
+      }
+      
+      try {
+        this.isLoading = true;
+        this.errorMessage = '';
+        
+        await this.addBatchParticipations(this.selectedEventId, this.participations);
+        
+        this.successMessage = 'Participations ajoutées avec succès';
+        this.$emit('participationsAdded');
+        
+        // Reset form
+        this.participations = [];
+        this.addParticipationRow();
+        
+        this.isLoading = false;
+      } catch (error) {
+        console.error('Error submitting participations:', error);
+        this.errorMessage = 'Erreur lors de l\'ajout des participations';
+        this.isLoading = false;
+      }
+    }
+  },
+  async mounted() {
+    try {
+      this.isLoading = true;
+      
+      // Fetch events
+      const eventsData = await this.fetchEvents();
+      this.events = eventsData.filter(event => !event.isCompleted);
+      
+      // Fetch characters
+      const response = await axios.get(`${this.API_URL}/characters`);
+      this.characters = response.data.filter(char => !char.isArchived);
+      
+      this.isLoading = false;
+    } catch (error) {
+      console.error('Error loading data:', error);
+      this.errorMessage = 'Erreur lors du chargement des données';
+      this.isLoading = false;
+    }
     
-    await addBatchParticipations(selectedEventId.value, participations.value);
-    
-    successMessage.value = 'Participations ajoutées avec succès';
-    emit('participationsAdded');
-    
-    // Reset form
-    participations.value = [];
-    
-    isLoading.value = false;
-  } catch (error) {
-    console.error('Error submitting participations:', error);
-    errorMessage.value = 'Erreur lors de l\'ajout des participations';
-    isLoading.value = false;
+    // Initialize with one empty row
+    this.addParticipationRow();
   }
 };
-
-// Initialize with one empty row
-addParticipationRow();
 </script>

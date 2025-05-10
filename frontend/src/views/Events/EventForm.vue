@@ -3,7 +3,7 @@
     <div class="max-w-3xl mx-auto">
       <div class="mb-6">
         <button 
-          @click="router.push('/events')"
+          @click="$router.push('/events')"
           class="flex items-center text-gray-400 hover:text-white transition-colors duration-300"
         >
           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -134,173 +134,236 @@
   </div>
 </template>
 
-<script setup>
-import { ref, onMounted, computed } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
-import { fetchEventById, createEvent, updateEvent } from '@/services/eventServices';
+<script>
+import axios from 'axios';
 import EventOrganizerSelector from '@/components/Events/EventOrganizerSelector.vue';
 
-const images = import.meta.glob('@/assets/icon_classe/*.avif', { eager: true });
-
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
-const route = useRoute();
-const router = useRouter();
-
-const isEditMode = computed(() => route.name === 'EventEdit');
-const eventId = computed(() => route.params.id);
-
-const event = ref({
-  organizerId: '',
-  title: '',
-  description: '',
-  eventDate: new Date().toISOString().slice(0, 16),
-  image: null
-});
-
-const characters = ref([]);
-const imagePreview = ref(null);
-const isLoading = ref(false);
-const error = ref(null);
-const success = ref(null);
-
-const classes = {
-  sram: images['/src/assets/icon_classe/sram.avif'].default,
-  forgelance: images['/src/assets/icon_classe/forgelance.avif'].default,
-  cra: images['/src/assets/icon_classe/cra.avif'].default,
-  ecaflip: images['/src/assets/icon_classe/ecaflip.avif'].default,
-  eniripsa: images['/src/assets/icon_classe/eniripsa.avif'].default,
-  enutrof: images['/src/assets/icon_classe/enutrof.avif'].default,
-  feca: images['/src/assets/icon_classe/feca.avif'].default,
-  eliotrope: images['/src/assets/icon_classe/eliotrope.avif'].default,
-  iop: images['/src/assets/icon_classe/iop.avif'].default,
-  osamodas: images['/src/assets/icon_classe/osamodas.avif'].default,
-  pandawa: images['/src/assets/icon_classe/pandawa.avif'].default,
-  roublard: images['/src/assets/icon_classe/roublard.avif'].default,
-  sacrieur: images['/src/assets/icon_classe/sacrieur.avif'].default,
-  sadida: images['/src/assets/icon_classe/sadida.avif'].default,
-  steamer: images['/src/assets/icon_classe/steamer.avif'].default,
-  xelor: images['/src/assets/icon_classe/xelor.avif'].default,
-  zobal: images['/src/assets/icon_classe/zobal.avif'].default,
-  huppermage: images['/src/assets/icon_classe/huppermage.avif'].default,
-  ouginak: images['/src/assets/icon_classe/ouginak.avif'].default,
-};
-
-onMounted(async () => {
-  try {
-    isLoading.value = true;
-
-    // Fetch characters for organizer selector
-    const response = await fetch(`${API_URL}/characters`);
-    const data = await response.json();
-    characters.value = data.filter(char => !char.isArchived);
-
-    if (isEditMode.value) {
-      const data = await fetchEventById(eventId.value);
-      event.value = {
-        organizerId: data.organizer.id,
-        title: data.title,
-        description: data.description,
-        eventDate: new Date(data.eventDate).toISOString().slice(0, 16),
+export default {
+  components: {
+    EventOrganizerSelector
+  },
+  data() {
+    const images = import.meta.glob('@/assets/icon_classe/*.avif', { eager: true });
+    
+    return {
+      API_URL: import.meta.env.VITE_API_URL || 'http://localhost:8000',
+      event: {
+        organizerId: '',
+        title: '',
+        description: '',
+        eventDate: new Date().toISOString().slice(0, 16),
         image: null
+      },
+      characters: [],
+      imagePreview: null,
+      isLoading: false,
+      error: null,
+      success: null,
+      classes: {
+        sram: images['/src/assets/icon_classe/sram.avif'].default,
+        forgelance: images['/src/assets/icon_classe/forgelance.avif'].default,
+        cra: images['/src/assets/icon_classe/cra.avif'].default,
+        ecaflip: images['/src/assets/icon_classe/ecaflip.avif'].default,
+        eniripsa: images['/src/assets/icon_classe/eniripsa.avif'].default,
+        enutrof: images['/src/assets/icon_classe/enutrof.avif'].default,
+        feca: images['/src/assets/icon_classe/feca.avif'].default,
+        eliotrope: images['/src/assets/icon_classe/eliotrope.avif'].default,
+        iop: images['/src/assets/icon_classe/iop.avif'].default,
+        osamodas: images['/src/assets/icon_classe/osamodas.avif'].default,
+        pandawa: images['/src/assets/icon_classe/pandawa.avif'].default,
+        roublard: images['/src/assets/icon_classe/roublard.avif'].default,
+        sacrieur: images['/src/assets/icon_classe/sacrieur.avif'].default,
+        sadida: images['/src/assets/icon_classe/sadida.avif'].default,
+        steamer: images['/src/assets/icon_classe/steamer.avif'].default,
+        xelor: images['/src/assets/icon_classe/xelor.avif'].default,
+        zobal: images['/src/assets/icon_classe/zobal.avif'].default,
+        huppermage: images['/src/assets/icon_classe/huppermage.avif'].default,
+        ouginak: images['/src/assets/icon_classe/ouginak.avif'].default,
+      }
+    };
+  },
+  computed: {
+    isEditMode() {
+      return this.$route.name === 'EventEdit';
+    },
+    eventId() {
+      return this.$route.params.id;
+    }
+  },
+  methods: {
+    async fetchEventById(id) {
+      try {
+        const response = await axios.get(`${this.API_URL}/events/${id}`);
+        return response.data;
+      } catch (error) {
+        console.error(`Error fetching event with id ${id}:`, error);
+        throw error;
+      }
+    },
+    async createEvent(eventData) {
+      try {
+        const formData = new FormData();
+        formData.append('data', JSON.stringify({
+          title: eventData.title,
+          description: eventData.description,
+          eventDate: eventData.eventDate,
+          organizerId: eventData.organizerId
+        }));
+        
+        if (eventData.image) {
+          formData.append('image', eventData.image);
+        }
+        
+        const response = await axios.post(`${this.API_URL}/events`, formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data'
+          }
+        });
+        
+        return response.data;
+      } catch (error) {
+        console.error('Error creating event:', error);
+        throw error;
+      }
+    },
+    async updateEvent(id, eventData) {
+      try {
+        const formData = new FormData();
+        formData.append('data', JSON.stringify({
+          title: eventData.title,
+          description: eventData.description,
+          eventDate: eventData.eventDate,
+          organizerId: eventData.organizerId
+        }));
+        
+        if (eventData.image) {
+          formData.append('image', eventData.image);
+        }
+        
+        const response = await axios.put(`${this.API_URL}/events/${id}`, formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data'
+          }
+        });
+        
+        return response.data;
+      } catch (error) {
+        console.error(`Error updating event with id ${id}:`, error);
+        throw error;
+      }
+    },
+    handleImageChange(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      
+      this.event.image = file;
+      
+      // Create preview
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        this.imagePreview = e.target.result;
       };
+      reader.readAsDataURL(file);
+    },
+    removeImage() {
+      this.event.image = null;
+      this.imagePreview = null;
+      
+      // Reset file input
+      const fileInput = document.getElementById('event-image');
+      if (fileInput) {
+        fileInput.value = '';
+      }
+    },
+    validateForm() {
+      if (!this.event.organizerId) {
+        this.error = 'L\'organisateur est requis';
+        return false;
+      }
 
-      if (data.imageFilename) {
-        imagePreview.value = `${API_URL}/uploads/events/${data.imageFilename}`;
+      if (!this.event.title.trim()) {
+        this.error = 'Le titre est requis';
+        return false;
+      }
+      
+      if (!this.event.description.trim()) {
+        this.error = 'La description est requise';
+        return false;
+      }
+      
+      if (!this.event.eventDate) {
+        this.error = 'La date est requise';
+        return false;
+      }
+      
+      return true;
+    },
+    async handleSubmit() {
+      this.error = null;
+      this.success = null;
+      
+      if (!this.validateForm()) return;
+      
+      try {
+        this.isLoading = true;
+        
+        if (this.isEditMode) {
+          await this.updateEvent(this.eventId, this.event);
+          this.success = 'Événement mis à jour avec succès';
+        } else {
+          const newEvent = await this.createEvent(this.event);
+          this.success = 'Événement créé avec succès';
+          
+          // Redirect to event details after a short delay
+          setTimeout(() => {
+            this.$router.push(`/events/${newEvent.id}`);
+          }, 1500);
+        }
+        
+        this.isLoading = false;
+      } catch (err) {
+        console.error('Error saving event:', err);
+        this.error = 'Erreur lors de l\'enregistrement de l\'événement';
+        this.isLoading = false;
+      }
+    },
+    cancelForm() {
+      if (this.isEditMode) {
+        this.$router.push(`/events/${this.eventId}`);
+      } else {
+        this.$router.push('/events');
       }
     }
+  },
+  async mounted() {
+    try {
+      this.isLoading = true;
 
-    isLoading.value = false;
-  } catch (err) {
-    console.error('Error loading data:', err);
-    error.value = 'Erreur lors du chargement des données';
-    isLoading.value = false;
-  }
-});
+      // Fetch characters for organizer selector
+      const response = await axios.get(`${this.API_URL}/characters`);
+      this.characters = response.data.filter(char => !char.isArchived);
 
-const handleImageChange = (e) => {
-  const file = e.target.files[0];
-  if (!file) return;
-  
-  event.value.image = file;
-  
-  // Create preview
-  const reader = new FileReader();
-  reader.onload = (e) => {
-    imagePreview.value = e.target.result;
-  };
-  reader.readAsDataURL(file);
-};
+      if (this.isEditMode) {
+        const data = await this.fetchEventById(this.eventId);
+        this.event = {
+          organizerId: data.organizer.id,
+          title: data.title,
+          description: data.description,
+          eventDate: new Date(data.eventDate).toISOString().slice(0, 16),
+          image: null
+        };
 
-const removeImage = () => {
-  event.value.image = null;
-  imagePreview.value = null;
-  
-  // Reset file input
-  const fileInput = document.getElementById('event-image');
-  if (fileInput) {
-    fileInput.value = '';
-  }
-};
+        if (data.imageFilename) {
+          this.imagePreview = `${this.API_URL}/uploads/events/${data.imageFilename}`;
+        }
+      }
 
-const validateForm = () => {
-  if (!event.value.organizerId) {
-    error.value = 'L\'organisateur est requis';
-    return false;
-  }
-
-  if (!event.value.title.trim()) {
-    error.value = 'Le titre est requis';
-    return false;
-  }
-  
-  if (!event.value.description.trim()) {
-    error.value = 'La description est requise';
-    return false;
-  }
-  
-  if (!event.value.eventDate) {
-    error.value = 'La date est requise';
-    return false;
-  }
-  
-  return true;
-};
-
-const handleSubmit = async () => {
-  error.value = null;
-  success.value = null;
-  
-  if (!validateForm()) return;
-  
-  try {
-    isLoading.value = true;
-    
-    if (isEditMode.value) {
-      await updateEvent(eventId.value, event.value);
-      success.value = 'Événement mis à jour avec succès';
-    } else {
-      const newEvent = await createEvent(event.value);
-      success.value = 'Événement créé avec succès';
-      
-      // Redirect to event details after a short delay
-      setTimeout(() => {
-        router.push(`/events/${newEvent.id}`);
-      }, 1500);
+      this.isLoading = false;
+    } catch (err) {
+      console.error('Error loading data:', err);
+      this.error = 'Erreur lors du chargement des données';
+      this.isLoading = false;
     }
-    
-    isLoading.value = false;
-  } catch (err) {
-    console.error('Error saving event:', err);
-    error.value = 'Erreur lors de l\'enregistrement de l\'événement';
-    isLoading.value = false;
-  }
-};
-
-const cancelForm = () => {
-  if (isEditMode.value) {
-    router.push(`/events/${eventId.value}`);
-  } else {
-    router.push('/events');
   }
 };
 </script>

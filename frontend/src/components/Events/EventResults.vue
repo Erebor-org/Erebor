@@ -60,92 +60,93 @@
   </div>
 </template>
 
-<script setup>
-import { ref, onMounted, watch } from 'vue';
+<script>
 import axios from 'axios';
-import { fetchEventParticipations } from '@/services/eventServices';
 
-const API_URL = import.meta.env.VITE_API_URL
-
-const props = defineProps({
-  eventId: {
-    type: [Number, String],
-    required: true
-  }
-});
-
-const participations = ref([]);
-const isLoading = ref(false);
-const error = ref(null);
-
-const loadParticipations = async () => {
-  if (!props.eventId) return;
-  
-  try {
-    isLoading.value = true;
-    error.value = null;
-    
-    const data = await fetchEventParticipations(props.eventId);
-    
-    // Fetch character data for each participation
-    for (const participation of data) {
-      const characterResponse = await axios.get(`${API_URL}/characters/${participation.characterId}`);
-      participation.character = characterResponse.data;
+export default {
+  props: {
+    eventId: {
+      type: [Number, String],
+      required: true
     }
+  },
+  data() {
+    const images = import.meta.glob('@/assets/icon_classe/*.avif', { eager: true });
     
-    participations.value = data;
-    
-    isLoading.value = false;
-  } catch (err) {
-    console.error('Error loading participations:', err);
-    error.value = 'Erreur lors du chargement des résultats';
-    isLoading.value = false;
+    return {
+      API_URL: import.meta.env.VITE_API_URL,
+      participations: [],
+      isLoading: false,
+      error: null,
+      classes: {
+        sram: images['/src/assets/icon_classe/sram.avif'].default,
+        forgelance: images['/src/assets/icon_classe/forgelance.avif'].default,
+        cra: images['/src/assets/icon_classe/cra.avif'].default,
+        ecaflip: images['/src/assets/icon_classe/ecaflip.avif'].default,
+        eniripsa: images['/src/assets/icon_classe/eniripsa.avif'].default,
+        enutrof: images['/src/assets/icon_classe/enutrof.avif'].default,
+        feca: images['/src/assets/icon_classe/feca.avif'].default,
+        eliotrope: images['/src/assets/icon_classe/eliotrope.avif'].default,
+        iop: images['/src/assets/icon_classe/iop.avif'].default,
+        osamodas: images['/src/assets/icon_classe/osamodas.avif'].default,
+        pandawa: images['/src/assets/icon_classe/pandawa.avif'].default,
+        roublard: images['/src/assets/icon_classe/roublard.avif'].default,
+        sacrieur: images['/src/assets/icon_classe/sacrieur.avif'].default,
+        sadida: images['/src/assets/icon_classe/sadida.avif'].default,
+        steamer: images['/src/assets/icon_classe/steamer.avif'].default,
+        xelor: images['/src/assets/icon_classe/xelor.avif'].default,
+        zobal: images['/src/assets/icon_classe/zobal.avif'].default,
+        huppermage: images['/src/assets/icon_classe/huppermage.avif'].default,
+        ouginak: images['/src/assets/icon_classe/ouginak.avif'].default,
+      }
+    };
+  },
+  methods: {
+    async loadParticipations() {
+      if (!this.eventId) return;
+      
+      try {
+        this.isLoading = true;
+        this.error = null;
+        
+        const response = await axios.get(`${this.API_URL}/event-participations/event/${this.eventId}`);
+        const data = response.data;
+        
+        // Fetch character data for each participation
+        for (const participation of data) {
+          const characterResponse = await axios.get(`${this.API_URL}/characters/${participation.characterId}`);
+          participation.character = characterResponse.data;
+        }
+        
+        this.participations = data;
+        
+        this.isLoading = false;
+      } catch (err) {
+        console.error('Error loading participations:', err);
+        this.error = 'Erreur lors du chargement des résultats';
+        this.isLoading = false;
+      }
+    },
+    getClassIcon(characterClass) {
+      if (!characterClass) return this.classes['sram']; // Default to Sram if class is null/undefined
+      
+      const normalizedClass = characterClass.toLowerCase();
+      return this.classes[normalizedClass] || this.classes['sram']; // Default to Sram if class not found
+    },
+    getPositionColor(position) {
+      if (position === 1) return 'bg-yellow-500 text-black';
+      if (position === 2) return 'bg-gray-400 text-black';
+      if (position === 3) return 'bg-amber-700 text-white';
+      return 'bg-gray-700';
+    }
+  },
+  mounted() {
+    this.loadParticipations();
+  },
+  watch: {
+    eventId() {
+      this.loadParticipations();
+    }
   }
-};
-
-onMounted(() => {
-  loadParticipations();
-});
-
-watch(() => props.eventId, () => {
-  loadParticipations();
-});
-
-const images = import.meta.glob('@/assets/icon_classe/*.avif', { eager: true });
-
-const classes = {
-  sram: images['/src/assets/icon_classe/sram.avif'].default,
-  forgelance: images['/src/assets/icon_classe/forgelance.avif'].default,
-  cra: images['/src/assets/icon_classe/cra.avif'].default,
-  ecaflip: images['/src/assets/icon_classe/ecaflip.avif'].default,
-  eniripsa: images['/src/assets/icon_classe/eniripsa.avif'].default,
-  enutrof: images['/src/assets/icon_classe/enutrof.avif'].default,
-  feca: images['/src/assets/icon_classe/feca.avif'].default,
-  eliotrope: images['/src/assets/icon_classe/eliotrope.avif'].default,
-  iop: images['/src/assets/icon_classe/iop.avif'].default,
-  osamodas: images['/src/assets/icon_classe/osamodas.avif'].default,
-  pandawa: images['/src/assets/icon_classe/pandawa.avif'].default,
-  roublard: images['/src/assets/icon_classe/roublard.avif'].default,
-  sacrieur: images['/src/assets/icon_classe/sacrieur.avif'].default,
-  sadida: images['/src/assets/icon_classe/sadida.avif'].default,
-  steamer: images['/src/assets/icon_classe/steamer.avif'].default,
-  xelor: images['/src/assets/icon_classe/xelor.avif'].default,
-  zobal: images['/src/assets/icon_classe/zobal.avif'].default,
-  huppermage: images['/src/assets/icon_classe/huppermage.avif'].default,
-  ouginak: images['/src/assets/icon_classe/ouginak.avif'].default,
-};
-
-const getClassIcon = (characterClass) => {
-  if (!characterClass) return classes['sram']; // Default to Sram if class is null/undefined
-  
-  const normalizedClass = characterClass.toLowerCase();
-  return classes[normalizedClass] || classes['sram']; // Default to Sram if class not found
-};
-
-const getPositionColor = (position) => {
-  if (position === 1) return 'bg-yellow-500 text-black';
-  if (position === 2) return 'bg-gray-400 text-black';
-  if (position === 3) return 'bg-amber-700 text-white';
-  return 'bg-gray-700';
 };
 </script>

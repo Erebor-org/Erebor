@@ -19,11 +19,18 @@ use Symfony\Component\Serializer\SerializerInterface;
 #[Route('/events')]
 class EventController extends AbstractController
 {
+    private NotificationService $notificationService;
+    private FileUploadService $fileUploadService;
+    private SerializerInterface $serializer;
+
     public function __construct(
-        private NotificationService $notificationService,
-        private FileUploadService $fileUploadService,
-        private SerializerInterface $serializer
+        NotificationService $notificationService,
+        FileUploadService $fileUploadService,
+        SerializerInterface $serializer
     ) {
+        $this->notificationService = $notificationService;
+        $this->fileUploadService = $fileUploadService;
+        $this->serializer = $serializer;
     }
 
     #[Route('', methods: ['GET'])]

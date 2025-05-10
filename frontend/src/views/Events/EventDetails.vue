@@ -167,124 +167,121 @@
   </div>
 </template>
 
-<script setup>
-import { ref, onMounted, computed } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
-import { fetchEventById, deleteEvent, completeEvent } from '@/services/eventServices';
+<script>
+import axios from 'axios';
 import EventResults from '@/components/Events/EventResults.vue';
 import ParticipationForm from '@/components/Events/ParticipationForm.vue';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
-const route = useRoute();
-const router = useRouter();
-const event = ref(null);
-const isLoading = ref(false);
-const error = ref(null);
-const showDeleteConfirm = ref(false);
-const showCompleteConfirm = ref(false);
-const showParticipationForm = ref(false);
-
-const eventId = computed(() => route.params.id);
-
-const loadEvent = async () => {
-  try {
-    isLoading.value = true;
-    error.value = null;
-    
-    const data = await fetchEventById(eventId.value);
-    event.value = data;
-    
-    isLoading.value = false;
-  } catch (err) {
-    console.error('Error loading event:', err);
-    error.value = 'Erreur lors du chargement de l\'événement';
-    isLoading.value = false;
+export default {
+  components: {
+    EventResults,
+    ParticipationForm
+  },
+  data() {
+    return {
+      API_URL: import.meta.env.VITE_API_URL || 'http://localhost:8000',
+      event: null,
+      isLoading: false,
+      error: null,
+      showDeleteConfirm: false,
+      showCompleteConfirm: false,
+      showParticipationForm: false
+    };
+  },
+  computed: {
+    eventId() {
+      return this.$route.params.id;
+    },
+    formattedDate() {
+      if (!this.event?.eventDate) return '';
+      const date = new Date(this.event.eventDate);
+      return date.toLocaleDateString('fr-FR', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    },
+    isUpcoming() {
+      if (!this.event?.eventDate) return false;
+      const eventDate = new Date(this.event.eventDate);
+      return eventDate > new Date();
+    },
+    imageUrl() {
+      if (!this.event?.imageFilename) return null;
+      return `${this.API_URL}/uploads/events/${this.event.imageFilename}`;
+    }
+  },
+  methods: {
+    async loadEvent() {
+      try {
+        this.isLoading = true;
+        this.error = null;
+        
+        const response = await axios.get(`${this.API_URL}/events/${this.eventId}`);
+        this.event = response.data;
+        
+        this.isLoading = false;
+      } catch (err) {
+        console.error('Error loading event:', err);
+        this.error = 'Erreur lors du chargement de l\'événement';
+        this.isLoading = false;
+      }
+    },
+    editEvent() {
+      this.$router.push(`/events/${this.eventId}/edit`);
+    },
+    confirmDelete() {
+      this.showDeleteConfirm = true;
+    },
+    cancelDelete() {
+      this.showDeleteConfirm = false;
+    },
+    confirmComplete() {
+      this.showCompleteConfirm = true;
+    },
+    cancelComplete() {
+      this.showCompleteConfirm = false;
+    },
+    async handleDelete() {
+      try {
+        this.isLoading = true;
+        
+        await axios.delete(`${this.API_URL}/events/${this.eventId}`);
+        
+        this.$router.push('/events');
+      } catch (err) {
+        console.error('Error deleting event:', err);
+        this.error = 'Erreur lors de la suppression de l\'événement';
+        this.isLoading = false;
+      }
+    },
+    async handleComplete() {
+      try {
+        this.isLoading = true;
+        this.showCompleteConfirm = false;
+        
+        const response = await axios.patch(`${this.API_URL}/events/${this.eventId}/complete`);
+        this.event = response.data;
+        
+        this.isLoading = false;
+      } catch (err) {
+        console.error('Error completing event:', err);
+        this.error = 'Erreur lors de la complétion de l\'événement';
+        this.isLoading = false;
+      }
+    },
+    toggleParticipationForm() {
+      this.showParticipationForm = !this.showParticipationForm;
+    },
+    handleParticipationsAdded() {
+      this.loadEvent();
+      this.showParticipationForm = false;
+    }
+  },
+  mounted() {
+    this.loadEvent();
   }
-};
-
-onMounted(() => {
-  loadEvent();
-});
-
-const formattedDate = computed(() => {
-  if (!event.value?.eventDate) return '';
-  const date = new Date(event.value.eventDate);
-  return date.toLocaleDateString('fr-FR', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit'
-  });
-});
-
-const isUpcoming = computed(() => {
-  if (!event.value?.eventDate) return false;
-  const eventDate = new Date(event.value.eventDate);
-  return eventDate > new Date();
-});
-
-const imageUrl = computed(() => {
-  if (!event.value?.imageFilename) return null;
-  return `${API_URL}/uploads/events/${event.value.imageFilename}`;
-});
-
-const editEvent = () => {
-  router.push(`/events/${eventId.value}/edit`);
-};
-
-const confirmDelete = () => {
-  showDeleteConfirm.value = true;
-};
-
-const cancelDelete = () => {
-  showDeleteConfirm.value = false;
-};
-
-const confirmComplete = () => {
-  showCompleteConfirm.value = true;
-};
-
-const cancelComplete = () => {
-  showCompleteConfirm.value = false;
-};
-
-const handleDelete = async () => {
-  try {
-    isLoading.value = true;
-    
-    await deleteEvent(eventId.value);
-    
-    router.push('/events');
-  } catch (err) {
-    console.error('Error deleting event:', err);
-    error.value = 'Erreur lors de la suppression de l\'événement';
-    isLoading.value = false;
-  }
-};
-
-const handleComplete = async () => {
-  try {
-    isLoading.value = true;
-    showCompleteConfirm.value = false;
-    
-    const updatedEvent = await completeEvent(eventId.value);
-    event.value = updatedEvent;
-    
-    isLoading.value = false;
-  } catch (err) {
-    console.error('Error completing event:', err);
-    error.value = 'Erreur lors de la complétion de l\'événement';
-    isLoading.value = false;
-  }
-};
-
-const toggleParticipationForm = () => {
-  showParticipationForm.value = !showParticipationForm.value;
-};
-
-const handleParticipationsAdded = () => {
-  loadEvent();
-  showParticipationForm.value = false;
 };
 </script>

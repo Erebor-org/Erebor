@@ -91,66 +91,88 @@
   </div>
 </template>
 
-<script setup>
-import { ref, onMounted } from 'vue';
-import { useRouter } from 'vue-router';
-import { fetchEvents, fetchUpcomingEvents, fetchPastEvents } from '@/services/eventServices';
+<script>
+import axios from 'axios';
 import EventCard from '@/components/Events/EventCard.vue';
 import members_bg from '@/assets/members_bg.webp';
 
-const backgroundImage = members_bg;
+const API_URL = import.meta.env.VITE_API_URL;
 
-const router = useRouter();
-const events = ref([]);
-const upcomingEvents = ref([]);
-const pastEvents = ref([]);
-const isLoading = ref(false);
-const error = ref(null);
-const activeTab = ref('all'); // 'all', 'upcoming', 'past'
-
-const loadEvents = async () => {
-  try {
-    isLoading.value = true;
-    error.value = null;
+export default {
+  components: {
+    EventCard
+  },
+  data() {
+    return {
+      backgroundImage: members_bg,
+      events: [],
+      upcomingEvents: [],
+      pastEvents: [],
+      isLoading: false,
+      error: null,
+      activeTab: 'all' // 'all', 'upcoming', 'past'
+    };
+  },
+  methods: {
+    async loadEvents() {
+      try {
+        this.isLoading = true;
+        this.error = null;
+        
+        const [allEvents, upcoming, past] = await Promise.all([
+          this.fetchEvents(),
+          this.fetchUpcomingEvents(),
+          this.fetchPastEvents()
+        ]);
+        
+        this.events = allEvents;
+        this.upcomingEvents = upcoming;
+        this.pastEvents = past;
+        
+        this.isLoading = false;
+      } catch (err) {
+        console.error('Error loading events:', err);
+        this.error = 'Erreur lors du chargement des événements';
+        this.isLoading = false;
+      }
+    },
     
-    const [allEvents, upcoming, past] = await Promise.all([
-      fetchEvents(),
-      fetchUpcomingEvents(),
-      fetchPastEvents()
-    ]);
+    async fetchEvents() {
+      const response = await axios.get(`${API_URL}/events`);
+      return response.data;
+    },
     
-    events.value = allEvents;
-    upcomingEvents.value = upcoming;
-    pastEvents.value = past;
+    async fetchUpcomingEvents() {
+      const response = await axios.get(`${API_URL}/events/upcoming`);
+      return response.data;
+    },
     
-    isLoading.value = false;
-  } catch (err) {
-    console.error('Error loading events:', err);
-    error.value = 'Erreur lors du chargement des événements';
-    isLoading.value = false;
+    async fetchPastEvents() {
+      const response = await axios.get(`${API_URL}/events/past`);
+      return response.data;
+    },
+    
+    createEvent() {
+      this.$router.push('/events/create');
+    },
+    
+    displayedEvents() {
+      switch (this.activeTab) {
+        case 'upcoming':
+          return this.upcomingEvents;
+        case 'past':
+          return this.pastEvents;
+        default:
+          return this.events;
+      }
+    },
+    
+    setTab(tab) {
+      this.activeTab = tab;
+    }
+  },
+  mounted() {
+    this.loadEvents();
   }
-};
-
-onMounted(() => {
-  loadEvents();
-});
-
-const createEvent = () => {
-  router.push('/events/create');
-};
-
-const displayedEvents = () => {
-  switch (activeTab.value) {
-    case 'upcoming':
-      return upcomingEvents.value;
-    case 'past':
-      return pastEvents.value;
-    default:
-      return events.value;
-  }
-};
-
-const setTab = (tab) => {
-  activeTab.value = tab;
 };
 </script>

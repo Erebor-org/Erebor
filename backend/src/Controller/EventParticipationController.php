@@ -18,10 +18,15 @@ use Symfony\Component\Routing\Annotation\Route;
 #[Route('/event-participations')]
 class EventParticipationController extends AbstractController
 {
+    private EventScoringService $scoringService;
+    private NotificationService $notificationService;
+
     public function __construct(
-        private NotificationService $notificationService,
-        private EventScoringService $scoringService
+        EventScoringService $scoringService,
+        NotificationService $notificationService
     ) {
+        $this->scoringService = $scoringService;
+        $this->notificationService = $notificationService;
     }
     
     private function notify($message) {
