@@ -70,4 +70,14 @@ class EventRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+    public function findAllWithParticipants(): array
+    {
+        return $this->createQueryBuilder('e')
+            ->addSelect('p', 'c')
+            ->leftJoin('e.participations', 'p')
+            ->leftJoin('p.character', 'c')
+            ->orderBy('e.eventDate', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
 }

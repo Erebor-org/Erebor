@@ -21,12 +21,14 @@ class Characters
     private ?int $userId = null;
 
     #[ORM\Column(type: 'string', length: 255)]
+    #[Groups(['character:read', 'event:read', 'participation:read'])]
     private string $pseudo;
 
     #[ORM\Column(type: 'string', length: 255)]
     private string $ankamaPseudo;
 
     #[ORM\Column(type: 'string', length: 255)]
+    #[Groups(['character:read', 'event:read', 'participation:read'])]
     private string $class;
 
     #[ORM\Column(type: 'boolean')]

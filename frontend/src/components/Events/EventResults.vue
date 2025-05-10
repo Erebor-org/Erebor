@@ -33,13 +33,19 @@
                   {{ participation.position }}
                 </div>
               </td>
-              <td class="px-4 py-4 whitespace-nowrap text-white">
-                {{ participation.character.pseudo }}
+              <td class="p-4 text-[#b07d46] font-bold text-center align-middle">
+                <div class="flex items-center justify-center gap-2">
+                  {{ participation.character.pseudo}}
+                </div>
               </td>
-              <td class="px-4 py-4 whitespace-nowrap">
-                <span :class="['px-2 py-1 rounded-md text-xs font-medium text-white', getClassColor(participation.character.class)]">
-                  {{ participation.character.class }}
-                </span>
+              <td class="p-4 relative text-center align-middle">
+                <div class="relative inline-block">
+                  <img
+                    :src="getClassIcon(participation.character.class)"
+                    alt="Character Class"
+                    class="w-14 h-14 cursor-pointer mx-auto"
+                  />
+                </div>
               </td>
               <td class="px-4 py-4 whitespace-nowrap">
                 <div class="text-[#93a402] font-bold">
@@ -56,7 +62,10 @@
 
 <script setup>
 import { ref, onMounted, watch } from 'vue';
+import axios from 'axios';
 import { fetchEventParticipations } from '@/services/eventServices';
+
+const API_URL = import.meta.env.VITE_API_URL
 
 const props = defineProps({
   eventId: {
@@ -77,6 +86,13 @@ const loadParticipations = async () => {
     error.value = null;
     
     const data = await fetchEventParticipations(props.eventId);
+    
+    // Fetch character data for each participation
+    for (const participation of data) {
+      const characterResponse = await axios.get(`${API_URL}/characters/${participation.characterId}`);
+      participation.character = characterResponse.data;
+    }
+    
     participations.value = data;
     
     isLoading.value = false;
@@ -95,29 +111,35 @@ watch(() => props.eventId, () => {
   loadParticipations();
 });
 
-const getClassColor = (characterClass) => {
-  const classColors = {
-    'Cra': 'bg-green-700',
-    'Ecaflip': 'bg-red-700',
-    'Eliotrope': 'bg-purple-700',
-    'Eniripsa': 'bg-pink-700',
-    'Enutrof': 'bg-yellow-700',
-    'Feca': 'bg-blue-700',
-    'Forgelance': 'bg-orange-700',
-    'Huppermage': 'bg-indigo-700',
-    'Iop': 'bg-red-800',
-    'Osamodas': 'bg-green-800',
-    'Pandawa': 'bg-blue-800',
-    'Roublard': 'bg-yellow-800',
-    'Sacrieur': 'bg-red-900',
-    'Sadida': 'bg-green-900',
-    'Sram': 'bg-gray-700',
-    'Steamer': 'bg-orange-800',
-    'Xelor': 'bg-purple-800',
-    'Zobal': 'bg-indigo-800'
-  };
+const images = import.meta.glob('@/assets/icon_classe/*.avif', { eager: true });
+
+const classes = {
+  sram: images['/src/assets/icon_classe/sram.avif'].default,
+  forgelance: images['/src/assets/icon_classe/forgelance.avif'].default,
+  cra: images['/src/assets/icon_classe/cra.avif'].default,
+  ecaflip: images['/src/assets/icon_classe/ecaflip.avif'].default,
+  eniripsa: images['/src/assets/icon_classe/eniripsa.avif'].default,
+  enutrof: images['/src/assets/icon_classe/enutrof.avif'].default,
+  feca: images['/src/assets/icon_classe/feca.avif'].default,
+  eliotrope: images['/src/assets/icon_classe/eliotrope.avif'].default,
+  iop: images['/src/assets/icon_classe/iop.avif'].default,
+  osamodas: images['/src/assets/icon_classe/osamodas.avif'].default,
+  pandawa: images['/src/assets/icon_classe/pandawa.avif'].default,
+  roublard: images['/src/assets/icon_classe/roublard.avif'].default,
+  sacrieur: images['/src/assets/icon_classe/sacrieur.avif'].default,
+  sadida: images['/src/assets/icon_classe/sadida.avif'].default,
+  steamer: images['/src/assets/icon_classe/steamer.avif'].default,
+  xelor: images['/src/assets/icon_classe/xelor.avif'].default,
+  zobal: images['/src/assets/icon_classe/zobal.avif'].default,
+  huppermage: images['/src/assets/icon_classe/huppermage.avif'].default,
+  ouginak: images['/src/assets/icon_classe/ouginak.avif'].default,
+};
+
+const getClassIcon = (characterClass) => {
+  if (!characterClass) return classes['sram']; // Default to Sram if class is null/undefined
   
-  return classColors[characterClass] || 'bg-gray-700';
+  const normalizedClass = characterClass.toLowerCase();
+  return classes[normalizedClass] || classes['sram']; // Default to Sram if class not found
 };
 
 const getPositionColor = (position) => {

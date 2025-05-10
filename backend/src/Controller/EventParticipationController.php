@@ -23,6 +23,12 @@ class EventParticipationController extends AbstractController
         private EventScoringService $scoringService
     ) {
     }
+    
+    private function notify($message) {
+        $this->notificationService->notify('participation_added', [
+            'message' => $message,
+        ]);
+    }
 
     #[Route('', methods: ['GET'])]
     public function getAllParticipations(EventParticipationRepository $repository): JsonResponse
@@ -33,9 +39,17 @@ class EventParticipationController extends AbstractController
     }
 
     #[Route('/event/{id}', methods: ['GET'])]
-    public function getParticipationsByEvent(Event $event, EventParticipationRepository $repository): JsonResponse
+    public function getParticipationsByEvent(Event $event, EntityManagerInterface $entityManager): JsonResponse
     {
-        $participations = $repository->findByEventOrderedByPosition($event);
+        $participations = $entityManager->getRepository(EventParticipation::class)
+            ->createQueryBuilder('p')
+            ->where('p.event = :event')
+            ->setParameter('event', $event)
+            ->leftJoin('p.character', 'c')
+            ->addSelect('c')
+            ->orderBy('p.position', 'ASC')
+            ->getQuery()
+            ->getResult();
         
         return $this->json($participations, Response::HTTP_OK, [], ['groups' => 'participation:read']);
     }
@@ -94,13 +108,13 @@ class EventParticipationController extends AbstractController
         $entityManager->persist($participation);
         $entityManager->flush();
         
-        $this->notificationService->createNotification(
-            sprintf('%s a été ajouté à l\'événement %s en position %d', 
-                $character->getPseudo(), 
-                $event->getTitle(), 
-                $position
-            )
-        );
+       // $this->notificationService->createNotification(
+        //    sprintf('%s a été ajouté à l\'événement %s en position %d', 
+        //        $character->getPseudo(), 
+         //       $event->getTitle(), 
+        //        $position
+        //    )
+       // );
         
         return $this->json($participation, Response::HTTP_CREATED, [], ['groups' => 'participation:read']);
     }
@@ -159,13 +173,8 @@ class EventParticipationController extends AbstractController
         
         $entityManager->flush();
         
-        // Mark event as completed
-        $event->setIsCompleted(true);
-        $entityManager->flush();
-        
-        $this->notificationService->createNotification(
-            sprintf('Résultats ajoutés pour l\'événement %s', $event->getTitle())
-        );
+        // Notification
+        // $this->notify(sprintf('Résultats ajoutés pour l\'événement %s', $event->getTitle()));
         
         return $this->json($createdParticipations, Response::HTTP_CREATED, [], ['groups' => 'participation:read']);
     }

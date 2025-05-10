@@ -42,10 +42,10 @@ class Event
     #[Groups(['event:read'])]
     private Collection $participations;
 
-    #[ORM\ManyToOne]
+    #[ORM\ManyToOne(targetEntity: Characters::class)]
     #[ORM\JoinColumn(nullable: false)]
     #[Groups(['event:read'])]
-    private ?User $organizer = null;
+    private ?Characters $organizer = null;
 
     #[ORM\Column]
     #[Groups(['event:read'])]
@@ -152,12 +152,12 @@ class Event
         return $this;
     }
 
-    public function getOrganizer(): ?User
+    public function getOrganizer(): ?Characters
     {
         return $this->organizer;
     }
 
-    public function setOrganizer(?User $organizer): self
+    public function setOrganizer(?Characters $organizer): self
     {
         $this->organizer = $organizer;
 

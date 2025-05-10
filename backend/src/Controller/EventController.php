@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Entity\Characters;
 use App\Entity\Event;
 use App\Repository\EventRepository;
 use App\Service\FileUploadService;
@@ -28,8 +29,8 @@ class EventController extends AbstractController
     #[Route('', methods: ['GET'])]
     public function getAllEvents(EventRepository $repository): JsonResponse
     {
-        $events = $repository->findAllOrderedByDate();
-        
+        $events = $repository->findAllWithParticipants();
+
         return $this->json($events, Response::HTTP_OK, [], ['groups' => 'event:read']);
     }
 
@@ -72,7 +73,17 @@ class EventController extends AbstractController
         $event->setTitle($data['title']);
         $event->setDescription($data['description']);
         $event->setEventDate(new \DateTime($data['eventDate']));
-        $event->setOrganizer($this->getUser());
+        
+        // Get organizer from request
+        if (isset($data['organizerId'])) {
+            $organizer = $entityManager->getRepository(Characters::class)->find($data['organizerId']);
+            if (!$organizer) {
+                return $this->json(['error' => 'Organizer not found'], Response::HTTP_BAD_REQUEST);
+            }
+            $event->setOrganizer($organizer);
+        } else {
+            return $this->json(['error' => 'Organizer is required'], Response::HTTP_BAD_REQUEST);
+        }
         
         // Handle image upload if present
         $imageFile = $request->files->get('image');
@@ -84,7 +95,10 @@ class EventController extends AbstractController
         $entityManager->persist($event);
         $entityManager->flush();
         
-        $this->notificationService->createNotification('Nouvel événement créé: ' . $event->getTitle());
+        // Send notification
+     //   $this->notificationService->notify('event_created', [
+     //       'message' => 'Nouvel événement créé: ' . $event->getTitle(),
+      //  ]);
         
         return $this->json($event, Response::HTTP_CREATED, [], ['groups' => 'event:read']);
     }
@@ -92,11 +106,32 @@ class EventController extends AbstractController
 #[Route('/{id}', methods: ['PUT'])]
     public function updateEvent(Request $request, Event $event, EntityManagerInterface $entityManager): JsonResponse
     {
-        $data = json_decode($request->request->get('data'), true);
+        // Try to get data from FormData first
+        $formData = $request->request->get('data');
+        
+        // If not found, try to get from request body
+        if (!$formData) {
+            $formData = $request->getContent();
+        }
+        
+        $data = json_decode($formData, true);
+        
+        if (!$data) {
+            return $this->json(['error' => 'Invalid request data'], Response::HTTP_BAD_REQUEST);
+        }
         
         $event->setTitle($data['title']);
         $event->setDescription($data['description']);
         $event->setEventDate(new \DateTime($data['eventDate']));
+        
+        // Update organizer if provided
+        if (isset($data['organizerId'])) {
+            $organizer = $entityManager->getRepository(Characters::class)->find($data['organizerId']);
+            if (!$organizer) {
+                return $this->json(['error' => 'Organizer not found'], Response::HTTP_BAD_REQUEST);
+            }
+            $event->setOrganizer($organizer);
+        }
         
         // Handle image upload if present
         $imageFile = $request->files->get('image');
@@ -112,7 +147,10 @@ class EventController extends AbstractController
         
         $entityManager->flush();
         
-        $this->notificationService->createNotification('Événement mis à jour: ' . $event->getTitle());
+        // Send notification
+       // $this->notificationService->notify('event_updated', [
+         //'message' => 'Événement mis à jour: ' . $event->getTitle(),
+       // ]);
         
         return $this->json($event, Response::HTTP_OK, [], ['groups' => 'event:read']);
     }
@@ -130,7 +168,9 @@ class EventController extends AbstractController
         $entityManager->remove($event);
         $entityManager->flush();
         
-        $this->notificationService->createNotification('Événement supprimé: ' . $eventTitle);
+      //  $this->notificationService->notify('event_deleted', [
+      //      'message' => 'Événement supprimé: ' . $eventTitle,
+      //  ]);
         
         return $this->json(null, Response::HTTP_NO_CONTENT);
     }
@@ -141,7 +181,9 @@ class EventController extends AbstractController
         $event->setIsCompleted(true);
         $entityManager->flush();
         
-        $this->notificationService->createNotification('Événement terminé: ' . $event->getTitle());
+      //  $this->notificationService->notify('event_terminated', [
+       //     'message' => 'Événement terminé: ' . $event->getTitle(),
+        //]);
         
         return $this->json($event, Response::HTTP_OK, [], ['groups' => 'event:read']);
     }

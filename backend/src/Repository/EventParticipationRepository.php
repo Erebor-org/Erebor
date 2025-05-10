@@ -31,6 +31,8 @@ class EventParticipationRepository extends ServiceEntityRepository
         return $this->createQueryBuilder('p')
             ->andWhere('p.event = :event')
             ->setParameter('event', $event)
+            ->leftJoin('p.character', 'c')
+            ->addSelect('c')
             ->orderBy('p.position', 'ASC')
             ->getQuery()
             ->getResult();

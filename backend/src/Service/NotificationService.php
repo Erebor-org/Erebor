@@ -17,6 +17,8 @@ class NotificationService
         'warning_added' => 'https://n8n.neitosden.fr/webhook/warning',
         'archivage_added' => 'https://n8n.neitosden.fr/webhook/archivage',
         'mule_import' => 'https://n8n.neitosden.fr/webhook/mule_import',
+        'event_deleted' => 'https://n8n.neitosden.fr/webhook/event_deleted',
+        'participation_added' => 'https://n8n.neitosden.fr/webhook/participation_added',
     ];
 
     public function __construct(HttpClientInterface $httpClient)
@@ -56,10 +58,29 @@ class NotificationService
             'mule_import' => [
                 'embeds' => [$this->buildMuleImportEmbed($data)],
             ],
+            'event_deleted' => [
+                'embeds' => [$this->buildEventDeletedEmbed($data)],
+            ],
             default => throw new \InvalidArgumentException(sprintf('Unsupported event type: %s', $eventType)),
         };
     }
     
+    private function buildEventDeletedEmbed(array $data): array
+    {
+        return [
+            'title' => 'Événement supprimé 🗑️',
+            'description' => sprintf(
+                "L'événement **%s** a été supprimé.",
+                $data['message']
+            ),
+            'color' => 15158332, // Rouge clair
+            'timestamp' => (new \DateTime())->format(\DateTime::ATOM),
+            'footer' => [
+                'text' => 'Système Erebor',
+            ],
+        ];
+    }
+
     private function buildMuleImportEmbed(Mule $mule): array
     {
         $mainCharacter = $mule->getMainCharacter();

@@ -32,6 +32,15 @@
         </div>
         
         <form v-else @submit.prevent="handleSubmit" class="space-y-6">
+          <!-- Organizer -->
+          <EventOrganizerSelector 
+            v-model="event.organizerId"
+            :characters="characters"
+            :is-loading="isLoading"
+            label="Sélectionner l'organisateur"
+            :classes="classes"
+          />
+
           <!-- Title -->
           <div>
             <label for="event-title" class="block text-gray-300 mb-2">Titre</label>
@@ -44,7 +53,7 @@
               :disabled="isLoading"
             />
           </div>
-          
+
           <!-- Description -->
           <div>
             <label for="event-description" class="block text-gray-300 mb-2">Description</label>
@@ -56,7 +65,7 @@
               :disabled="isLoading"
             ></textarea>
           </div>
-          
+
           <!-- Date -->
           <div>
             <label for="event-date" class="block text-gray-300 mb-2">Date et heure</label>
@@ -68,7 +77,7 @@
               :disabled="isLoading"
             />
           </div>
-          
+
           <!-- Image -->
           <div>
             <label for="event-image" class="block text-gray-300 mb-2">Image</label>
@@ -129,6 +138,9 @@
 import { ref, onMounted, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { fetchEventById, createEvent, updateEvent } from '@/services/eventServices';
+import EventOrganizerSelector from '@/components/Events/EventOrganizerSelector.vue';
+
+const images = import.meta.glob('@/assets/icon_classe/*.avif', { eager: true });
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 const route = useRoute();
@@ -138,41 +150,70 @@ const isEditMode = computed(() => route.name === 'EventEdit');
 const eventId = computed(() => route.params.id);
 
 const event = ref({
+  organizerId: '',
   title: '',
   description: '',
   eventDate: new Date().toISOString().slice(0, 16),
   image: null
 });
 
+const characters = ref([]);
 const imagePreview = ref(null);
 const isLoading = ref(false);
 const error = ref(null);
 const success = ref(null);
 
+const classes = {
+  sram: images['/src/assets/icon_classe/sram.avif'].default,
+  forgelance: images['/src/assets/icon_classe/forgelance.avif'].default,
+  cra: images['/src/assets/icon_classe/cra.avif'].default,
+  ecaflip: images['/src/assets/icon_classe/ecaflip.avif'].default,
+  eniripsa: images['/src/assets/icon_classe/eniripsa.avif'].default,
+  enutrof: images['/src/assets/icon_classe/enutrof.avif'].default,
+  feca: images['/src/assets/icon_classe/feca.avif'].default,
+  eliotrope: images['/src/assets/icon_classe/eliotrope.avif'].default,
+  iop: images['/src/assets/icon_classe/iop.avif'].default,
+  osamodas: images['/src/assets/icon_classe/osamodas.avif'].default,
+  pandawa: images['/src/assets/icon_classe/pandawa.avif'].default,
+  roublard: images['/src/assets/icon_classe/roublard.avif'].default,
+  sacrieur: images['/src/assets/icon_classe/sacrieur.avif'].default,
+  sadida: images['/src/assets/icon_classe/sadida.avif'].default,
+  steamer: images['/src/assets/icon_classe/steamer.avif'].default,
+  xelor: images['/src/assets/icon_classe/xelor.avif'].default,
+  zobal: images['/src/assets/icon_classe/zobal.avif'].default,
+  huppermage: images['/src/assets/icon_classe/huppermage.avif'].default,
+  ouginak: images['/src/assets/icon_classe/ouginak.avif'].default,
+};
+
 onMounted(async () => {
-  if (isEditMode.value) {
-    try {
-      isLoading.value = true;
-      
+  try {
+    isLoading.value = true;
+
+    // Fetch characters for organizer selector
+    const response = await fetch(`${API_URL}/characters`);
+    const data = await response.json();
+    characters.value = data.filter(char => !char.isArchived);
+
+    if (isEditMode.value) {
       const data = await fetchEventById(eventId.value);
-      
       event.value = {
+        organizerId: data.organizer.id,
         title: data.title,
         description: data.description,
         eventDate: new Date(data.eventDate).toISOString().slice(0, 16),
         image: null
       };
-      
+
       if (data.imageFilename) {
         imagePreview.value = `${API_URL}/uploads/events/${data.imageFilename}`;
       }
-      
-      isLoading.value = false;
-    } catch (err) {
-      console.error('Error loading event:', err);
-      error.value = 'Erreur lors du chargement de l\'événement';
-      isLoading.value = false;
     }
+
+    isLoading.value = false;
+  } catch (err) {
+    console.error('Error loading data:', err);
+    error.value = 'Erreur lors du chargement des données';
+    isLoading.value = false;
   }
 });
 
@@ -202,6 +243,11 @@ const removeImage = () => {
 };
 
 const validateForm = () => {
+  if (!event.value.organizerId) {
+    error.value = 'L\'organisateur est requis';
+    return false;
+  }
+
   if (!event.value.title.trim()) {
     error.value = 'Le titre est requis';
     return false;
