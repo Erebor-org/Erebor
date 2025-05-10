@@ -35,16 +35,19 @@
               </td>
               <td class="p-4 text-[#b07d46] font-bold text-center align-middle">
                 <div class="flex items-center justify-center gap-2">
-                  {{ participation.character.pseudo}}
+                  {{ participation.characterName || `Position ${participation.position}` }}
                 </div>
               </td>
               <td class="p-4 relative text-center align-middle">
-                <div class="relative inline-block">
+                <div v-if="participation.characterClass" class="relative inline-block">
                   <img
-                    :src="getClassIcon(participation.character.class)"
+                    :src="getClassIcon(participation.characterClass)"
                     alt="Character Class"
                     class="w-14 h-14 cursor-pointer mx-auto"
                   />
+                </div>
+                <div v-else class="text-gray-400">
+                  Position {{ participation.position }}
                 </div>
               </td>
               <td class="px-4 py-4 whitespace-nowrap">
@@ -111,6 +114,9 @@ export default {
         
         const response = await axios.get(`${this.API_URL}/event-participations/event/${this.eventId}`);
         this.participations = response.data;
+        
+        // Debug the response
+        console.log('Participations loaded:', this.participations);
         
         this.isLoading = false;
       } catch (err) {

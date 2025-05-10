@@ -6,7 +6,8 @@ use App\Repository\CharactersRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
-
+use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: CharactersRepository::class)]
 #[ORM\Table(name: "characters")]
@@ -15,6 +16,7 @@ class Characters
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer')]
+    #[Groups(['character:read', 'event:read', 'participation:read'])]
     private ?int $id = null;
 
     #[ORM\Column(type: 'integer', nullable: true)]

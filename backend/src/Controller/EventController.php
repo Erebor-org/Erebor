@@ -95,26 +95,36 @@ class EventController extends AbstractController
         return $this->json($event, Response::HTTP_CREATED, [], ['groups' => 'event:read']);
     }
 
-    #[Route('/events/{id}', methods: ['PUT'])]
+    #[Route('/events/{id}', methods: ['PATCH'])]
     public function updateEvent(Request $request, Event $event, EntityManagerInterface $entityManager): JsonResponse
     {
-        // Try to get data from FormData first
-        $formData = $request->request->get('data');
+        $data = null;
         
-        // If not found, try to get from request body
-        if (!$formData) {
-            $formData = $request->getContent();
+        // Check if this is a multipart/form-data request (with file upload)
+        if ($request->request->has('data')) {
+            $data = json_decode($request->request->get('data'), true);
+            dump($data);
+        } else {
+            // This is a regular JSON request
+            $data = json_decode($request->getContent(), true);
+            dump($data);
         }
-        
-        $data = json_decode($formData, true);
         
         if (!$data) {
-            return $this->json(['error' => 'Invalid request data'], Response::HTTP_BAD_REQUEST);
+            return $this->json(['error' => 'Invalid request data '.json_last_error_msg()], Response::HTTP_BAD_REQUEST);
         }
         
-        $event->setTitle($data['title']);
-        $event->setDescription($data['description']);
-        $event->setEventDate(new \DateTime($data['eventDate']));
+        if (isset($data['title'])) {
+            $event->setTitle($data['title']);
+        }
+        
+        if (isset($data['description'])) {
+            $event->setDescription($data['description']);
+        }
+        
+        if (isset($data['eventDate'])) {
+            $event->setEventDate(new \DateTime($data['eventDate']));
+        }
         
         // Update organizer if provided
         if (isset($data['organizerId'])) {

@@ -37,8 +37,11 @@
         <div v-if="standings.length >= 2" class="w-1/4 flex flex-col items-center">
           <div class="relative mb-2">
             <div class="w-24 h-24 rounded-full overflow-hidden border-4 border-gray-400">
-              <div class="w-full h-full flex items-center justify-center" :class="getClassColor(standings[1].character.class)">
-                <span class="text-white text-xl font-bold">{{ standings[1].character.class.substring(0, 1) }}</span>
+              <div v-if="standings[1].character_class && getClassImage(standings[1].character_class)" class="w-full h-full flex items-center justify-center">
+                <img :src="getClassImage(standings[1].character_class)" alt="Class icon" class="w-full h-full object-cover" />
+              </div>
+              <div v-else class="w-full h-full flex items-center justify-center" :class="getClassColor(standings[1].character_class)">
+                <span class="text-white text-xl font-bold">{{ standings[1].character_class ? standings[1].character_class.substring(0, 1) : '?' }}</span>
               </div>
             </div>
             <div class="absolute -bottom-2 -right-2 w-8 h-8 rounded-full bg-gray-400 text-black flex items-center justify-center font-bold text-lg">
@@ -46,9 +49,9 @@
             </div>
           </div>
           <div class="text-center">
-            <h3 class="text-[#b07d46] font-bold text-lg">{{ standings[1].character.pseudo }}</h3>
-            <p class="text-[#b02e2e] font-bold text-xl">{{ standings[1].totalPoints }} pts</p>
-            <p class="text-[#b07d46] text-sm">{{ standings[1].participationCount }} participations</p>
+            <h3 class="text-[#b07d46] font-bold text-lg">{{ standings[1].character_name }}</h3>
+            <p class="text-[#b02e2e] font-bold text-xl">{{ standings[1].total_points }} pts</p>
+            <p class="text-[#b07d46] text-sm">{{ standings[1].participation_count }} participations</p>
           </div>
         </div>
         
@@ -56,8 +59,11 @@
         <div v-if="standings.length >= 1" class="w-1/3 flex flex-col items-center">
           <div class="relative mb-2">
             <div class="w-32 h-32 rounded-full overflow-hidden border-4 border-yellow-500">
-              <div class="w-full h-full flex items-center justify-center" :class="getClassColor(standings[0].character.class)">
-                <span class="text-white text-2xl font-bold">{{ standings[0].character.class.substring(0, 1) }}</span>
+              <div v-if="standings[0].character_class && getClassImage(standings[0].character_class)" class="w-full h-full flex items-center justify-center">
+                <img :src="getClassImage(standings[0].character_class)" alt="Class icon" class="w-full h-full object-cover" />
+              </div>
+              <div v-else class="w-full h-full flex items-center justify-center" :class="getClassColor(standings[0].character_class)">
+                <span class="text-white text-2xl font-bold">{{ standings[0].character_class ? standings[0].character_class.substring(0, 1) : '?' }}</span>
               </div>
             </div>
             <div class="absolute -bottom-2 -right-2 w-10 h-10 rounded-full bg-yellow-500 text-black flex items-center justify-center font-bold text-xl">
@@ -65,9 +71,9 @@
             </div>
           </div>
           <div class="text-center">
-            <h3 class="text-[#b07d46] font-bold text-xl">{{ standings[0].character.pseudo }}</h3>
-            <p class="text-[#b02e2e] font-bold text-2xl">{{ standings[0].totalPoints }} pts</p>
-            <p class="text-[#b07d46] text-sm">{{ standings[0].participationCount }} participations</p>
+            <h3 class="text-[#b07d46] font-bold text-xl">{{ standings[0].character_name }}</h3>
+            <p class="text-[#b02e2e] font-bold text-2xl">{{ standings[0].total_points }} pts</p>
+            <p class="text-[#b07d46] text-sm">{{ standings[0].participation_count }} participations</p>
           </div>
         </div>
         
@@ -75,8 +81,11 @@
         <div v-if="standings.length >= 3" class="w-1/4 flex flex-col items-center">
           <div class="relative mb-2">
             <div class="w-20 h-20 rounded-full overflow-hidden border-4 border-amber-700">
-              <div class="w-full h-full flex items-center justify-center" :class="getClassColor(standings[2].character.class)">
-                <span class="text-white text-lg font-bold">{{ standings[2].character.class.substring(0, 1) }}</span>
+              <div v-if="standings[2].character_class && getClassImage(standings[2].character_class)" class="w-full h-full flex items-center justify-center">
+                <img :src="getClassImage(standings[2].character_class)" alt="Class icon" class="w-full h-full object-cover" />
+              </div>
+              <div v-else class="w-full h-full flex items-center justify-center" :class="getClassColor(standings[2].character_class)">
+                <span class="text-white text-lg font-bold">{{ standings[2].character_class ? standings[2].character_class.substring(0, 1) : '?' }}</span>
               </div>
             </div>
             <div class="absolute -bottom-2 -right-2 w-7 h-7 rounded-full bg-amber-700 text-white flex items-center justify-center font-bold text-lg">
@@ -84,9 +93,9 @@
             </div>
           </div>
           <div class="text-center">
-            <h3 class="text-[#b07d46] font-bold text-lg">{{ standings[2].character.pseudo }}</h3>
-            <p class="text-[#b02e2e] font-bold text-xl">{{ standings[2].totalPoints }} pts</p>
-            <p class="text-[#b07d46] text-sm">{{ standings[2].participationCount }} participations</p>
+            <h3 class="text-[#b07d46] font-bold text-lg">{{ standings[2].character_name }}</h3>
+            <p class="text-[#b02e2e] font-bold text-xl">{{ standings[2].total_points }} pts</p>
+            <p class="text-[#b07d46] text-sm">{{ standings[2].participation_count }} participations</p>
           </div>
         </div>
       </div>
@@ -106,31 +115,34 @@
               </tr>
             </thead>
             <tbody class="divide-y divide-[#b07d46]">
-              <tr v-for="(standing, index) in standings" :key="standing.character.id" class="hover:bg-[#f3d9b1]/30">
+              <tr v-for="(standing, index) in standings" :key="standing.character_id" class="hover:bg-[#f3d9b1]/30">
                 <td class="px-4 py-4 whitespace-nowrap">
                   <div :class="['inline-flex items-center justify-center w-8 h-8 rounded-full text-sm font-bold', getRankColor(index + 1)]">
                     {{ index + 1 }}
                   </div>
                 </td>
                 <td class="px-4 py-4 whitespace-nowrap text-[#b07d46] font-bold">
-                  {{ standing.character.pseudo }}
+                  {{ standing.character_name }}
                 </td>
                 <td class="px-4 py-4 whitespace-nowrap">
-                  <span :class="['px-2 py-1 rounded-md text-xs font-medium text-white', getClassColor(standing.character.class)]">
-                    {{ standing.character.class }}
-                  </span>
+                  <div class="flex items-center">
+                    <img v-if="standing.character_class && getClassImage(standing.character_class)" 
+                         :src="getClassImage(standing.character_class)" 
+                         :alt="standing.character_class" 
+                         class="w-12 h-12 mr-2 rounded-full" />
+                  </div>
                 </td>
                 <td class="px-4 py-4 whitespace-nowrap">
                   <div class="text-[#b02e2e] font-bold">
-                    {{ standing.totalPoints }} pts
+                    {{ standing.total_points }} pts
                   </div>
                 </td>
                 <td class="px-4 py-4 whitespace-nowrap text-[#b07d46]">
-                  {{ standing.participationCount }}
+                  {{ standing.participation_count }}
                 </td>
                 <td class="px-4 py-4 whitespace-nowrap">
-                  <div :class="['inline-flex items-center justify-center w-8 h-8 rounded-full text-sm font-bold', getRankColor(standing.bestPosition)]">
-                    {{ standing.bestPosition }}
+                  <div :class="['inline-flex items-center justify-center w-8 h-8 rounded-full text-sm font-bold', getRankColor(standing.best_position)]">
+                    {{ standing.best_position }}
                   </div>
                 </td>
               </tr>
@@ -147,6 +159,7 @@ import axios from 'axios';
 import members_bg from '@/assets/members_bg.webp';
 
 const API_URL = import.meta.env.VITE_API_URL;
+const images = import.meta.glob('@/assets/icon_classe/*.avif', { eager: true });
 
 export default {
   data() {
@@ -154,7 +167,28 @@ export default {
       backgroundImage: members_bg,
       standings: [],
       isLoading: false,
-      error: null
+      error: null,
+      classes: {
+        sram: images['/src/assets/icon_classe/sram.avif'].default,
+        forgelance: images['/src/assets/icon_classe/forgelance.avif'].default,
+        cra: images['/src/assets/icon_classe/cra.avif'].default,
+        ecaflip: images['/src/assets/icon_classe/ecaflip.avif'].default,
+        eniripsa: images['/src/assets/icon_classe/eniripsa.avif'].default,
+        enutrof: images['/src/assets/icon_classe/enutrof.avif'].default,
+        feca: images['/src/assets/icon_classe/feca.avif'].default,
+        eliotrope: images['/src/assets/icon_classe/eliotrope.avif'].default,
+        iop: images['/src/assets/icon_classe/iop.avif'].default,
+        osamodas: images['/src/assets/icon_classe/osamodas.avif'].default,
+        pandawa: images['/src/assets/icon_classe/pandawa.avif'].default,
+        roublard: images['/src/assets/icon_classe/roublard.avif'].default,
+        sacrieur: images['/src/assets/icon_classe/sacrieur.avif'].default,
+        sadida: images['/src/assets/icon_classe/sadida.avif'].default,
+        steamer: images['/src/assets/icon_classe/steamer.avif'].default,
+        xelor: images['/src/assets/icon_classe/xelor.avif'].default,
+        zobal: images['/src/assets/icon_classe/zobal.avif'].default,
+        huppermage: images['/src/assets/icon_classe/huppermage.avif'].default,
+        ouginak: images['/src/assets/icon_classe/ouginak.avif'].default,
+      }
     };
   },
   methods: {
@@ -174,6 +208,8 @@ export default {
       }
     },
     getClassColor(characterClass) {
+      if (!characterClass) return 'bg-gray-700';
+      
       const classColors = {
         'Cra': 'bg-green-700',
         'Ecaflip': 'bg-red-700',
@@ -196,6 +232,14 @@ export default {
       };
       
       return classColors[characterClass] || 'bg-gray-700';
+    },
+    getClassImage(characterClass) {
+      if (!characterClass) return null;
+      
+      // Convert to lowercase for matching with image keys
+      const className = characterClass.toLowerCase();
+      
+      return this.classes[className];
     },
     getRankColor(rank) {
       if (rank === 1) return 'bg-yellow-500 text-black';

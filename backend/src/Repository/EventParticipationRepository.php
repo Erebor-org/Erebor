@@ -60,12 +60,15 @@ class EventParticipationRepository extends ServiceEntityRepository
             FROM event_participation ep
             JOIN characters c ON c.id = ep.character_id
             WHERE c.is_archived = false
+            AND c.class IS NOT NULL
             GROUP BY c.id, c.pseudo, c.class
             ORDER BY total_points DESC
         ';
         
+        dump($sql);
         $stmt = $conn->prepare($sql);
         $result = $stmt->executeQuery();
+        dump($result);
         
         return $result->fetchAllAssociative();
     }

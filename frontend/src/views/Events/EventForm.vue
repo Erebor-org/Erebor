@@ -240,7 +240,7 @@ export default {
           formData.append('image', eventData.image);
         }
         
-        const response = await axios.put(`${this.API_URL}/events/${id}`, formData, {
+        const response = await axios.patch(`${this.API_URL}/events/${id}`, formData, {
           headers: {
             'Content-Type': 'multipart/form-data'
           }

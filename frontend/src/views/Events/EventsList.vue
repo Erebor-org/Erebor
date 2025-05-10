@@ -85,22 +85,35 @@
           v-for="event in displayedEvents()" 
           :key="event.id" 
           :event="event"
+          @edit="handleEdit"
         />
       </div>
     </div>
+    
+    <!-- Edit Event Modal -->
+    <teleport to="body">
+      <EditEventModal 
+        v-if="showEditModal && selectedEvent"
+        :event="selectedEvent"
+        @close="showEditModal = false"
+        @update="handleEventUpdate"
+      />
+    </teleport>
   </div>
 </template>
 
 <script>
 import axios from 'axios';
 import EventCard from '@/components/Events/EventCard.vue';
+import EditEventModal from '@/components/Events/EditEventModal.vue';
 import members_bg from '@/assets/members_bg.webp';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
 export default {
   components: {
-    EventCard
+    EventCard,
+    EditEventModal
   },
   data() {
     return {
@@ -110,7 +123,9 @@ export default {
       pastEvents: [],
       isLoading: false,
       error: null,
-      activeTab: 'all' // 'all', 'upcoming', 'past'
+      activeTab: 'all', // 'all', 'upcoming', 'past'
+      selectedEvent: null,
+      showEditModal: false
     };
   },
   methods: {
@@ -154,6 +169,25 @@ export default {
     
     setTab(tab) {
       this.activeTab = tab;
+    },
+    
+    handleEdit(event) {
+      this.selectedEvent = event;
+      this.showEditModal = true;
+    },
+    
+    handleEventUpdate(updatedEvent) {
+      // Update the event in the appropriate arrays
+      const updateEventInArray = (array) => {
+        const index = array.findIndex(e => e.id === updatedEvent.id);
+        if (index !== -1) {
+          array[index] = updatedEvent;
+        }
+      };
+      
+      updateEventInArray(this.events);
+      updateEventInArray(this.upcomingEvents);
+      updateEventInArray(this.pastEvents);
     }
   },
   mounted() {

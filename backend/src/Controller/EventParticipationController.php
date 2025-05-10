@@ -38,10 +38,52 @@ class EventParticipationController extends AbstractController
     }
 
     #[Route('/event-participations/event/{id}', methods: ['GET'])]
-    public function getParticipationsByEvent(Event $event, EventParticipationRepository $repository): JsonResponse
+    public function getParticipationsByEvent(Event $event, EventParticipationRepository $repository, CharactersRepository $charactersRepository): JsonResponse
     {
         $participations = $repository->findByEventOrderedByPosition($event);
-        return $this->json($participations, Response::HTTP_OK, [], ['groups' => 'participation:read']);
+        
+        // Create a custom response array with character information
+        $responseData = [];
+        foreach ($participations as $participation) {
+            $characterData = null;
+            $character = $participation->getCharacter();
+            
+            // If character is an object, get its data
+            if ($character instanceof Characters) {
+                $characterData = [
+                    'id' => $character->getId(),
+                    'pseudo' => $character->getPseudo(),
+                    'class' => $character->getClass()
+                ];
+            } else {
+                // Try to find the character by ID from the database
+                $characterId = $participation->getCharacter() ? $participation->getCharacter()->getId() : null;
+                if ($characterId) {
+                    $characterFromDb = $charactersRepository->find($characterId);
+                    if ($characterFromDb) {
+                        $characterData = [
+                            'id' => $characterFromDb->getId(),
+                            'pseudo' => $characterFromDb->getPseudo(),
+                            'class' => $characterFromDb->getClass()
+                        ];
+                    }
+                }
+            }
+            
+            // Build the participation data
+            $participationData = [
+                'id' => $participation->getId(),
+                'position' => $participation->getPosition(),
+                'points' => $participation->getPoints(),
+                'character' => $characterData ?: null,
+                'characterName' => $characterData ? $characterData['pseudo'] : 'Position ' . $participation->getPosition(),
+                'characterClass' => $characterData ? $characterData['class'] : null
+            ];
+            
+            $responseData[] = $participationData;
+        }
+        
+        return $this->json($responseData, Response::HTTP_OK);
     }
 
     #[Route('/event-participations/ladder', methods: ['GET'])]

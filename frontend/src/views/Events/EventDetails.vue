@@ -13,7 +13,7 @@
       <!-- Back button -->
       <div class="mb-6">
         <button 
-          @click="router.push('/events')"
+          @click="$router.push('/events')"
           class="flex items-center text-gray-400 hover:text-white transition-colors duration-300"
         >
           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -73,13 +73,22 @@
           
           <!-- Action buttons -->
           <div class="mt-8 flex flex-wrap gap-4">
-            <button 
-              v-if="!event.isCompleted"
-              @click="editEvent"
-              class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md font-medium transition-colors duration-300"
-            >
-              Modifier
-            </button>
+    <button 
+      v-if="!event.isCompleted"
+      @click="showEditModal = true"
+      class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md font-medium transition-colors duration-300"
+    >
+      Modifier
+    </button>
+    
+    <teleport to="body">
+      <EditEventModal 
+        v-if="showEditModal"
+        :event="event"
+        @close="showEditModal = false"
+        @update="handleEventUpdate"
+      />
+    </teleport>
             
             <button 
               v-if="!event.isCompleted"
@@ -171,11 +180,13 @@
 import axios from 'axios';
 import EventResults from '@/components/Events/EventResults.vue';
 import ParticipationForm from '@/components/Events/ParticipationForm.vue';
+import EditEventModal from '@/components/Events/EditEventModal.vue';
 
 export default {
   components: {
     EventResults,
-    ParticipationForm
+    ParticipationForm,
+    EditEventModal
   },
   data() {
     return {
@@ -185,7 +196,8 @@ export default {
       error: null,
       showDeleteConfirm: false,
       showCompleteConfirm: false,
-      showParticipationForm: false
+      showParticipationForm: false,
+      showEditModal: false
     };
   },
   computed: {
@@ -228,9 +240,6 @@ export default {
         this.error = 'Erreur lors du chargement de l\'événement';
         this.isLoading = false;
       }
-    },
-    editEvent() {
-      this.$router.push(`/events/${this.eventId}/edit`);
     },
     confirmDelete() {
       this.showDeleteConfirm = true;
@@ -278,6 +287,9 @@ export default {
     handleParticipationsAdded() {
       this.loadEvent();
       this.showParticipationForm = false;
+    },
+    handleEventUpdate(updatedEvent) {
+      this.event = updatedEvent;
     }
   },
   mounted() {

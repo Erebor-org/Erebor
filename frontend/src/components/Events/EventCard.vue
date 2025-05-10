@@ -78,6 +78,8 @@ const props = defineProps({
   }
 });
 
+const emit = defineEmits(['edit']);
+
 const router = useRouter();
 
 const formattedDate = computed(() => {
@@ -103,7 +105,7 @@ const viewEvent = () => {
 };
 
 const editEvent = () => {
-  router.push(`/events/${props.event.id}/edit`);
+  emit('edit', props.event);
 };
 
 const imageUrl = computed(() => {
