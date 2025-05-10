@@ -32,16 +32,28 @@
           <button 
             @click="filter = 'byRole'" 
             :class="[
-              'px-4 py-2 text-sm font-medium border border-b border-[#b07d46]',
+              'px-4 py-2 text-sm font-medium border-t border-b border-[#b07d46]',
               filter === 'byRole' 
+                ? 'bg-[#b07d46] text-white' 
+                : 'bg-white text-[#b07d46] hover:bg-[#f3d9b1]'
+            ]"
+          >
+            Par Rôle
+          </button>
+          <button 
+            @click="filter = 'byRecruiter'" 
+            :class="[
+              'px-4 py-2 text-sm font-medium border border-[#b07d46]',
+              filter === 'byRecruiter' 
                 ? 'bg-[#b07d46] text-white' 
                 : 'bg-white text-[#b07d46] hover:bg-[#f3d9b1]'
             ]"
             class="rounded-r-lg"
           >
-            Par Rôle
+            Par Recruteur
           </button>
         </div>
+        
       </div>
 
       <div v-if="filter === 'byRole'" class="mb-4">
@@ -51,6 +63,15 @@
         >
           <option value="">Sélectionner un rôle</option>
           <option v-for="role in roles" :key="role.id" :value="role.id">{{ role.name }}</option>
+        </select>
+      </div>
+      <div v-if="filter === 'byRecruiter'" class="mb-4">
+        <select 
+          v-model="selectedRecruiter" 
+          class="w-full md:w-1/3 mx-auto block border-2 border-[#b07d46] bg-[#fffaf0] rounded-md p-2 text-base focus:outline-none focus:ring-2 focus:ring-[#f3d9b1]"
+        >
+          <option value="">Sélectionner un recruteur</option>
+          <option v-for="recruiter in recruiters" :key="recruiter.id" :value="recruiter.id">{{ recruiter.pseudo }}</option>
         </select>
       </div>
     </div>
