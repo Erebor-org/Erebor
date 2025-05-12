@@ -77,12 +77,13 @@
             <thead class="sticky top-0 bg-[#b02e2e] z-10">
               <tr class="text-[#f3d9b1] text-lg">
                 <th class="p-4">Classe</th>
-                <th class="p-4">Nom</th>
-                <th class="p-4">Ankama</th>
+                <th class="p-4">Pseudo</th>
+                <th class="p-4">Ankama ID</th>
                 <th class="p-4">Recruteur</th>
                 <th class="p-4">Rang</th>
+                <th class="p-4">Arrivée</th>
                 <th class="p-4">Mules</th>
-                <th class="p-4">Avertissements</th>
+                <th class="p-4">Carton</th>
                 <th class="p-4">Actions</th>
               </tr>
             </thead>
@@ -156,13 +157,20 @@
               <td class="p-4 text-[#b07d46] text-center align-middle">
                 {{ member?.rank?.name || 'No Rank' }}
               </td>
+              <td class="p-4 text-[#b07d46] text-center align-middle">
+              {{
+                member.createdAt
+                  ? new Date(member.createdAt).toLocaleDateString('fr-FR')
+                  : 'Date inconnue'
+              }}
+            </td>
               <td class="p-4 text-center align-middle">
                 <button
                   v-if="filteredMulesByCharacter(id).length > 0"
                   @click="toggleExpand(id)"
                   class="text-[#b02e2e] font-bold underline hover:text-[#942828] transition-all duration-300"
                 >
-                  {{ filteredMulesByCharacter(id).length }} mules
+                  {{ filteredMulesByCharacter(id).length }} 
                 </button>
               </td>
               <td class="p-4 text-center align-middle">
