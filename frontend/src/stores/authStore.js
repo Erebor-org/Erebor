@@ -26,8 +26,8 @@ export const useAuthStore = defineStore('auth', {
           localStorage.setItem('token', this.token);
           localStorage.setItem('user', JSON.stringify(this.user));
 
-          // ✅ Redirect to /membres using the global router
-          router.push('/membres');
+          // Redirect to /events using the global router
+          router.push('/events');
         }
       } catch (error) {
         console.error("Erreur d'inscription ou de connexion:", error.response?.data || error.message);
@@ -45,9 +45,9 @@ export const useAuthStore = defineStore('auth', {
           localStorage.setItem("token", this.token);
           localStorage.setItem("user", JSON.stringify(this.user));
 
-          // ✅ Redirect only if not already on /membres
-          if (router.currentRoute.value.path !== "/membres") {
-            router.push("/membres");
+          // Redirect only if not already on /events
+          if (router.currentRoute.value.path !== "/events") {
+            router.push("/events");
           }
         }
       } catch (error) {

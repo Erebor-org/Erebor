@@ -133,6 +133,10 @@ export default {
     eventId: {
       type: [Number, String],
       default: null
+    },
+    isAdminOrAnim: {
+      type: Boolean,
+      default: false
     }
   },
   data() {
@@ -323,6 +327,12 @@ export default {
     }
   },
   async mounted() {
+    // Check if user has permission to add participations
+    if (!this.isAdminOrAnim) {
+      this.errorMessage = 'Vous n\'avez pas les permissions nécessaires pour ajouter des résultats.';
+      return;
+    }
+    
     try {
       this.isLoading = true;
       

@@ -76,8 +76,12 @@ const logout = () => {
 const isLoggedIn = computed(() => authStore.token !== null);
 const user = computed(() => authStore.user);
 const isAdmin = computed(() => {
-  return user.value?.roles?.includes('ROLE_ADMIN');
-});
+    return user.value?.roles?.includes('ROLE_ADMIN');
+  });
+  
+  const isAdminOrAnim = computed(() => {
+    return user.value?.roles?.includes('ROLE_ADMIN') || user.value?.roles?.includes('ROLE_ANIM');
+  });
 </script>
 
 <style scoped>

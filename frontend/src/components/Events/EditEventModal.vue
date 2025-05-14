@@ -14,6 +14,11 @@
         </svg>
       </button>
       <h3 class="text-xl font-bold text-[#b02e2e] mb-4">Modifier l'événement</h3>
+      
+      <!-- Error notification -->
+      <div v-if="error" class="bg-red-500 text-white p-4 rounded-md mb-4">
+        {{ error }}
+      </div>
       <form @submit.prevent="handleSubmit">
         <div>
           <label for="event-title" class="block text-[#b07d46] font-bold mb-2">Titre</label>
@@ -100,7 +105,8 @@
 
 <script setup>
 import axios from 'axios';
-import { onMounted, ref, computed } from 'vue';
+import { onMounted, ref } from 'vue';
+import { useAuthStore } from '@/stores/authStore';
 
 const props = defineProps({
   event: {
@@ -118,11 +124,22 @@ const updatedEvent = ref({ ...props.event });
 const imagePreview = ref(null);
 const newImage = ref(null);
 
-const currentEventDate = computed(() => {
-  return new Date(props.event.eventDate).toISOString().slice(0, 16);
-});
+// Initialize with proper date format
 
 onMounted(() => {
+  // Check permissions first
+  const authStore = useAuthStore();
+  const user = authStore.user;
+  const isAdminOrAnim = user?.roles?.includes('ROLE_ADMIN') || user?.roles?.includes('ROLE_ANIM');
+  
+  if (!isAdminOrAnim) {
+    error.value = 'Vous n\'avez pas les permissions nécessaires pour modifier cet événement.';
+    setTimeout(() => {
+      emit('close');
+    }, 2000);
+    return;
+  }
+  
   if (props.event.imageFilename) {
     imagePreview.value = `${API_URL}/uploads/events/${props.event.imageFilename}`;
   }
@@ -150,6 +167,16 @@ const removeImage = () => {
 };
 
 const handleSubmit = async () => {
+  // Check user permissions
+  const authStore = useAuthStore();
+  const user = authStore.user;
+  const isAdminOrAnim = user?.roles?.includes('ROLE_ADMIN') || user?.roles?.includes('ROLE_ANIM');
+  
+  if (!isAdminOrAnim) {
+    error.value = 'Vous n\'avez pas les permissions nécessaires pour modifier cet événement.';
+    return;
+  }
+  
   try {
     isLoading.value = true;
     error.value = null;
@@ -185,6 +212,16 @@ const handleSubmit = async () => {
 };
 
 const cancel = () => {
+  // Check if user has permission before allowing the modal to even be displayed
+  const authStore = useAuthStore();
+  const user = authStore.user;
+  const isAdminOrAnim = user?.roles?.includes('ROLE_ADMIN') || user?.roles?.includes('ROLE_ANIM');
+  
+  if (!isAdminOrAnim) {
+    error.value = 'Vous n\'avez pas les permissions nécessaires pour modifier cet événement.';
+    return;
+  }
+
   emit('close');
 };
 </script>

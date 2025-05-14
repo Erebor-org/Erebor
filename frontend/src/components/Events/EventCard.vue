@@ -53,7 +53,7 @@
           Voir
         </button>
         <button 
-          v-if="!event.isCompleted" 
+          v-if="!event.isCompleted && isAdminOrAnim" 
           @click.stop="editEvent" 
           class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-full text-sm font-medium transition-colors duration-300"
         >
@@ -78,6 +78,10 @@ const props = defineProps({
   showActions: {
     type: Boolean,
     default: true
+  },
+  isAdminOrAnim: {
+    type: Boolean,
+    default: false
   }
 });
 

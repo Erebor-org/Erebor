@@ -31,14 +31,14 @@ const register = async () => {
 
   await authStore.register(form.value.pseudo, form.value.password);
   if (authStore.token) {
-    router.push('/membres'); // Redirection après l'inscription et connexion réussies
+    router.push('/events'); // Redirection après l'inscription et connexion réussies
   }
 };
 
 const login = async () => {
   await authStore.login(loginForm.value.pseudo, loginForm.value.password);
   if (authStore.token) {
-    router.push('/membres'); // Redirige si le token est défini après le login
+    router.push('/events'); // Redirige si le token est défini après le login
   }
 };
 

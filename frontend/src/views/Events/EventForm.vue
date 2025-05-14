@@ -136,6 +136,7 @@
 
 <script>
 import axios from 'axios';
+import { useAuthStore } from '@/stores/authStore';
 import EventOrganizerSelector from '@/components/Events/EventOrganizerSelector.vue';
 
 export default {
@@ -159,6 +160,7 @@ export default {
       isLoading: false,
       error: null,
       success: null,
+      isAdminOrAnim: false,
       classes: {
         sram: images['/src/assets/icon_classe/sram.avif'].default,
         forgelance: images['/src/assets/icon_classe/forgelance.avif'].default,
@@ -191,6 +193,23 @@ export default {
     }
   },
   methods: {
+    checkAdminOrAnimPermission() {
+      const authStore = useAuthStore();
+      const user = authStore.user;
+      
+      // Check if user has either ROLE_ADMIN or ROLE_ANIM
+      this.isAdminOrAnim = user?.roles?.includes('ROLE_ADMIN') || user?.roles?.includes('ROLE_ANIM');
+      
+      if (!this.isAdminOrAnim) {
+        this.error = 'Vous n\'avez pas les permissions nécessaires pour créer ou modifier des événements.';
+        // Disable form inputs
+        this.isLoading = true;
+        // Redirect after a short delay
+        setTimeout(() => {
+          this.$router.push('/events');
+        }, 2000);
+      }
+    },
     async fetchEventById(id) {
       try {
         const response = await axios.get(`${this.API_URL}/events/${id}`);
@@ -302,6 +321,12 @@ export default {
       this.error = null;
       this.success = null;
       
+      // Check permissions before proceeding
+      if (!this.isAdminOrAnim) {
+        this.error = 'Vous n\'avez pas les permissions nécessaires pour créer ou modifier des événements.';
+        return;
+      }
+      
       if (!this.validateForm()) return;
       
       try {
@@ -336,6 +361,14 @@ export default {
     }
   },
   async mounted() {
+    // Check permissions first
+    this.checkAdminOrAnimPermission();
+    
+    // If no permission, don't continue loading data
+    if (!this.isAdminOrAnim) {
+      return;
+    }
+
     try {
       this.isLoading = true;
 
@@ -357,6 +390,8 @@ export default {
           this.imagePreview = `${this.API_URL}/uploads/events/${data.imageFilename}`;
         }
       }
+
+      await this.checkAdminOrAnimPermission();
 
       this.isLoading = false;
     } catch (err) {

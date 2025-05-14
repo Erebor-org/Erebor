@@ -18,7 +18,7 @@
             }"
             class="px-6 py-2 rounded-full font-bold transition-all duration-300"
           >
-            Tous les événements
+            Tous les événements 
           </button>
           <button
             @click="setTab('upcoming')"
@@ -49,6 +49,7 @@
         
         <!-- Add Event Button -->
         <button
+          v-if="isAdminOrAnim"
           @click="createEvent"
           class="bg-[#b02e2e] text-[#f3d9b1] font-bold py-2 px-6 rounded-full hover:bg-[#942828] transition-all duration-300"
         >
@@ -85,6 +86,7 @@
           v-for="event in displayedEvents()" 
           :key="event.id" 
           :event="event"
+          :isAdminOrAnim="isAdminOrAnim"
           @edit="handleEdit"
         />
       </div>
@@ -107,8 +109,11 @@ import axios from 'axios';
 import EventCard from '@/components/Events/EventCard.vue';
 import EditEventModal from '@/components/Events/EditEventModal.vue';
 import members_bg from '@/assets/members_bg.webp';
+import { useAuthStore } from '@/stores/authStore';
 
 const API_URL = import.meta.env.VITE_API_URL;
+
+
 
 export default {
   components: {
@@ -125,6 +130,7 @@ export default {
       error: null,
       activeTab: 'all', // 'all', 'upcoming', 'past'
       selectedEvent: null,
+      isAdminOrAnim: false,
       showEditModal: false
     };
   },
@@ -155,7 +161,13 @@ export default {
     createEvent() {
       this.$router.push('/events/create');
     },
-    
+    setAdminOrAnim() {
+      const authStore = useAuthStore();
+      const user = authStore.user;
+      console.log("user", user)
+      // Check if user has either ROLE_ADMIN or ROLE_ANIM
+      return user?.roles?.includes('ROLE_ADMIN') || user?.roles?.includes('ROLE_ANIM');
+    },
     displayedEvents() {
       switch (this.activeTab) {
         case 'upcoming':
@@ -192,6 +204,7 @@ export default {
   },
   mounted() {
     this.loadEvents();
+    this.isAdminOrAnim = this.setAdminOrAnim();
   }
 };
 </script>

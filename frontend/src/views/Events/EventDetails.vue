@@ -74,7 +74,7 @@
           <!-- Action buttons -->
           <div class="mt-8 flex flex-wrap gap-4">
     <button 
-      v-if="!event.isCompleted"
+      v-if="!event.isCompleted && isAdminOrAnim"
       @click="showEditModal = true"
       class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md font-medium transition-colors duration-300"
     >
@@ -91,7 +91,7 @@
     </teleport>
             
             <button 
-              v-if="!event.isCompleted"
+              v-if="!event.isCompleted && isAdminOrAnim"
               @click="confirmComplete"
               class="bg-[#93a402] hover:bg-[#7a8a02] text-white px-4 py-2 rounded-md font-medium transition-colors duration-300"
             >
@@ -99,7 +99,7 @@
             </button>
             
             <button 
-              v-if="!event.isCompleted"
+              v-if="!event.isCompleted && isAdminOrAnim"
               @click="toggleParticipationForm"
               class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-md font-medium transition-colors duration-300"
             >
@@ -107,6 +107,7 @@
             </button>
             
             <button 
+              v-if="isAdminOrAnim"
               @click="confirmDelete"
               class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md font-medium transition-colors duration-300"
             >
@@ -116,10 +117,11 @@
         </div>
       </div>
       
-      <!-- Participation form -->
-      <div v-if="showParticipationForm" class="mb-8">
+      <!-- Participation form - only shown for admin/animator -->
+      <div v-if="showParticipationForm && isAdminOrAnim" class="mb-8">
         <ParticipationForm 
           :eventId="eventId" 
+          :isAdminOrAnim="isAdminOrAnim"
           @participations-added="handleParticipationsAdded"
         />
       </div>
@@ -127,8 +129,8 @@
       <!-- Event results -->
       <EventResults :eventId="eventId" :refreshKey="resultsKey" />
       
-      <!-- Delete confirmation modal -->
-      <div v-if="showDeleteConfirm" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <!-- Delete confirmation modal - only shown for admin/animator -->
+      <div v-if="showDeleteConfirm && isAdminOrAnim" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
         <div class="bg-gray-800 rounded-lg p-6 max-w-md w-full">
           <h3 class="text-xl font-bold text-white mb-4">Confirmer la suppression</h3>
           <p class="text-gray-300 mb-6">Êtes-vous sûr de vouloir supprimer cet événement ? Cette action est irréversible.</p>
@@ -151,7 +153,7 @@
       </div>
       
       <!-- Complete confirmation modal -->
-      <div v-if="showCompleteConfirm" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div v-if="showCompleteConfirm && isAdminOrAnim" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
         <div class="bg-gray-800 rounded-lg p-6 max-w-md w-full">
           <h3 class="text-xl font-bold text-white mb-4">Confirmer la complétion</h3>
           <p class="text-gray-300 mb-6">Êtes-vous sûr de vouloir marquer cet événement comme terminé ?</p>
@@ -181,6 +183,7 @@ import axios from 'axios';
 import EventResults from '@/components/Events/EventResults.vue';
 import ParticipationForm from '@/components/Events/ParticipationForm.vue';
 import EditEventModal from '@/components/Events/EditEventModal.vue';
+import { useAuthStore } from '@/stores/authStore';
 
 export default {
   components: {
@@ -198,6 +201,7 @@ export default {
       showCompleteConfirm: false,
       showParticipationForm: false,
       showEditModal: false,
+      isAdminOrAnim: false,
       resultsKey: 0
     };
   },
@@ -243,18 +247,33 @@ export default {
       }
     },
     confirmDelete() {
+      if (!this.isAdminOrAnim) {
+        this.error = 'Vous n\'avez pas les permissions nécessaires pour supprimer cet événement.';
+        return;
+      }
       this.showDeleteConfirm = true;
     },
     cancelDelete() {
       this.showDeleteConfirm = false;
     },
     confirmComplete() {
+      if (!this.isAdminOrAnim) {
+        this.error = 'Vous n\'avez pas les permissions nécessaires pour marquer cet événement comme terminé.';
+        return;
+      }
       this.showCompleteConfirm = true;
     },
     cancelComplete() {
       this.showCompleteConfirm = false;
     },
     async handleDelete() {
+      // Verify permissions before proceeding
+      if (!this.isAdminOrAnim) {
+        this.error = 'Vous n\'avez pas les permissions nécessaires pour supprimer cet événement.';
+        this.showDeleteConfirm = false;
+        return;
+      }
+      
       try {
         this.isLoading = true;
         
@@ -268,6 +287,13 @@ export default {
       }
     },
     async handleComplete() {
+      // Verify permissions before proceeding
+      if (!this.isAdminOrAnim) {
+        this.error = 'Vous n\'avez pas les permissions nécessaires pour marquer cet événement comme terminé.';
+        this.showCompleteConfirm = false;
+        return;
+      }
+      
       try {
         this.isLoading = true;
         this.showCompleteConfirm = false;
@@ -283,6 +309,10 @@ export default {
       }
     },
     toggleParticipationForm() {
+      if (!this.isAdminOrAnim) {
+        this.error = 'Vous n\'avez pas les permissions nécessaires pour ajouter des résultats.';
+        return;
+      }
       this.showParticipationForm = !this.showParticipationForm;
     },
     handleParticipationsAdded() {
@@ -292,10 +322,16 @@ export default {
     },
     handleEventUpdate(updatedEvent) {
       this.event = updatedEvent;
+    },
+    checkAdminOrAnim() {
+      const authStore = useAuthStore();
+      const user = authStore.user;
+      this.isAdminOrAnim = user?.roles?.includes('ROLE_ADMIN') || user?.roles?.includes('ROLE_ANIM');
     }
   },
   mounted() {
     this.loadEvent();
+    this.checkAdminOrAnim();
   }
 };
 </script>
