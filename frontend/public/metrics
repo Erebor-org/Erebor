@@ -1,0 +1,3 @@
+# HELP erebor_frontend_health_status Frontend health status (1 = ready, 0 = not ready)
+# TYPE erebor_frontend_health_status gauge
+erebor_frontend_health_status 1 
