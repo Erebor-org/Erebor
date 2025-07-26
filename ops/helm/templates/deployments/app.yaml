@@ -45,6 +45,14 @@ spec:
           ports:
             - containerPort: 80
               protocol: TCP
+          readinessProbe:
+            httpGet:
+              path: /health/ready
+              port: 80
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 3
           {{- if .Values.deployments.app.containers.nginx.resources }}
           {{- with .Values.deployments.app.containers.nginx.resources }}
           resources:
@@ -61,6 +69,22 @@ spec:
           ports:
             - containerPort: 9000
               protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /health/live
+              port: 80
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /health/ready
+              port: 80
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 3
           {{- if .Values.deployments.app.containers.symfony.resources }}
           {{- with .Values.deployments.app.containers.symfony.resources }}
           resources:
