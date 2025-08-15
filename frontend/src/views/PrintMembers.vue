@@ -31,9 +31,57 @@
         @show-modal-member="showModalMember = true"
       />
 
+      <!-- View Toggle -->
+      <div class="flex justify-center mb-6">
+        <ViewToggle
+          :view-mode="viewMode"
+          @update:view-mode="(newMode) => { console.log('ViewToggle clicked:', newMode); viewMode = newMode; }"
+        />
+        <!-- Debug info -->
+        <div class="ml-4 text-sm text-gray-400">
+          Mode actuel: {{ viewMode }}
+        </div>
+        <!-- Test buttons -->
+        <div class="ml-4 flex space-x-2">
+          <button
+            @click="viewMode = 'cards'"
+            class="px-2 py-1 text-xs bg-blue-500 text-white rounded"
+          >
+            Test Cards
+          </button>
+          <button
+            @click="viewMode = 'list'"
+            class="px-2 py-1 text-xs bg-green-500 text-white rounded"
+          >
+            Test List
+          </button>
+        </div>
+      </div>
+
       <!-- Main Content -->
       <div v-if="activeTab === 'active'" class="mt-12">
+        <!-- Cards View -->
         <MembersTable
+          v-if="viewMode === 'cards'"
+          :filtered-members="filteredMembers"
+          :classes="classes"
+          :filtered-mules-by-character="filteredMulesByCharacter"
+          :character-warning-counts="characterWarningCounts"
+          :editing-pseudo="editingPseudo"
+          :edit-pseudo="editPseudo"
+          @open-modal="openModal"
+          @view-warnings="viewWarnings"
+          @update-character-class="updateCharacterClass"
+          @update-mule-class="updateMuleClass"
+          @start-editing-pseudo="startEditingPseudo"
+          @save-pseudo="savePseudo"
+          @open-mule-modal="openMuleModal"
+          @open-add-mule-modal="openAddMuleModal"
+        />
+
+        <!-- List View -->
+        <MembersTableList
+          v-else
           :filtered-members="filteredMembers"
           :classes="classes"
           :filtered-mules-by-character="filteredMulesByCharacter"
@@ -53,7 +101,17 @@
 
       <!-- Archived Characters -->
       <div v-if="activeTab === 'archived'" class="mt-12">
+        <!-- Cards View -->
         <ArchivedMembersTable
+          v-if="viewMode === 'cards'"
+          :filtered-archived-members="filteredArchivedMembers"
+          :classes="classes"
+          @open-unarchived-character-modal="openUnarchivedCharacterModal"
+        />
+
+        <!-- List View -->
+        <ArchivedMembersTableList
+          v-else
           :filtered-archived-members="filteredArchivedMembers"
           :classes="classes"
           @open-unarchived-character-modal="openUnarchivedCharacterModal"
@@ -108,8 +166,11 @@ import ImportMember from '@/components/ImportMember.vue';
 import Notification from '@/components/NotificationCenter.vue';
 import SearchHeader from '@/components/SearchHeader.vue';
 import MembersTable from '@/components/MembersTable.vue';
+import MembersTableList from '@/components/MembersTableList.vue';
 import ArchivedMembersTable from '@/components/ArchivedMembersTable.vue';
+import ArchivedMembersTableList from '@/components/ArchivedMembersTableList.vue';
 import ArchiveModal from '@/components/ArchiveModal.vue';
+import ViewToggle from '@/components/ViewToggle.vue';
 
 const images = import.meta.glob('@/assets/icon_classe/*.avif', { eager: true });
 
@@ -121,8 +182,11 @@ export default {
     Notification,
     SearchHeader,
     MembersTable,
+    MembersTableList,
     ArchivedMembersTable,
+    ArchivedMembersTableList,
     ArchiveModal,
+    ViewToggle,
   },
   data() {
     return {
@@ -148,6 +212,7 @@ export default {
 
       activeTab: 'active',
       archivedSearchQuery: '',
+      viewMode: 'cards', // New property for view mode (cards or list)
       classes: {
         sram: images['/src/assets/icon_classe/sram.avif'].default,
         forgelance: images['/src/assets/icon_classe/forgelance.avif'].default,
