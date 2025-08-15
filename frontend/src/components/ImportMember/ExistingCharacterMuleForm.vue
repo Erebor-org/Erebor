@@ -179,6 +179,11 @@ export default {
     fetchNotArchivedCharacters: {
       type: Array,
       required: true
+    },
+    selectedCharacterForMule: {
+      type: Object,
+      required: false,
+      default: null
     }
   },
   data() {
@@ -195,6 +200,12 @@ export default {
       selectedCharacterName: '',
       selectedCharacterIcon: ''
     };
+  },
+    // Dans ExistingCharacterMuleForm.vue
+  mounted() {
+    if (this.selectedCharacterForMule) {
+      this.selectNotArchivedCharacter(this.selectedCharacterForMule);
+    }
   },
   computed: {
     filteredNotArchivedCharacters() {

@@ -130,6 +130,7 @@
             :classes="classes"
             :blacklist="blacklist"
             :fetchNotArchivedCharacters="fetchNotArchivedCharacters"
+            :selectedCharacterForMule="selectedCharacterForMule"
             @mule-added="handleMuleAdded"
             @close="closeModal"
           />
@@ -163,6 +164,11 @@ export default {
     fetchNotArchivedCharacters: {
       type: Array,
       required: true,
+    },
+    selectedCharacterForMule: {
+      type: Object,
+      required: false,
+      default: null,
     },
   },
   data() {
@@ -203,6 +209,20 @@ export default {
         ouginak: images['/src/assets/icon_classe/ouginak.avif'].default,
       },
     };
+  },
+  watch: {
+    selectedCharacterForMule(newVal) {
+      if (newVal) {
+        // Si un personnage est pré-sélectionné, ouvrir directement l'onglet ajout mule
+        this.activeTab = 'addMule';
+      }
+    },
+    showModal(newVal) {
+      if (!newVal) {
+        // Quand le modal se ferme, réinitialiser l'onglet actif
+        this.activeTab = 'newCharacter';
+      }
+    },
   },
   methods: {
     closeModal() {
