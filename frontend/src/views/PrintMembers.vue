@@ -14,7 +14,7 @@
     />
 
     <!-- Main Container -->
-    <div class="container mx-auto px-4 py-8">
+    <div ref="mainContainer" class="container mx-auto px-4 py-8">
       <!-- Page Header -->
       <div class="text-center mb-12">
         <h1 class="text-6xl font-bold text-amber-400 mb-6">Gestion des Membres</h1>
@@ -61,6 +61,19 @@
       </div>
     </div>
 
+    <!-- Scroll to Top Button -->
+    <button
+      v-if="showScrollToTop"
+      @click="scrollToTop"
+      class="fixed bottom-8 right-8 z-[9999] w-16 h-16 bg-gradient-to-br from-gray-900 to-black hover:from-gray-800 hover:to-gray-900 text-amber-400 rounded-full shadow-2xl hover:shadow-amber-500/25 transition-all duration-500 transform hover:scale-110 focus:outline-none focus:ring-4 focus:ring-amber-500/30 border-2 border-amber-500/50 hover:border-amber-400"
+      title="Retour en haut de page"
+    >
+      <div class="absolute inset-0 bg-gradient-to-br from-amber-500/20 to-transparent rounded-full"></div>
+      <svg class="w-7 h-7 mx-auto relative z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18" />
+      </svg>
+    </button>
+    
     <!-- Modals -->
     <ArchiveModal
       :show="showModal"
@@ -131,6 +144,7 @@ export default {
       showUnarchivedCharacterModal: false,
       currentCharacter: null,
       selectedCharacterForMule: null, // New state for pre-selected character when adding mule
+      showScrollToTop: false, // New state for scroll-to-top button visibility
 
       activeTab: 'active',
       archivedSearchQuery: '',
@@ -162,9 +176,7 @@ export default {
   computed: {
     // ✅ Use computed properties instead of redundant API calls
     charactersNotArchived() {
-      console.log('charactersNotArchived computed - charactersData:', this.charactersData);
       const result = this.charactersData.filter(character => !character.isArchived);
-      console.log('charactersNotArchived computed - result:', result);
       return result;
     },
     archivedCharacters() {
@@ -183,10 +195,6 @@ export default {
       },
     },
     filteredMembers() {
-      console.log('filteredMembers computed - searchQuery:', this.searchQuery);
-      console.log('filteredMembers computed - charactersData:', this.charactersData);
-      console.log('filteredMembers computed - charactersNotArchived:', this.charactersNotArchived);
-      
       const query = this.searchQuery.toLowerCase();
       const result = this.charactersNotArchived
         .filter(member => {
@@ -214,7 +222,6 @@ export default {
           id: member.id,
         }));
       
-      console.log('filteredMembers computed - result:', result);
       return result;
     },
     filteredArchivedMembers() {
@@ -242,15 +249,10 @@ export default {
   methods: {
     // ✅ Fetch all characters once and store them
     async fetchCharacters() {
-      console.log('fetchCharacters called - API_URL:', API_URL);
       try {
         const response = await axios.get(`${API_URL}/characters/`);
-        console.log('fetchCharacters response:', response);
-        console.log('fetchCharacters response.data:', response.data);
         this.charactersData = response.data;
-        this.notArchivedCharacters = response.data.filter(character => !character.isArchived);
-        console.log('fetchCharacters - charactersData set to:', this.charactersData);
-        console.log('fetchCharacters - notArchivedCharacters set to:', this.notArchivedCharacters);
+        this.notArchivedCharacters = this.charactersData.filter(character => !character.isArchived);
       } catch (error) {
         console.error('Error fetching characters:', error.response?.data || error.message);
       }
@@ -502,25 +504,81 @@ export default {
     viewWarnings(characterId, member) {
       this.$router.push(`/warnings/${characterId}/${member}`);
     },
+
+    // Scroll to top logic
+    scrollToTop() {
+      try {
+        // Get the scrollable container (RouterView)
+        const scrollContainer = document.querySelector('.h-\\[calc\\(100vh-128px\\)\\]');
+        if (scrollContainer) {
+          scrollContainer.scrollTo({
+            top: 0,
+            behavior: 'smooth',
+          });
+        } else {
+          // Fallback to window scroll
+          window.scrollTo({
+            top: 0,
+            behavior: 'smooth',
+          });
+        }
+        
+        // Force update of scroll state after a short delay
+        setTimeout(() => {
+          this.handleScroll();
+        }, 100);
+      } catch (error) {
+        console.error('Error scrolling to top:', error);
+      }
+    },
+    // Watch for scroll events to show/hide the button
+    handleScroll() {
+      // Get the scrollable container (RouterView)
+      const scrollContainer = document.querySelector('.h-\\[calc\\(100vh-128px\\)\\]');
+      if (scrollContainer) {
+        const scrollTop = scrollContainer.scrollTop;
+        this.showScrollToTop = scrollTop > 300;
+      } else {
+        // Fallback to window scroll
+        const scrollY = window.scrollY || window.pageYOffset || 0;
+        this.showScrollToTop = scrollY > 300;
+      }
+    },
   },
   async mounted() {
-    console.log('PrintMembers mounted - starting initialization');
     try {
-      console.log('PrintMembers mounted - calling fetchCharacters');
       await this.fetchCharacters(); // Fetch all characters once
-      console.log('PrintMembers mounted - fetchCharacters completed, charactersData:', this.charactersData);
-      
-      console.log('PrintMembers mounted - calling fetchAllMules');
       await this.fetchAllMules(); // Fetch mules once
-      console.log('PrintMembers mounted - fetchAllMules completed');
-      
-      console.log('PrintMembers mounted - calling fetchWarningCounts');
       await this.fetchWarningCounts();
-      console.log('PrintMembers mounted - fetchWarningCounts completed');
       
-      console.log('PrintMembers mounted - initialization completed');
+      // Add event listener for scroll on the RouterView container
+      const scrollContainer = document.querySelector('.h-\\[calc\\(100vh-128px\\)\\]');
+      if (scrollContainer) {
+        scrollContainer.addEventListener('scroll', this.handleScroll);
+      } else {
+        // Fallback to window scroll
+        window.addEventListener('scroll', this.handleScroll);
+        document.addEventListener('scroll', this.handleScroll);
+      }
+      
+      // Force a scroll test after a delay
+      setTimeout(() => {
+        this.handleScroll();
+      }, 1000);
+      
     } catch (error) {
       console.error('Error during component initialization:', error);
+    }
+  },
+  beforeUnmount() {
+    // Remove event listener for scroll
+    const scrollContainer = document.querySelector('.h-\\[calc\\(100vh-128px\\)\\]');
+    if (scrollContainer) {
+      scrollContainer.removeEventListener('scroll', this.handleScroll);
+    } else {
+      // Remove fallback listeners
+      window.removeEventListener('scroll', this.handleScroll);
+      document.removeEventListener('scroll', this.handleScroll);
     }
   },
 };
