@@ -13,6 +13,21 @@
       @muleAdded="addMuleToTable"
     />
 
+    <!-- Mules Modal -->
+    <MulesModal
+      :show="showMulesModal"
+      :member="selectedMemberForMules"
+      :classes="classes"
+      :filtered-mules-by-character="filteredMulesByCharacter"
+      :editing-pseudo="editingPseudo"
+      :edit-pseudo="editPseudo"
+      @close="closeMulesModal"
+      @save-pseudo="savePseudo"
+      @update-mule-class="updateMuleClass"
+      @open-mule-modal="openMuleModal"
+      @open-add-mule-modal="openAddMuleModal"
+    />
+
     <!-- Main Container -->
     <div ref="mainContainer" class="container mx-auto px-4 py-8">
       <!-- Page Header -->
@@ -37,25 +52,6 @@
           :view-mode="viewMode"
           @update:view-mode="(newMode) => { console.log('ViewToggle clicked:', newMode); viewMode = newMode; }"
         />
-        <!-- Debug info -->
-        <div class="ml-4 text-sm text-gray-400">
-          Mode actuel: {{ viewMode }}
-        </div>
-        <!-- Test buttons -->
-        <div class="ml-4 flex space-x-2">
-          <button
-            @click="viewMode = 'cards'"
-            class="px-2 py-1 text-xs bg-blue-500 text-white rounded"
-          >
-            Test Cards
-          </button>
-          <button
-            @click="viewMode = 'list'"
-            class="px-2 py-1 text-xs bg-green-500 text-white rounded"
-          >
-            Test List
-          </button>
-        </div>
       </div>
 
       <!-- Main Content -->
@@ -96,6 +92,7 @@
           @save-pseudo="savePseudo"
           @open-mule-modal="openMuleModal"
           @open-add-mule-modal="openAddMuleModal"
+          @open-mules-modal="openMulesModal"
         />
       </div>
 
@@ -171,6 +168,7 @@ import ArchivedMembersTable from '@/components/ArchivedMembersTable.vue';
 import ArchivedMembersTableList from '@/components/ArchivedMembersTableList.vue';
 import ArchiveModal from '@/components/ArchiveModal.vue';
 import ViewToggle from '@/components/ViewToggle.vue';
+import MulesModal from '@/components/MulesModal.vue';
 
 const images = import.meta.glob('@/assets/icon_classe/*.avif', { eager: true });
 
@@ -187,6 +185,7 @@ export default {
     ArchivedMembersTableList,
     ArchiveModal,
     ViewToggle,
+    MulesModal,
   },
   data() {
     return {
@@ -205,6 +204,7 @@ export default {
       showNotification: false,
       notArchivedMules: {},
       showMulesModal: false,
+      selectedMemberForMules: null,
       showUnarchivedCharacterModal: false,
       currentCharacter: null,
       selectedCharacterForMule: null, // New state for pre-selected character when adding mule
@@ -608,6 +608,17 @@ export default {
         const scrollY = window.scrollY || window.pageYOffset || 0;
         this.showScrollToTop = scrollY > 300;
       }
+    },
+    
+    // Mules Modal Methods
+    openMulesModal(member) {
+      this.selectedMemberForMules = member;
+      this.showMulesModal = true;
+    },
+    
+    closeMulesModal() {
+      this.showMulesModal = false;
+      this.selectedMemberForMules = null;
     },
   },
   async mounted() {
