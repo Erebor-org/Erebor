@@ -86,16 +86,16 @@
         <div class="mb-8">
           <h3 class="text-lg font-semibold text-theme-text mb-4">Boutons</h3>
           <div class="flex flex-wrap gap-4">
-            <button class="px-6 py-3 bg-theme-primary text-theme-bg font-semibold rounded-lg hover:bg-theme-primary-hover transition-colors">
+            <button class="px-6 py-3 bg-theme-primary text-white font-semibold rounded-lg hover:bg-theme-primary-hover transition-colors">
               Bouton Principal
             </button>
-            <button class="px-6 py-3 bg-theme-success text-theme-bg font-semibold rounded-lg hover:opacity-90 transition-colors">
+            <button class="px-6 py-3 bg-theme-success text-white font-semibold rounded-lg hover:opacity-90 transition-colors">
               Succès
             </button>
-            <button class="px-6 py-3 bg-theme-warning text-theme-bg font-semibold rounded-lg hover:opacity-90 transition-colors">
+            <button class="px-6 py-3 bg-theme-warning text-white font-semibold rounded-lg hover:opacity-90 transition-colors">
               Attention
             </button>
-            <button class="px-6 py-3 bg-theme-error text-theme-bg font-semibold rounded-lg hover:opacity-90 transition-colors">
+            <button class="px-6 py-3 bg-theme-error text-white font-semibold rounded-lg hover:opacity-90 transition-colors">
               Erreur
             </button>
             <button class="px-6 py-3 bg-theme-bg-muted text-theme-text font-semibold rounded-lg hover:bg-theme-border transition-colors">

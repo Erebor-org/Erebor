@@ -9,11 +9,29 @@
     >
       <div class="flex items-start space-x-3">
         <div class="flex-shrink-0">
-          <component :is="icon" :class="['w-5 h-5', iconClasses[type]]" />
+          <NotificationIcons :type="type" :class="iconClasses[type]" />
         </div>
         <div class="flex-1 min-w-0">
           <h4 class="font-semibold text-sm leading-5 mb-1">{{ title }}</h4>
           <p class="text-sm leading-5 opacity-90">{{ message }}</p>
+          
+          <!-- Action buttons for certain types -->
+          <div v-if="showActions" class="mt-3 flex space-x-2">
+            <button
+              v-if="type === 'error'"
+              @click="retryAction"
+              class="px-3 py-1.5 text-xs bg-theme-error/20 hover:bg-theme-error/30 text-theme-error font-medium rounded-lg transition-all duration-200 hover:scale-105"
+            >
+              Réessayer
+            </button>
+            <button
+              v-if="type === 'warning'"
+              @click="dismissWarning"
+              class="px-3 py-1.5 text-xs bg-theme-warning/20 hover:bg-theme-warning/30 text-theme-warning font-medium rounded-lg transition-all duration-200 hover:scale-105"
+            >
+              Ignorer
+            </button>
+          </div>
         </div>
         <button
           @click="close"
@@ -38,11 +56,12 @@
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue'
+import NotificationIcons from './NotificationIcons.vue'
 
 const props = defineProps({
   type: {
     type: String,
-    default: 'info',
+    default: 'success',
     validator: (value) => ['success', 'warning', 'error', 'info'].includes(value)
   },
   title: {
@@ -56,8 +75,14 @@ const props = defineProps({
   duration: {
     type: Number,
     default: 5000
+  },
+  showActions: {
+    type: Boolean,
+    default: false
   }
 })
+
+const emit = defineEmits(['retry', 'dismiss', 'close'])
 
 const isVisible = ref(true)
 const progress = ref(100)
@@ -77,18 +102,19 @@ const iconClasses = {
   info: 'text-theme-primary'
 }
 
-const icon = computed(() => {
-  const icons = {
-    success: 'CheckCircleIcon',
-    warning: 'ExclamationTriangleIcon',
-    error: 'XCircleIcon',
-    info: 'InformationCircleIcon'
-  }
-  return icons[props.type] || 'InformationCircleIcon'
-})
-
 const close = () => {
   isVisible.value = false
+  emit('close')
+}
+
+const retryAction = () => {
+  emit('retry')
+  close()
+}
+
+const dismissWarning = () => {
+  emit('dismiss')
+  close()
 }
 
 const startProgress = () => {
@@ -135,22 +161,5 @@ onUnmounted(() => {
 .notification-leave-from {
   opacity: 1;
   transform: translateX(0) scale(1);
-}
-
-/* Icon components - modern SVG implementations */
-.CheckCircleIcon {
-  @apply w-5 h-5;
-}
-
-.ExclamationTriangleIcon {
-  @apply w-5 h-5;
-}
-
-.XCircleIcon {
-  @apply w-5 h-5;
-}
-
-.InformationCircleIcon {
-  @apply w-5 h-5;
 }
 </style>

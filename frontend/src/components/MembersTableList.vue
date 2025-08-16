@@ -113,13 +113,13 @@
               <div class="flex items-center space-x-2">
                 <button
                   @click="openModal(member)"
-                  class="px-3 py-1 text-xs bg-theme-error hover:bg-theme-primary text-theme-text rounded transition-colors duration-200"
+                  class="px-3 py-2 text-xs bg-theme-error hover:bg-theme-error/80 text-white font-medium rounded-lg transition-all duration-200 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-theme-error/30 shadow-sm hover:shadow-md"
                 >
                   Archiver
                 </button>
                 <button
                   @click="openMuleModal(member)"
-                  class="px-3 py-1 text-xs bg-theme-primary hover:bg-theme-primary text-theme-text rounded transition-colors duration-200"
+                  class="px-3 py-2 text-xs bg-theme-primary hover:bg-theme-primary-hover text-white font-medium rounded-lg transition-all duration-200 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-theme-primary/30 shadow-sm hover:shadow-md"
                 >
                   Gérer Mules
                 </button>

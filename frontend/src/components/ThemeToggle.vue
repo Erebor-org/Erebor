@@ -6,7 +6,7 @@
   >
     <!-- Icône Soleil (Light) -->
     <div
-      class="absolute left-1 flex h-8 w-8 items-center justify-center rounded-full bg-theme-primary text-theme-bg transition-all duration-300"
+              class="absolute left-1 flex h-8 w-8 items-center justify-center rounded-full bg-theme-primary text-white transition-all duration-300"
       :class="themeStore.currentTheme === 'dark' ? 'translate-x-10' : 'translate-x-0'"
     >
               <svg

@@ -28,7 +28,7 @@
         </button>
         <button
           @click="cancelEdit"
-          class="w-6 h-6 bg-theme-error text-theme-text rounded-full flex items-center justify-center hover:bg-theme-primary transition-all duration-300 shadow-lg"
+                          class="w-6 h-6 bg-theme-error hover:bg-theme-error/80 text-white rounded-full flex items-center justify-center transition-all duration-300 shadow-lg hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-theme-error/30"
           title="Annuler"
         >
           <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">

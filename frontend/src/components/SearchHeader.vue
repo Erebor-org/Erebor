@@ -58,7 +58,7 @@
       <!-- Add Character Button -->
       <button
         @click="$emit('show-modal-member')"
-        class="inline-flex items-center px-8 py-4 bg-gradient-to-r from-theme-primary to-theme-primary-hover text-theme-bg font-bold rounded-xl hover:from-theme-primary hover:to-theme-primary-hover focus:outline-none focus:ring-2 focus:ring-theme-primary focus:ring-offset-2 focus:ring-offset-theme-bg transition-all duration-300 shadow-lg hover:shadow-xl shadow-theme-primary/30 hover:shadow-theme-primary/50 transform hover:-translate-y-1"
+        class="inline-flex items-center px-8 py-4 bg-gradient-to-r from-theme-primary to-theme-primary-hover text-white font-bold rounded-xl hover:from-theme-primary hover:to-theme-primary-hover focus:outline-none focus:ring-2 focus:ring-theme-primary focus:ring-offset-2 focus:ring-offset-theme-bg transition-all duration-300 shadow-lg hover:shadow-xl shadow-theme-primary/30 hover:shadow-theme-primary/50 transform hover:-translate-y-1"
       >
         <svg class="w-6 h-6 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />

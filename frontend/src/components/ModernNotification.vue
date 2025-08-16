@@ -9,7 +9,7 @@
     >
       <div class="flex items-start space-x-3">
         <div class="flex-shrink-0">
-          <component :is="icon" :class="['w-5 h-5', iconClasses[type]]" />
+          <NotificationIcons :type="type" :class="iconClasses[type]" />
         </div>
         <div class="flex-1 min-w-0">
           <h4 class="font-semibold text-sm leading-5 mb-1">{{ title }}</h4>
@@ -37,7 +37,8 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
+import NotificationIcons from './NotificationIcons.vue'
 
 const props = defineProps({
   type: {
@@ -76,16 +77,6 @@ const iconClasses = {
   error: 'text-theme-error',
   info: 'text-theme-primary'
 }
-
-const icon = computed(() => {
-  const icons = {
-    success: 'CheckCircleIcon',
-    warning: 'ExclamationTriangleIcon',
-    error: 'XCircleIcon',
-    info: 'InformationCircleIcon'
-  }
-  return icons[props.type] || 'InformationCircleIcon'
-})
 
 const close = () => {
   isVisible.value = false
@@ -137,20 +128,5 @@ onUnmounted(() => {
   transform: translateX(0) scale(1);
 }
 
-/* Icon components - modern SVG implementations */
-.CheckCircleIcon {
-  @apply w-5 h-5;
-}
 
-.ExclamationTriangleIcon {
-  @apply w-5 h-5;
-}
-
-.XCircleIcon {
-  @apply w-5 h-5;
-}
-
-.InformationCircleIcon {
-  @apply w-5 h-5;
-}
 </style>

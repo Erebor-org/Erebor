@@ -101,7 +101,7 @@
           <div v-if="!isLoggedIn" class="flex items-center space-x-3">
             <RouterLink 
               to="/inscription"
-              class="px-6 py-2.5 bg-theme-primary hover:bg-theme-primary-hover text-theme-bg font-semibold rounded-xl transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-theme-ring focus:ring-opacity-30 shadow-lg"
+              class="px-6 py-2.5 bg-theme-primary hover:bg-theme-primary-hover text-white font-semibold rounded-xl transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-theme-ring focus:ring-opacity-30 shadow-lg"
             >
               S'inscrire
             </RouterLink>

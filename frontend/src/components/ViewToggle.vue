@@ -5,7 +5,7 @@
       :class="[
         'px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 flex items-center space-x-2',
         viewMode === 'cards'
-          ? 'bg-theme-primary text-theme-bg shadow-lg'
+          ? 'bg-theme-primary text-white shadow-lg'
           : 'text-theme-text-muted hover:text-theme-text hover:bg-theme-bg-muted'
       ]"
       title="Vue en fiches"
@@ -21,7 +21,7 @@
       :class="[
         'px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 flex items-center space-x-2',
         viewMode === 'list'
-          ? 'bg-theme-primary text-theme-bg shadow-lg'
+          ? 'bg-theme-primary text-white shadow-lg'
           : 'text-theme-text-muted hover:text-theme-text hover:bg-theme-bg-muted'
       ]"
       title="Vue en liste"

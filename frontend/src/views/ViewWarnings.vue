@@ -44,7 +44,7 @@
             
             <button
               @click="openAddWarningModal"
-              class="px-6 py-3 bg-gradient-to-r from-theme-primary-hover to-theme-warning hover:from-theme-primary-hover hover:to-theme-warning text-theme-bg font-bold rounded-xl transition-all duration-200 transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-theme-primary/30 flex items-center space-x-2"
+              class="px-6 py-3 bg-gradient-to-r from-theme-primary-hover to-theme-warning hover:from-theme-primary-hover hover:to-theme-warning text-white font-bold rounded-xl transition-all duration-200 transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-theme-primary/30 flex items-center space-x-2"
             >
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
@@ -96,14 +96,14 @@
                     <div class="flex justify-center space-x-2">
                       <button
                         @click="openEditWarningModal(warning)"
-                        class="px-3 py-1 bg-theme-primary hover:bg-theme-primary-hover text-theme-text text-xs font-medium rounded-lg transition-all duration-200 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-theme-primary/30"
+                        class="px-3 py-1 bg-theme-primary hover:bg-theme-primary-hover text-white text-xs font-medium rounded-lg transition-all duration-200 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-theme-primary/30 shadow-sm hover:shadow-md"
                         title="Modifier"
                       >
                         Modifier
                       </button>
                       <button
                         @click="openDeleteWarningModal(warning)"
-                        class="px-3 py-1 bg-theme-error hover:bg-theme-primary text-theme-text text-xs font-medium rounded-lg transition-all duration-200 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-theme-error/30"
+                        class="px-3 py-1 bg-theme-error hover:bg-theme-error/80 text-white text-xs font-medium rounded-lg transition-all duration-200 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-theme-error/30 shadow-sm hover:shadow-md"
                         title="Supprimer"
                       >
                         Supprimer
@@ -195,7 +195,7 @@
               <button
                 type="button"
                 @click="clearSelectedAuthor"
-                class="w-8 h-8 bg-theme-error hover:bg-theme-primary text-theme-text rounded-lg flex items-center justify-center transition-all duration-200 hover:scale-105"
+                class="w-8 h-8 bg-theme-error hover:bg-theme-error/80 text-white rounded-lg flex items-center justify-center transition-all duration-200 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-theme-error/30 shadow-sm hover:shadow-md"
                 title="Changer d'auteur"
               >
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -353,7 +353,7 @@
             </button>
             <button
               @click="deleteWarning"
-              class="px-4 py-2 bg-theme-error hover:bg-theme-primary text-theme-text font-medium rounded-lg transition-all duration-200"
+                              class="px-4 py-2 bg-theme-error hover:bg-theme-error/80 text-white font-medium rounded-lg transition-all duration-200 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-theme-error/30 shadow-sm hover:shadow-md"
               :disabled="isSubmitting"
             >
               {{ isSubmitting ? 'Suppression...' : 'Supprimer' }}

@@ -28,7 +28,7 @@
           <button 
             type="button" 
             @click="removeMule(index)"
-            class="w-8 h-8 bg-theme-error hover:bg-theme-primary text-theme-text rounded-lg flex items-center justify-center transition-all duration-200 hover:scale-105"
+                            class="w-8 h-8 bg-theme-error hover:bg-theme-error/80 text-white rounded-lg flex items-center justify-center transition-all duration-200 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-theme-error/30 shadow-sm hover:shadow-md"
             title="Supprimer la mule"
           >
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
