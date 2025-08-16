@@ -1,125 +1,150 @@
 <template>
   <div>
-    <h2 class="text-xl md:text-2xl font-bold text-[#b02e2e] mb-4 md:mb-6">
-      Personnage Principal
-    </h2>
+    <div class="flex items-center space-x-3 mb-6">
+      <div class="w-8 h-8 bg-gradient-to-br from-amber-500 to-yellow-600 rounded-lg flex items-center justify-center">
+        <svg class="w-5 h-5 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+        </svg>
+      </div>
+      <h2 class="text-2xl font-bold text-amber-400">Personnage Principal</h2>
+    </div>
 
-    <div class="space-y-4 md:space-y-6">
+    <div class="space-y-6">
       <!-- Pseudo & Ankama Pseudo -->
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <!-- Pseudo -->
-        <div>
+        <div class="space-y-2">
           <label
             for="mainPseudo"
-            class="block text-sm md:text-base font-medium text-[#b07d46] mb-1"
+            class="block text-sm font-medium text-gray-300"
           >
-            Pseudo <span class="text-[#b02e2e]">*</span>
+            Pseudo <span class="text-red-400">*</span>
           </label>
           <input
             type="text"
             id="mainPseudo"
             v-model="character.pseudo"
-            class="w-full border-2 border-[#b07d46] bg-[#fffaf0] rounded-md p-2 md:p-3 text-base focus:outline-none focus:ring-2 focus:ring-[#b02e2e]"
+            class="w-full bg-gray-700 border-2 border-gray-600 text-white rounded-lg px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all duration-200 placeholder-gray-400"
+            :class="{ 'border-red-500 bg-red-900/20': isPseudoInvalid }"
+            placeholder="Entrez le pseudo du personnage"
             required
-            :class="{ 'border-[#b02e2e] bg-[#fff0f0]': isPseudoInvalid }"
           />
           <div
             v-if="isPseudoInvalid"
-            class="text-[#b02e2e] text-sm font-medium mt-1 flex items-center"
+            class="flex items-center space-x-2 text-red-400 text-sm"
           >
-            <span class="mr-1">⚠️</span> "{{ character.pseudo }}" est blacklist d'Erebor.
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+            </svg>
+            <span>"{{ character.pseudo }}" est blacklist d'Erebor.</span>
           </div>
         </div>
 
         <!-- Pseudo Ankama -->
-        <div>
+        <div class="space-y-2">
           <label
             for="ankamaPseudo"
-            class="block text-sm md:text-base font-medium text-[#b07d46] mb-1"
+            class="block text-sm font-medium text-gray-300"
           >
-            Pseudo Ankama <span class="text-[#b02e2e]">*</span>
+            Pseudo Ankama <span class="text-red-400">*</span>
           </label>
           <input
             type="text"
             id="ankamaPseudo"
             v-model="character.ankamaPseudo"
-            class="w-full border-2 border-[#b07d46] bg-[#fffaf0] rounded-md p-2 md:p-3 text-base focus:outline-none focus:ring-2 focus:ring-[#b02e2e]"
+            class="w-full bg-gray-700 border-2 border-gray-600 text-white rounded-lg px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all duration-200 placeholder-gray-400"
+            :class="{ 'border-red-500 bg-red-900/20': isAnkamaPseudoInvalid }"
+            placeholder="Entrez le pseudo Ankama"
             required
-            :class="{ 'border-[#b02e2e] bg-[#fff0f0]': isAnkamaPseudoInvalid }"
           />
           <div
             v-if="isAnkamaPseudoInvalid"
-            class="text-[#b02e2e] text-sm font-medium mt-1 flex items-center"
+            class="flex items-center space-x-2 text-red-400 text-sm"
           >
-            <span class="mr-1">⚠️</span> "{{ character.ankamaPseudo }}" est blacklist
-            d'Erebor.
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+            </svg>
+            <span>"{{ character.ankamaPseudo }}" est blacklist d'Erebor.</span>
           </div>
         </div>
       </div>
 
       <!-- Date & Recruteur -->
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <!-- Date -->
-        <div>
+        <div class="space-y-2">
           <label
             for="recruitedAt"
-            class="block text-sm md:text-base font-medium text-[#b07d46] mb-1"
+            class="block text-sm font-medium text-gray-300"
           >
-            Date de recrutement <span class="text-[#b02e2e]">*</span>
+            Date de recrutement <span class="text-red-400">*</span>
           </label>
           <input
             type="date"
             id="recruitedAt"
             name="recruitedAt"
             v-model="character.recruitedAt"
-            class="w-full border-2 border-[#b07d46] bg-[#fffaf0] rounded-md p-2 md:p-3 text-base focus:outline-none focus:ring-2 focus:ring-[#b02e2e]"
+            class="w-full bg-gray-700 border-2 border-gray-600 text-white rounded-lg px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all duration-200"
             required
           />
         </div>
 
         <!-- Recruteur -->
-        <RecruiterSelector 
-          :recruiters="recruiters"
-          :selected-recruiter-id="character.recruiterId"
-          :classes="classes" 
-          @select-recruiter="selectRecruiter"
-          @clear-recruiter="clearRecruiter"
-        />
-      </div>
-      
-      <!-- Classe (responsive grid) -->
-      <div>
-        <label class="block text-sm md:text-base font-medium text-[#b07d46] mb-2">
-          Classe du personnage <span class="text-[#b02e2e]">*</span>
-        </label>
-        <div
-          class="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-7 gap-2 md:gap-3"
-        >
-          <div
-            v-for="(icon, index) in classes"
-            :key="index"
-            :class="[
-              'cursor-pointer border-2 rounded-md flex items-center justify-center aspect-square transition-all',
-              character.class === index
-                ? 'border-[#b02e2e] bg-[#f3d9b1] scale-110 shadow-md'
-                : 'border-[#b07d46] bg-[#fffaf0] hover:bg-[#f3d9b1] hover:border-[#b02e2e]',
-            ]"
-            @click="selectClass(index)"
-          >
-            <img :src="icon" alt="Classe" class="w-full h-full p-1 md:p-2 object-contain" />
-          </div>
+        <div class="space-y-2">
+          <label class="block text-sm font-medium text-gray-300">
+            Recruteur
+          </label>
+          <RecruiterSelector 
+            :recruiters="recruiters"
+            :selected-recruiter-id="character.recruiterId"
+            :classes="classes" 
+            @select-recruiter="selectRecruiter"
+            @clear-recruiter="clearRecruiter"
+          />
         </div>
       </div>
-    </div>
-
-    <!-- Erreur locale -->
-    <div
-      v-if="errorMessage"
-      class="mt-4 p-3 bg-[#ffeeee] border-l-4 border-[#b02e2e] text-[#b02e2e] rounded"
-    >
-      <div class="flex items-center">
-        <span class="mr-2 text-xl">⚠️</span>
-        <span class="font-medium">{{ errorMessage }}</span>
+      
+      <!-- Classe Selection -->
+      <div class="space-y-4">
+        <label class="block text-sm font-medium text-gray-300">
+          Classe du personnage <span class="text-red-400">*</span>
+        </label>
+        <div class="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-7 gap-3">
+          <button
+            v-for="(icon, className) in classes"
+            :key="className"
+            type="button"
+            @click="selectClass(className)"
+            class="group relative p-3 rounded-xl border-2 transition-all duration-200 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 focus:ring-offset-gray-800"
+            :class="[
+              character.class === className
+                ? 'border-amber-500 bg-amber-500/20 shadow-lg shadow-amber-500/25'
+                : 'border-gray-600 hover:border-amber-400 bg-gray-700 hover:bg-gray-600'
+            ]"
+          >
+            <img
+              :src="icon"
+              :alt="className"
+              class="w-12 h-12 rounded-lg mx-auto mb-2 group-hover:scale-110 transition-transform duration-200"
+            />
+            <span class="block text-xs font-medium text-center capitalize transition-colors duration-200"
+                  :class="[
+                    character.class === className
+                      ? 'text-amber-400'
+                      : 'text-gray-400 group-hover:text-gray-300'
+                  ]">
+              {{ className }}
+            </span>
+            
+            <!-- Selection indicator -->
+            <div v-if="character.class === className"
+                 class="absolute -top-1 -right-1 w-6 h-6 bg-amber-500 rounded-full flex items-center justify-center shadow-lg">
+              <svg class="w-3 h-3 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
+          </button>
+        </div>
       </div>
     </div>
   </div>

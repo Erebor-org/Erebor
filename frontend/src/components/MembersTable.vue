@@ -57,13 +57,18 @@
           <div class="flex items-center space-x-3">
             <button
               @click="viewWarnings(member.id, member.pseudo)"
-              class="p-3 text-red-400 hover:text-red-300 hover:bg-red-900/20 rounded-xl transition-all duration-200 flex flex-col items-center"
+              class="p-3 text-red-400 hover:text-red-300 hover:bg-red-900/20 rounded-xl transition-all duration-200 flex items-center space-x-2"
               :title="`${(characterWarningCounts && characterWarningCounts[member.id]) || 0} avertissement(s)`"
             >
-              <svg class="w-6 h-6 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+              <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 
+                        1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 
+                        0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
               </svg>
-              <span class="text-sm font-bold text-red-400">{{ (characterWarningCounts && characterWarningCounts[member.id]) || 0 }}</span>
+              <span class="text-sm font-bold text-red-400">
+                {{ (characterWarningCounts && characterWarningCounts[member.id]) || 0 }}
+              </span>
             </button>
             <button
               @click="openModal(member)"

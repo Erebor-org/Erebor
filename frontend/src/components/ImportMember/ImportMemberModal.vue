@@ -1,62 +1,82 @@
 <template>
   <div
     v-if="showModal"
-    class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 p-4 md:p-0"
+    class="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4"
     @click.self="closeModal"
   >
     <!-- Modal Content -->
     <div
-      class="w-full lg:max-w-[90vw] xl:max-w-[80vw] bg-[#fff5e6] border-4 border-[#b07d46] rounded-lg shadow-lg relative max-h-[90vh] overflow-hidden flex flex-col"
+      class="w-full max-w-7xl bg-gray-900 border border-gray-800 rounded-2xl shadow-2xl relative max-h-[90vh] overflow-hidden flex flex-col"
     >
-      <!-- Close Button -->
-      <button
-        class="absolute top-3 right-3 text-[#b02e2e] hover:text-[#942828] font-bold text-xl h-8 w-8 flex items-center justify-center rounded-full hover:bg-[#f3d9b1] transition-colors z-20"
-        @click="closeModal"
-        aria-label="Fermer"
-      >
-        &times;
-      </button>
-      
-      <!-- Title at the top -->
-      <div class="sticky top-0 bg-[#fff5e6] z-10 border-b-2 border-[#b07d46] py-3">
-        <h2 class="text-xl md:text-2xl font-bold text-[#b02e2e] text-center">
-          Import de personnage
-        </h2>
+      <!-- Header with gradient -->
+      <div class="bg-gradient-to-r from-gray-800 to-gray-900 border-b border-gray-700 p-6">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center space-x-4">
+            <div class="w-12 h-12 bg-gradient-to-br from-amber-500 to-yellow-600 rounded-xl flex items-center justify-center shadow-lg">
+              <svg class="w-7 h-7 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+              </svg>
+            </div>
+            <div>
+              <h2 class="text-3xl font-bold text-amber-400">Import de Personnage</h2>
+              <p class="text-gray-400 mt-1">Gérez vos nouveaux membres et mules</p>
+            </div>
+          </div>
+          
+          <!-- Close Button -->
+          <button
+            class="w-10 h-10 bg-gray-800 hover:bg-gray-700 text-gray-400 hover:text-white rounded-xl flex items-center justify-center transition-all duration-200 hover:scale-105"
+            @click="closeModal"
+            aria-label="Fermer"
+          >
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
       </div>
 
-      <!-- Tabs -->
-      <div class="flex border-b border-[#b07d46]">
-        <button 
-          @click="activeTab = 'newCharacter'"
-          :class="[
-            'flex-1 py-2 px-4 text-center font-medium transition-colors',
-            activeTab === 'newCharacter' 
-              ? 'text-[#b02e2e] border-b-2 border-[#b02e2e]' 
-              : 'text-[#b07d46] hover:text-[#b02e2e]'
-          ]"
-        >
-          Nouveau Personnage
-        </button>
-        <button 
-          @click="activeTab = 'addMule'"
-          :class="[
-            'flex-1 py-2 px-4 text-center font-medium transition-colors',
-            activeTab === 'addMule' 
-              ? 'text-[#b02e2e] border-b-2 border-[#b02e2e]' 
-              : 'text-[#b07d46] hover:text-[#b02e2e]'
-          ]"
-        >
-          Ajouter une Mule
-        </button>
+      <!-- Tabs with modern design -->
+      <div class="bg-gray-800 border-b border-gray-700 px-6">
+        <div class="flex space-x-1">
+          <button 
+            @click="activeTab = 'newCharacter'"
+            :class="[
+              'px-6 py-4 text-sm font-medium rounded-t-xl transition-all duration-200 flex items-center space-x-2',
+              activeTab === 'newCharacter' 
+                ? 'bg-gray-900 text-amber-400 border-b-2 border-amber-400' 
+                : 'text-gray-400 hover:text-gray-300 hover:bg-gray-700'
+            ]"
+          >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+            </svg>
+            <span>Nouveau Personnage</span>
+          </button>
+          <button 
+            @click="activeTab = 'addMule'"
+            :class="[
+              'px-6 py-4 text-sm font-medium rounded-t-xl transition-all duration-200 flex items-center space-x-2',
+              activeTab === 'addMule' 
+                ? 'bg-gray-900 text-amber-400 border-b-2 border-amber-400' 
+                : 'text-gray-400 hover:text-gray-300 hover:bg-gray-700'
+            ]"
+          >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+            </svg>
+            <span>Ajouter une Mule</span>
+          </button>
+        </div>
       </div>
 
       <!-- Scrollable Content Area -->
-      <div class="p-4 md:p-6 overflow-y-auto text-lg">
+      <div class="flex-1 overflow-y-auto bg-gray-900">
         <!-- New Character Tab -->
-        <div v-if="activeTab === 'newCharacter'">
-          <form @submit.prevent="submitForm" class="flex flex-col lg:flex-row gap-6">
+        <div v-if="activeTab === 'newCharacter'" class="p-8">
+          <form @submit.prevent="submitForm" class="space-y-8">
             <!-- Main Character Form -->
-            <div class="lg:w-1/2">
+            <div class="bg-gray-800 rounded-xl p-6 border border-gray-700">
               <MainCharacterForm 
                 ref="mainCharacterForm"
                 :classes="classes" 
@@ -66,7 +86,7 @@
             </div>
 
             <!-- Mules Section -->
-            <div class="lg:w-1/2">
+            <div class="bg-gray-800 rounded-xl p-6 border border-gray-700">
               <MulesManager 
                 ref="mulesManager"
                 :classes="classes" 
@@ -74,68 +94,61 @@
                 @update:mules="updateMules"
               />
             </div>
-          </form>
 
-          <!-- Global error message -->
-          <div
-            v-if="errorMessage"
-            class="mt-4 p-3 bg-[#ffeeee] border-l-4 border-[#b02e2e] text-[#b02e2e] rounded"
-          >
-            <div class="flex items-center">
-              <span class="mr-2 text-xl">⚠️</span>
-              <span class="font-medium">{{ errorMessage }}</span>
-            </div>
-          </div>
-
-          <!-- Submit Button -->
-          <div class="mt-6">
-            <button
-              type="button"
-              @click="submitForm"
-              class="w-full bg-[#b02e2e] text-[#f3d9b1] font-bold py-3 px-6 rounded-lg hover:bg-[#942828] focus:ring-4 focus:ring-[#f3d9b1] transition-colors flex items-center justify-center"
-              :disabled="isSubmitting || !character.class"
-              :class="{ 'opacity-70 cursor-not-allowed': isSubmitting || !character.class }"
+            <!-- Global error message -->
+            <div
+              v-if="errorMessage"
+              class="bg-red-900/50 border border-red-700 rounded-xl p-4 text-red-300"
             >
-              <span v-if="isSubmitting" class="mr-2">
-                <svg
-                  class="animate-spin h-5 w-5 text-white"
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                >
-                  <circle
-                    class="opacity-25"
-                    cx="12"
-                    cy="12"
-                    r="10"
-                    stroke="currentColor"
-                    stroke-width="4"
-                  ></circle>
-                  <path
-                    class="opacity-75"
-                    fill="currentColor"
-                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                  ></path>
+              <div class="flex items-center space-x-3">
+                <svg class="w-6 h-6 text-red-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
                 </svg>
-              </span>
-              Importer {{ mules.length > 0 ? 'le personnage et ses mules' : 'le personnage' }}
-            </button>
-          </div>
+                <span class="font-medium">{{ errorMessage }}</span>
+              </div>
+            </div>
+
+            <!-- Submit Button -->
+            <div class="flex justify-center">
+              <button
+                type="button"
+                @click="submitForm"
+                class="px-8 py-4 bg-gradient-to-r from-amber-600 to-yellow-600 hover:from-amber-700 hover:to-yellow-700 text-black font-bold rounded-xl transition-all duration-200 transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-amber-500/30 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                :disabled="isSubmitting || !character.class"
+              >
+                <div class="flex items-center space-x-3">
+                  <span v-if="isSubmitting" class="animate-spin">
+                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24">
+                      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                  </span>
+                  <span v-else>
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                    </svg>
+                  </span>
+                  <span>{{ isSubmitting ? 'Import en cours...' : `Importer ${mules.length > 0 ? 'le personnage et ses mules' : 'le personnage'}` }}</span>
+                </div>
+              </button>
+            </div>
+          </form>
         </div>
         
         <!-- Add Mule to Existing Character Tab -->
-        <div v-if="activeTab === 'addMule'">
-          <ExistingCharacterMuleForm
-            ref="existingCharacterMuleForm"
-            :classes="classes"
-            :blacklist="blacklist"
-            :fetchNotArchivedCharacters="fetchNotArchivedCharacters"
-            :selectedCharacterForMule="selectedCharacterForMule"
-            @mule-added="handleMuleAdded"
-            @close="closeModal"
-          />
+        <div v-if="activeTab === 'addMule'" class="p-8">
+          <div class="bg-gray-800 rounded-xl p-6 border border-gray-700">
+            <ExistingCharacterMuleForm
+              ref="existingCharacterMuleForm"
+              :classes="classes"
+              :blacklist="blacklist"
+              :fetchNotArchivedCharacters="fetchNotArchivedCharacters"
+              :selectedCharacterForMule="selectedCharacterForMule"
+              @mule-added="handleMuleAdded"
+              @close="closeModal"
+            />
+          </div>
         </div>
-          
       </div>
     </div>
   </div>

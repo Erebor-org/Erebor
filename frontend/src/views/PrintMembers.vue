@@ -34,7 +34,6 @@
       <div class="text-center mb-12">
         <h1 class="text-6xl font-bold text-amber-400 mb-6">Gestion des Membres</h1>
         <div class="w-32 h-1 bg-gradient-to-r from-amber-400 via-yellow-500 to-amber-600 mx-auto rounded-full shadow-lg shadow-amber-500/50"></div>
-        <p class="text-gray-400 mt-6 text-lg">Gérez votre communauté de manière élégante</p>
       </div>
 
       <!-- Search Header -->

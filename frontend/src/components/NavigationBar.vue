@@ -1,86 +1,214 @@
 <script setup>
   import { useAuthStore } from '@/stores/authStore';
-  import { computed } from 'vue';
+  import { computed, ref } from 'vue';
   import { useRouter } from 'vue-router';
+  
   const authStore = useAuthStore();
   const router = useRouter();
+  const isMobileMenuOpen = ref(false);
+  
   const logout = () => {
     authStore.logout();
     router.push('/');
   };
+  
   const isAdmin = computed(() => {
     return user.value?.roles?.includes('ROLE_ADMIN');
   });
 
   const isLoggedIn = computed(() => authStore.token !== null);
   const user = computed(() => authStore.user);
-
+  
+  const toggleMobileMenu = () => {
+    isMobileMenuOpen.value = !isMobileMenuOpen.value;
+  };
 </script>
+
 <template>
-  <div class="text-white grid">
-    <!-- Dofus Logo Positioned Independently -->
-    <div class="logo-container">
-      <img :src="dofus_logo" alt="Logo" class="dofus-logo"/>
-    </div>
-
-    <!-- Top Bar -->
-    <div class="flex items-center justify-between px-4 py-2">
-      <!-- Left Section -->
-      <div class="flex items-center space-x-4">
-        <img :src="erebor_logo" alt="Logo" class="w-10 h-10" />
-        <button class="text-sm uppercase underline-on-hover font-fantasy">Erebor</button>
-      </div>
-
-      <!-- Right Section -->
-      <div class="flex items-center space-x-4" v-if="!isLoggedIn">
-        <button class="text-sm uppercase underline-on-hover font-fantasy">
-          <RouterLink to="/inscription">S'inscrire</RouterLink>
-        </button>
-      </div>
-      <div class="flex items-center space-x-4" v-else>
-        <p>  {{ user?.username }}  </p>
-        <img :src="profile_icon" alt="User Avatar" class="h-10 w-10 rounded-full" />
-        <button class="text-sm uppercase underline-on-hover font-fantasy" @click="logout">Déconnexion</button>
-      </div>
-    </div>
-
-    <!-- Green Line -->
-    <div class="bg-[#93a402] h-1"></div>
-
-    <!-- Navigation Bar -->
-    <div class="bg-black text-white relative z-10 font-nav">
-      <div class="container mx-auto flex items-center justify-between px-16 py-6">
-        <!-- Left Menu -->
-        <div class="flex items-center space-x-6">
-          <nav class="flex items-center space-x-4">
-            <button class="text-sm uppercase underline-on-hover">Annonce</button>
-            <button class="text-sm uppercase underline-on-hover">Ladders</button>
-            <button class="text-sm uppercase underline-on-hover">Events</button>
-          </nav>
+  <nav class="bg-gradient-to-r from-gray-900 via-black to-gray-900 border-b border-gray-800 shadow-2xl">
+    <!-- Main Navigation Container -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-20">
+        
+        <!-- Left Section - Logo & Brand -->
+        <div class="flex items-center space-x-4">
+          <div class="flex-shrink-0">
+            <img :src="erebor_logo" alt="Erebor" class="w-12 h-12 transition-transform duration-300 hover:scale-110" />
+          </div>
+          <div class="hidden md:block">
+            <h1 class="text-2xl font-bold bg-gradient-to-r from-amber-400 via-yellow-500 to-amber-600 bg-clip-text text-transparent">
+              EREBOR
+            </h1>
+          </div>
         </div>
 
-        <!-- Right Menu -->
-        <div class="flex items-center space-x-6">
-          <button class="text-sm uppercase underline-on-hover" v-if="isLoggedIn && isAdmin"><RouterLink to="/membres">Membres</RouterLink></button>
-          <button class="text-sm uppercase underline-on-hover" v-if="isLoggedIn && isAdmin"><RouterLink to="/blacklist">Blacklist</RouterLink></button>
-          <button class="text-sm uppercase underline-on-hover" v-if="isLoggedIn && isAdmin"><RouterLink to="/warnings-management">Avertissements</RouterLink></button>
-          <button class="text-sm uppercase underline-on-hover" v-if="isLoggedIn && isAdmin"><RouterLink to="/statistiques">Statistiques</RouterLink></button>
+        <!-- Center Section - Navigation Links (Desktop) -->
+        <div class="hidden lg:flex items-center space-x-8">
+          
+          <RouterLink 
+            to="/membres" 
+            v-if="isLoggedIn && isAdmin"
+            class="nav-link"
+            active-class="nav-link-active"
+          >
+            Membres
+          </RouterLink>
+          
+          <RouterLink 
+            to="/blacklist" 
+            v-if="isLoggedIn && isAdmin"
+            class="nav-link"
+            active-class="nav-link-active"
+          >
+            Blacklist
+          </RouterLink>
+          
+          <RouterLink 
+            to="/warnings-management" 
+            v-if="isLoggedIn && isAdmin"
+            class="nav-link"
+            active-class="nav-link-active"
+          >
+            Avertissements
+          </RouterLink>
+          
+          <RouterLink 
+            to="/statistiques" 
+            v-if="isLoggedIn && isAdmin"
+            class="nav-link"
+            active-class="nav-link-active"
+          >
+            Statistiques
+          </RouterLink>
+        </div>
+
+        <!-- Right Section - User Menu & Auth -->
+        <div class="flex items-center space-x-4">
+          
+          <!-- Not Logged In -->
+          <div v-if="!isLoggedIn" class="flex items-center space-x-3">
+            <RouterLink 
+              to="/inscription"
+              class="px-6 py-2.5 bg-gradient-to-r from-amber-500 to-yellow-600 hover:from-amber-600 hover:to-yellow-700 text-black font-semibold rounded-xl transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-amber-500/30 shadow-lg"
+            >
+              S'inscrire
+            </RouterLink>
+          </div>
+
+          <!-- Logged In User -->
+          <div v-else class="flex items-center space-x-4">
+            <!-- User Info -->
+            <div class="hidden md:flex items-center space-x-3">
+              <div class="text-right">
+                <p class="text-sm font-medium text-gray-200">{{ user?.username }}</p>
+                <p class="text-xs text-gray-400">Connecté</p>
+              </div>
+            </div>
+            
+            <!-- Profile Avatar -->
+            <div class="relative group">
+              <img 
+                :src="profile_icon" 
+                alt="Profile" 
+                class="w-10 h-10 rounded-full border-2 border-gray-600 hover:border-amber-500 transition-all duration-300 cursor-pointer group-hover:scale-110"
+              />
+              <div class="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-2 h-2 bg-green-500 rounded-full border border-gray-900"></div>
+            </div>
+            
+            <!-- Logout Button -->
+            <button 
+              @click="logout"
+              class="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-gray-300 font-medium rounded-lg transition-all duration-300 hover:text-white focus:outline-none focus:ring-2 focus:ring-gray-600"
+            >
+              <span class="hidden sm:inline">Déconnexion</span>
+              <svg class="w-5 h-5 sm:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+              </svg>
+            </button>
+          </div>
+
+          <!-- Mobile Menu Button -->
+          <button
+            @click="toggleMobileMenu"
+            class="lg:hidden p-2 rounded-lg bg-gray-800 hover:bg-gray-700 text-gray-300 transition-colors duration-200"
+          >
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path v-if="!isMobileMenuOpen" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+              <path v-else stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
         </div>
       </div>
     </div>
-  </div>
+
+    <!-- Mobile Menu -->
+    <div 
+      v-if="isMobileMenuOpen" 
+      class="lg:hidden bg-gray-900 border-t border-gray-800 shadow-xl"
+    >
+      <div class="px-4 py-6 space-y-4">
+        <RouterLink 
+          to="/" 
+          class="mobile-nav-link"
+          active-class="mobile-nav-link-active"
+          @click="isMobileMenuOpen = false"
+        >
+          Accueil
+        </RouterLink>
+        
+        <RouterLink 
+          to="/membres" 
+          v-if="isLoggedIn && isAdmin"
+          class="mobile-nav-link"
+          active-class="mobile-nav-link-active"
+          @click="isMobileMenuOpen = false"
+        >
+          Membres
+        </RouterLink>
+        
+        <RouterLink 
+          to="/blacklist" 
+          v-if="isLoggedIn && isAdmin"
+          class="mobile-nav-link"
+          active-class="mobile-nav-link-active"
+          @click="isMobileMenuOpen = false"
+        >
+          Blacklist
+        </RouterLink>
+        
+        <RouterLink 
+          to="/warnings-management" 
+          v-if="isLoggedIn && isAdmin"
+          class="mobile-nav-link"
+          active-class="mobile-nav-link-active"
+          @click="isMobileMenuOpen = false"
+        >
+          Avertissements
+        </RouterLink>
+        
+        <RouterLink 
+          to="/statistiques" 
+          v-if="isLoggedIn && isAdmin"
+          class="mobile-nav-link"
+          active-class="mobile-nav-link-active"
+          @click="isMobileMenuOpen = false"
+        >
+          Statistiques
+        </RouterLink>
+      </div>
+    </div>
+  </nav>
 </template>
 
 <script>
 import erebor_logo from '@/assets/erebor_logo.png';
-import dofus_logo from '@/assets/logo_dofus_good_quality.webp';
 import profile_icon from '@/assets/profile_icon.png';
+
 export default {
   name: "NavigationBar",
   data() {
     return {
       erebor_logo,
-      dofus_logo,
       profile_icon
     };
   },
@@ -88,49 +216,58 @@ export default {
 </script>
 
 <style scoped>
-@import url('https://fonts.googleapis.com/css2?family=Uncial+Antiqua&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Oswald:wght@200..700&display=swap');
-
-
-.font-fantasy {
-  font-family: 'Uncial Antiqua', cursive;
-}
-.font-nav {
-  font-family: 'Oswald', cursive;
+/* Navigation Link Styles */
+.nav-link {
+  @apply text-gray-300 hover:text-amber-400 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-300 relative;
 }
 
-/* Position the logo container above the navbar */
-.logo-container {
-  position: absolute;
-  /*top: 60px; /* Adjust to desired height */
-  left: 57%;
-  transform: translateX(-50%);
-  z-index: 20; /* Ensure it is above other elements */
-}
-
-/* Add specific styles for the Dofus logo with reduced size */
-.dofus-logo {
-  width: 50%; /* Set to 50% of original size */
-  height: auto; /* Maintain aspect ratio */
-}
-.underline-on-hover {
-  position: relative; /* Ensure the pseudo-element positions correctly */
-}
-.underline-on-hover::after {
+.nav-link::after {
   content: '';
-  position: absolute;
-  left: 0;
-  bottom: -2px; /* Adjust to set the underline position */
-  width: 100%;
-  height: 2px; /* Thickness of the underline */
-  background-color: #93a402;
-  transform: scaleX(0); /* Initially hidden */
-  transform-origin: left; /* Animation starts from the left */
-  transition: transform 0.3s ease-in-out; /* Smooth animation */
-  font-size: 16px;
+  @apply absolute bottom-0 left-1/2 w-0 h-0.5 bg-gradient-to-r from-amber-400 to-yellow-500 transition-all duration-300 transform -translate-x-1/2;
 }
 
-.underline-on-hover:hover::after {
-  transform: scaleX(1); /* Fully visible underline on hover */
+.nav-link:hover::after {
+  @apply w-full;
+}
+
+.nav-link-active {
+  @apply text-amber-400;
+}
+
+.nav-link-active::after {
+  @apply w-full;
+}
+
+/* Mobile Navigation Link Styles */
+.mobile-nav-link {
+  @apply block px-4 py-3 text-gray-300 hover:text-amber-400 hover:bg-gray-800 rounded-lg text-base font-medium transition-all duration-300;
+}
+
+.mobile-nav-link-active {
+  @apply text-amber-400 bg-gray-800;
+}
+
+/* Smooth transitions */
+* {
+  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 300ms;
+}
+
+/* Custom scrollbar for webkit browsers */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-gray-900;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-gray-700 rounded-full;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-gray-600;
 }
 </style>
