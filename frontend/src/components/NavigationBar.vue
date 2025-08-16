@@ -29,22 +29,22 @@
   <nav class="bg-theme-card border-b border-theme-border shadow-lg">
     <!-- Main Navigation Container -->
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="flex items-center justify-between h-20">
+      <div class="flex items-center justify-between h-16">
         
         <!-- Left Section - Logo & Brand -->
         <div class="flex items-center space-x-4">
           <div class="flex-shrink-0">
-            <img :src="erebor_logo" alt="Erebor" class="w-12 h-12 transition-transform duration-300 hover:scale-110" />
+            <img :src="erebor_logo" alt="Erebor" class="w-10 h-10 transition-transform duration-300 hover:scale-110" />
           </div>
           <div class="hidden md:block">
-            <h1 class="text-2xl font-bold text-theme-primary">
+            <h1 class="text-xl font-bold text-theme-primary">
               EREBOR
             </h1>
           </div>
         </div>
 
         <!-- Center Section - Navigation Links (Desktop) -->
-        <div class="hidden lg:flex items-center space-x-8">
+        <div class="hidden lg:flex items-center space-x-6">
           
           <RouterLink 
             to="/membres" 
@@ -83,11 +83,11 @@
           </RouterLink>
           
           <RouterLink 
-            to="/theme-demo" 
+            to="/theme-customizer" 
             class="nav-link"
             active-class="nav-link-active"
           >
-            Thèmes
+            🎨 Personnaliser
           </RouterLink>
         </div>
 
@@ -209,12 +209,12 @@
         </RouterLink>
         
         <RouterLink 
-          to="/theme-demo" 
+          to="/theme-customizer" 
           class="mobile-nav-link"
           active-class="mobile-nav-link-active"
           @click="isMobileMenuOpen = false"
         >
-          Thèmes
+          🎨 Personnaliser
         </RouterLink>
       </div>
     </div>
@@ -239,7 +239,7 @@ export default {
 <style scoped>
 /* Navigation Link Styles */
 .nav-link {
-  @apply text-theme-text-muted hover:text-theme-primary px-3 py-2 rounded-lg text-sm font-medium transition-all duration-300 relative;
+  @apply text-theme-text-muted hover:text-theme-primary px-2 py-1.5 rounded-lg text-sm font-medium transition-all duration-300 relative;
 }
 
 .nav-link::after {

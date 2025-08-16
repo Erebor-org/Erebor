@@ -26,6 +26,9 @@ export const useThemeStore = defineStore('theme', () => {
   // Appliquer le thème au document
   const applyTheme = () => {
     document.documentElement.setAttribute('data-theme', currentTheme.value)
+    
+    // Apply custom colors if they exist
+    applyCustomColors()
   }
 
   // Basculer le thème
@@ -53,6 +56,42 @@ export const useThemeStore = defineStore('theme', () => {
     currentTheme.value = prefersDark ? 'dark' : 'light'
     isSystemTheme.value = true
     applyTheme()
+  }
+
+  // Apply custom colors from localStorage
+  const applyCustomColors = () => {
+    const customColors = localStorage.getItem('erebor-custom-colors')
+    if (customColors) {
+      try {
+        const colors = JSON.parse(customColors)
+        const currentColors = colors[currentTheme.value] || colors.light
+        
+        const root = document.documentElement
+        Object.entries(currentColors).forEach(([key, value]) => {
+          root.style.setProperty(`--${key}`, value)
+          
+          // Also set RGB versions for opacity usage
+          if (value && value.startsWith('#')) {
+            const rgb = hexToRgb(value)
+            if (rgb) {
+              root.style.setProperty(`--${key}-rgb`, `${rgb.r}, ${rgb.g}, ${rgb.b}`)
+            }
+          }
+        })
+      } catch (e) {
+        console.error('Failed to apply custom colors:', e)
+      }
+    }
+  }
+
+  // Convert hex to RGB
+  const hexToRgb = (hex) => {
+    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex)
+    return result ? {
+      r: parseInt(result[1], 16),
+      g: parseInt(result[2], 16),
+      b: parseInt(result[3], 16)
+    } : null
   }
 
   // Écouter les changements de prefers-color-scheme
@@ -84,6 +123,7 @@ export const useThemeStore = defineStore('theme', () => {
     toggleTheme,
     setTheme,
     resetToSystemTheme,
-    setupSystemThemeListener
+    setupSystemThemeListener,
+    applyCustomColors
   }
 })
