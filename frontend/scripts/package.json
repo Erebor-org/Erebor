@@ -1,0 +1,22 @@
+{
+  "name": "erebor-theme-migration",
+  "version": "1.0.0",
+  "description": "Script de migration des thèmes pour Erebor",
+  "main": "migrate-themes.js",
+  "scripts": {
+    "migrate": "node migrate-themes.js",
+    "migrate:dry-run": "node migrate-themes.js --dry-run"
+  },
+  "dependencies": {
+    "glob": "^8.0.3"
+  },
+  "keywords": [
+    "erebor",
+    "themes",
+    "migration",
+    "tailwind",
+    "vue"
+  ],
+  "author": "Erebor Team",
+  "license": "MIT"
+}

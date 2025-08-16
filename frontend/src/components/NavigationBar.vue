@@ -2,6 +2,7 @@
   import { useAuthStore } from '@/stores/authStore';
   import { computed, ref } from 'vue';
   import { useRouter } from 'vue-router';
+  import ThemeToggle from './ThemeToggle.vue';
   
   const authStore = useAuthStore();
   const router = useRouter();
@@ -25,7 +26,7 @@
 </script>
 
 <template>
-  <nav class="bg-gradient-to-r from-gray-900 via-black to-gray-900 border-b border-gray-800 shadow-2xl">
+  <nav class="bg-theme-card border-b border-theme-border shadow-lg">
     <!-- Main Navigation Container -->
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="flex items-center justify-between h-20">
@@ -36,7 +37,7 @@
             <img :src="erebor_logo" alt="Erebor" class="w-12 h-12 transition-transform duration-300 hover:scale-110" />
           </div>
           <div class="hidden md:block">
-            <h1 class="text-2xl font-bold bg-gradient-to-r from-amber-400 via-yellow-500 to-amber-600 bg-clip-text text-transparent">
+            <h1 class="text-2xl font-bold text-theme-primary">
               EREBOR
             </h1>
           </div>
@@ -80,16 +81,27 @@
           >
             Statistiques
           </RouterLink>
+          
+          <RouterLink 
+            to="/theme-demo" 
+            class="nav-link"
+            active-class="nav-link-active"
+          >
+            Thèmes
+          </RouterLink>
         </div>
 
         <!-- Right Section - User Menu & Auth -->
         <div class="flex items-center space-x-4">
           
+          <!-- Theme Toggle -->
+          <ThemeToggle />
+          
           <!-- Not Logged In -->
           <div v-if="!isLoggedIn" class="flex items-center space-x-3">
             <RouterLink 
               to="/inscription"
-              class="px-6 py-2.5 bg-gradient-to-r from-amber-500 to-yellow-600 hover:from-amber-600 hover:to-yellow-700 text-black font-semibold rounded-xl transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-amber-500/30 shadow-lg"
+              class="px-6 py-2.5 bg-theme-primary hover:bg-theme-primary-hover text-theme-bg font-semibold rounded-xl transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-theme-ring focus:ring-opacity-30 shadow-lg"
             >
               S'inscrire
             </RouterLink>
@@ -100,8 +112,8 @@
             <!-- User Info -->
             <div class="hidden md:flex items-center space-x-3">
               <div class="text-right">
-                <p class="text-sm font-medium text-gray-200">{{ user?.username }}</p>
-                <p class="text-xs text-gray-400">Connecté</p>
+                <p class="text-sm font-medium text-theme-text">{{ user?.username }}</p>
+                <p class="text-xs text-theme-text-muted">Connecté</p>
               </div>
             </div>
             
@@ -110,15 +122,15 @@
               <img 
                 :src="profile_icon" 
                 alt="Profile" 
-                class="w-10 h-10 rounded-full border-2 border-gray-600 hover:border-amber-500 transition-all duration-300 cursor-pointer group-hover:scale-110"
+                class="w-10 h-10 rounded-full border-2 border-theme-border hover:border-theme-primary transition-all duration-300 cursor-pointer group-hover:scale-110"
               />
-              <div class="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-2 h-2 bg-green-500 rounded-full border border-gray-900"></div>
+              <div class="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-2 h-2 bg-theme-success rounded-full border border-theme-bg"></div>
             </div>
             
             <!-- Logout Button -->
             <button 
               @click="logout"
-              class="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-gray-300 font-medium rounded-lg transition-all duration-300 hover:text-white focus:outline-none focus:ring-2 focus:ring-gray-600"
+              class="px-4 py-2 bg-theme-bg-muted hover:bg-theme-border text-theme-text font-medium rounded-lg transition-all duration-300 hover:text-theme-primary focus:outline-none focus:ring-2 focus:ring-theme-ring"
             >
               <span class="hidden sm:inline">Déconnexion</span>
               <svg class="w-5 h-5 sm:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -130,7 +142,7 @@
           <!-- Mobile Menu Button -->
           <button
             @click="toggleMobileMenu"
-            class="lg:hidden p-2 rounded-lg bg-gray-800 hover:bg-gray-700 text-gray-300 transition-colors duration-200"
+            class="lg:hidden p-2 rounded-lg bg-theme-bg-muted hover:bg-theme-border text-theme-text transition-colors duration-200"
           >
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path v-if="!isMobileMenuOpen" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
@@ -144,7 +156,7 @@
     <!-- Mobile Menu -->
     <div 
       v-if="isMobileMenuOpen" 
-      class="lg:hidden bg-gray-900 border-t border-gray-800 shadow-xl"
+      class="lg:hidden bg-theme-bg-muted border-t border-theme-border shadow-xl"
     >
       <div class="px-4 py-6 space-y-4">
         <RouterLink 
@@ -195,6 +207,15 @@
         >
           Statistiques
         </RouterLink>
+        
+        <RouterLink 
+          to="/theme-demo" 
+          class="mobile-nav-link"
+          active-class="mobile-nav-link-active"
+          @click="isMobileMenuOpen = false"
+        >
+          Thèmes
+        </RouterLink>
       </div>
     </div>
   </nav>
@@ -218,12 +239,12 @@ export default {
 <style scoped>
 /* Navigation Link Styles */
 .nav-link {
-  @apply text-gray-300 hover:text-amber-400 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-300 relative;
+  @apply text-theme-text-muted hover:text-theme-primary px-3 py-2 rounded-lg text-sm font-medium transition-all duration-300 relative;
 }
 
 .nav-link::after {
   content: '';
-  @apply absolute bottom-0 left-1/2 w-0 h-0.5 bg-gradient-to-r from-amber-400 to-yellow-500 transition-all duration-300 transform -translate-x-1/2;
+  @apply absolute bottom-0 left-1/2 w-0 h-0.5 bg-theme-primary transition-all duration-300 transform -translate-x-1/2;
 }
 
 .nav-link:hover::after {
@@ -231,7 +252,7 @@ export default {
 }
 
 .nav-link-active {
-  @apply text-amber-400;
+  @apply text-theme-primary;
 }
 
 .nav-link-active::after {
@@ -240,11 +261,11 @@ export default {
 
 /* Mobile Navigation Link Styles */
 .mobile-nav-link {
-  @apply block px-4 py-3 text-gray-300 hover:text-amber-400 hover:bg-gray-800 rounded-lg text-base font-medium transition-all duration-300;
+  @apply block px-4 py-3 text-theme-text-muted hover:text-theme-primary hover:bg-theme-bg-muted rounded-lg text-base font-medium transition-all duration-300;
 }
 
 .mobile-nav-link-active {
-  @apply text-amber-400 bg-gray-800;
+  @apply text-theme-primary bg-theme-bg-muted;
 }
 
 /* Smooth transitions */
@@ -260,14 +281,15 @@ export default {
 }
 
 ::-webkit-scrollbar-track {
-  @apply bg-gray-900;
+  background-color: var(--bg-muted);
 }
 
 ::-webkit-scrollbar-thumb {
-  @apply bg-gray-700 rounded-full;
+  background-color: var(--border);
+  border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  @apply bg-gray-600;
+  background-color: var(--text-muted);
 }
 </style>

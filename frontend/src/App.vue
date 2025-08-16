@@ -5,7 +5,7 @@ import NavigationBar from './components/NavigationBar.vue'
 
 <template>
   <div class="h-screen">
-    <header class="w-full bg-black">
+    <header class="w-full bg-theme-card">
         <nav>
         <NavigationBar />
         </nav>

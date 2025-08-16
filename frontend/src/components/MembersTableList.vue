@@ -1,40 +1,40 @@
 <template>
-  <div class="bg-gray-900 rounded-2xl border border-gray-800 overflow-hidden shadow-xl">
+  <div class="bg-theme-card rounded-2xl border border-theme-border overflow-hidden shadow-xl">
     <!-- Table Header -->
-    <div class="bg-gradient-to-r from-gray-800 to-gray-900 px-6 py-4 border-b border-gray-700">
-      <h3 class="text-xl font-bold text-amber-400">Membres Actifs</h3>
+    <div class="bg-gradient-to-r from-theme-bg-muted to-theme-card px-6 py-4 border-b border-theme-bg-muted">
+      <h3 class="text-xl font-bold text-theme-primary">Membres Actifs</h3>
     </div>
 
     <!-- Table -->
     <div class="overflow-x-auto">
       <table class="w-full">
-        <thead class="bg-gray-800 border-b border-gray-700">
+        <thead class="bg-theme-bg-muted border-b border-theme-bg-muted">
           <tr>
-            <th class="px-6 py-4 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+            <th class="px-6 py-4 text-left text-xs font-medium text-theme-text uppercase tracking-wider">
               Membre
             </th>
-            <th class="px-6 py-4 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+            <th class="px-6 py-4 text-left text-xs font-medium text-theme-text uppercase tracking-wider">
               Rang
             </th>
-            <th class="px-6 py-4 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+            <th class="px-6 py-4 text-left text-xs font-medium text-theme-text uppercase tracking-wider">
               Recruteur
             </th>
-            <th class="px-6 py-4 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+            <th class="px-6 py-4 text-left text-xs font-medium text-theme-text uppercase tracking-wider">
               Mules
             </th>
-            <th class="px-6 py-4 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+            <th class="px-6 py-4 text-left text-xs font-medium text-theme-text uppercase tracking-wider">
               Avertissements
             </th>
-            <th class="px-6 py-4 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+            <th class="px-6 py-4 text-left text-xs font-medium text-theme-text uppercase tracking-wider">
               Actions
             </th>
           </tr>
         </thead>
-        <tbody class="bg-gray-900 divide-y divide-gray-700">
+        <tbody class="bg-theme-card divide-y divide-gray-700">
           <tr
             v-for="member in filteredMembers"
             :key="`member-${member.id}`"
-            class="hover:bg-gray-800 transition-colors duration-200"
+            class="hover:bg-theme-bg-muted transition-colors duration-200"
           >
             <!-- Member Info -->
             <td class="px-6 py-4">
@@ -56,7 +56,7 @@
                     :edit-pseudo="editPseudo"
                     @save-pseudo="savePseudo"
                   />
-                  <p class="text-sm text-gray-400 truncate">
+                  <p class="text-sm text-theme-text-muted truncate">
                     {{ member.member.ankama_pseudo }}
                   </p>
                 </div>
@@ -65,14 +65,14 @@
 
             <!-- Rank -->
             <td class="px-6 py-4">
-              <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gray-700 text-amber-400 border border-gray-600">
+              <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-theme-bg-muted text-theme-primary border border-theme-border">
                 {{ member.member.rank?.name || 'N/A' }}
               </span>
             </td>
 
             <!-- Recruiter -->
             <td class="px-6 py-4">
-              <span class="text-gray-300">
+              <span class="text-theme-text">
                 {{ member.member.recruiter?.pseudo || 'N/A' }}
               </span>
             </td>
@@ -81,7 +81,7 @@
             <td class="px-6 py-4">
               <button
                 @click="openMulesModal(member)"
-                class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gray-700 text-gray-300 hover:bg-gray-600 hover:text-amber-400 transition-colors duration-200 border border-gray-600"
+                class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-theme-bg-muted text-theme-text hover:bg-theme-border hover:text-theme-primary transition-colors duration-200 border border-theme-border"
               >
                 <span class="mr-2">{{ filteredMulesByCharacter(member.id).length }}</span>
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -94,14 +94,14 @@
             <td class="px-6 py-4">
               <div class="flex items-center space-x-2">
                 <div class="flex flex-col items-center">
-                  <svg class="w-5 h-5 text-red-500" fill="currentColor" viewBox="0 0 20 20">
+                  <svg class="w-5 h-5 text-theme-error" fill="currentColor" viewBox="0 0 20 20">
                     <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
                   </svg>
-                  <span class="text-sm text-gray-300">{{ characterWarningCounts[member.id] || 0 }}</span>
+                  <span class="text-sm text-theme-text">{{ characterWarningCounts[member.id] || 0 }}</span>
                 </div>
                 <button
                   @click="viewWarnings(member.id, member.member)"
-                  class="ml-2 px-2 py-1 text-xs bg-gray-700 hover:bg-gray-600 text-gray-300 rounded transition-colors duration-200"
+                  class="ml-2 px-2 py-1 text-xs bg-theme-bg-muted hover:bg-theme-border text-theme-text rounded transition-colors duration-200"
                 >
                   Voir
                 </button>
@@ -113,13 +113,13 @@
               <div class="flex items-center space-x-2">
                 <button
                   @click="openModal(member)"
-                  class="px-3 py-1 text-xs bg-red-600 hover:bg-red-700 text-white rounded transition-colors duration-200"
+                  class="px-3 py-1 text-xs bg-theme-error hover:bg-theme-primary text-theme-text rounded transition-colors duration-200"
                 >
                   Archiver
                 </button>
                 <button
                   @click="openMuleModal(member)"
-                  class="px-3 py-1 text-xs bg-blue-600 hover:bg-blue-700 text-white rounded transition-colors duration-200"
+                  class="px-3 py-1 text-xs bg-theme-primary hover:bg-theme-primary text-theme-text rounded transition-colors duration-200"
                 >
                   Gérer Mules
                 </button>

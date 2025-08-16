@@ -8,7 +8,7 @@
     >
       <input
         v-model="localEditPseudo"
-        class="w-full px-4 py-3 bg-black border-2 border-amber-500 rounded-xl focus:ring-2 focus:ring-amber-500/50 focus:border-amber-400 text-white placeholder-gray-500 transition-all duration-300 text-base font-bold shadow-lg shadow-amber-500/25"
+        class="w-full px-4 py-3 bg-theme-bg border-2 border-theme-primary rounded-xl focus:ring-2 focus:ring-theme-primary/50 focus:border-theme-primary text-theme-text placeholder-gray-500 transition-all duration-300 text-base font-bold shadow-lg shadow-theme-primary/25"
         @blur="savePseudo"
         @keydown.enter.prevent="savePseudo"
         @keydown.esc="cancelEdit"
@@ -19,7 +19,7 @@
       <div class="absolute right-3 top-1/2 transform -translate-y-1/2 flex space-x-2">
         <button
           @click="savePseudo"
-          class="w-6 h-6 bg-gradient-to-r from-amber-500 to-yellow-600 text-black rounded-full flex items-center justify-center hover:from-amber-600 hover:to-yellow-700 transition-all duration-300 shadow-lg"
+          class="w-6 h-6 bg-gradient-to-r from-theme-primary to-theme-primary-hover text-theme-bg rounded-full flex items-center justify-center hover:from-theme-primary hover:to-theme-primary-hover transition-all duration-300 shadow-lg"
           title="Sauvegarder"
         >
           <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -28,7 +28,7 @@
         </button>
         <button
           @click="cancelEdit"
-          class="w-6 h-6 bg-red-600 text-white rounded-full flex items-center justify-center hover:bg-red-700 transition-all duration-300 shadow-lg"
+          class="w-6 h-6 bg-theme-error text-theme-text rounded-full flex items-center justify-center hover:bg-theme-primary transition-all duration-300 shadow-lg"
           title="Annuler"
         >
           <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -41,13 +41,13 @@
     <!-- Display Mode -->
     <div
       v-else
-      class="group cursor-pointer hover:bg-amber-500/10 rounded-xl px-4 py-3 transition-all duration-300 border-2 border-transparent hover:border-amber-500/30"
+      class="group cursor-pointer hover:bg-theme-primary/10 rounded-xl px-4 py-3 transition-all duration-300 border-2 border-transparent hover:border-theme-primary/30"
       @click="startEditing"
     >
       <div class="flex items-center justify-between">
-        <span class="text-base font-bold text-amber-400 group-hover:text-yellow-300 transition-colors duration-300">{{ entity.pseudo || 'Aucun pseudo' }}</span>
+        <span class="text-base font-bold text-theme-primary group-hover:text-theme-primary-hover transition-colors duration-300">{{ entity.pseudo || 'Aucun pseudo' }}</span>
         <div class="opacity-0 group-hover:opacity-100 transition-all duration-300">
-          <svg class="w-5 h-5 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <svg class="w-5 h-5 text-theme-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
           </svg>
         </div>
@@ -57,9 +57,9 @@
     <!-- Loading State -->
     <div
       v-if="isLoading"
-      class="absolute inset-0 bg-black bg-opacity-75 rounded-xl flex items-center justify-center backdrop-blur-sm"
+      class="absolute inset-0 bg-theme-bg bg-opacity-75 rounded-xl flex items-center justify-center backdrop-blur-sm"
     >
-      <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-amber-500"></div>
+      <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-theme-primary"></div>
     </div>
   </div>
 </template>

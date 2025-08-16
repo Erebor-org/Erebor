@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen bg-black text-white">
+  <div class="min-h-screen bg-theme-bg text-theme-text">
     <!-- Notification -->
     <Notification ref="notificationRef" />
     
@@ -32,8 +32,8 @@
     <div ref="mainContainer" class="container mx-auto px-4 py-8">
       <!-- Page Header -->
       <div class="text-center mb-12">
-        <h1 class="text-6xl font-bold text-amber-400 mb-6">Gestion des Membres</h1>
-        <div class="w-32 h-1 bg-gradient-to-r from-amber-400 via-yellow-500 to-amber-600 mx-auto rounded-full shadow-lg shadow-amber-500/50"></div>
+        <h1 class="text-6xl font-bold text-theme-primary mb-6">Gestion des Membres</h1>
+        <div class="w-32 h-1 bg-gradient-to-r from-theme-primary via-yellow-500 to-theme-primary mx-auto rounded-full shadow-lg shadow-theme-primary/50"></div>
       </div>
 
       <!-- Search Header -->
@@ -119,10 +119,10 @@
     <button
       v-if="showScrollToTop"
       @click="scrollToTop"
-      class="fixed bottom-8 right-8 z-[9999] w-16 h-16 bg-gradient-to-br from-gray-900 to-black hover:from-gray-800 hover:to-gray-900 text-amber-400 rounded-full shadow-2xl hover:shadow-amber-500/25 transition-all duration-500 transform hover:scale-110 focus:outline-none focus:ring-4 focus:ring-amber-500/30 border-2 border-amber-500/50 hover:border-amber-400"
+      class="fixed bottom-8 right-8 z-[9999] w-16 h-16 bg-gradient-to-br from-theme-card to-theme-bg hover:from-theme-bg-muted hover:to-theme-card text-theme-primary rounded-full shadow-2xl hover:shadow-theme-primary/25 transition-all duration-500 transform hover:scale-110 focus:outline-none focus:ring-4 focus:ring-theme-primary/30 border-2 border-theme-primary/50 hover:border-theme-primary"
       title="Retour en haut de page"
     >
-      <div class="absolute inset-0 bg-gradient-to-br from-amber-500/20 to-transparent rounded-full"></div>
+      <div class="absolute inset-0 bg-gradient-to-br from-theme-primary/20 to-transparent rounded-full"></div>
       <svg class="w-7 h-7 mx-auto relative z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18" />
       </svg>

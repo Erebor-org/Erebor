@@ -1,12 +1,12 @@
 <template>
   <div>
     <div class="flex items-center space-x-3 mb-6">
-      <div class="w-8 h-8 bg-gradient-to-br from-amber-500 to-yellow-600 rounded-lg flex items-center justify-center">
-        <svg class="w-5 h-5 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <div class="w-8 h-8 bg-gradient-to-br from-theme-primary to-theme-primary-hover rounded-lg flex items-center justify-center">
+        <svg class="w-5 h-5 text-theme-bg" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
         </svg>
       </div>
-      <h3 class="text-2xl font-bold text-amber-400">Mules (Optionnel)</h3>
+      <h3 class="text-2xl font-bold text-theme-primary">Mules (Optionnel)</h3>
     </div>
     
     <!-- List of added mules -->
@@ -14,21 +14,21 @@
       <div 
         v-for="(mule, index) in mules" 
         :key="index"
-        class="p-4 bg-gray-700 rounded-xl border border-gray-600 hover:border-amber-500 transition-all duration-200 relative group"
+        class="p-4 bg-theme-bg-muted rounded-xl border border-theme-border hover:border-theme-primary transition-all duration-200 relative group"
       >
         <div class="flex items-center space-x-4">
           <!-- Mule info summary -->
-          <img :src="classes[mule.class]" :alt="`Classe ${mule.class}`" class="w-10 h-10 rounded-lg border-2 border-gray-600 group-hover:border-amber-500 transition-colors duration-200" />
+          <img :src="classes[mule.class]" :alt="`Classe ${mule.class}`" class="w-10 h-10 rounded-lg border-2 border-theme-border group-hover:border-theme-primary transition-colors duration-200" />
           <div class="flex-1">
-            <span class="font-semibold text-amber-400 text-lg">{{ mule.pseudo }}</span>
-            <span class="block text-sm text-gray-400">({{ mule.ankamaPseudo }})</span>
+            <span class="font-semibold text-theme-primary text-lg">{{ mule.pseudo }}</span>
+            <span class="block text-sm text-theme-text-muted">({{ mule.ankamaPseudo }})</span>
           </div>
           
           <!-- Remove button -->
           <button 
             type="button" 
             @click="removeMule(index)"
-            class="w-8 h-8 bg-red-600 hover:bg-red-700 text-white rounded-lg flex items-center justify-center transition-all duration-200 hover:scale-105"
+            class="w-8 h-8 bg-theme-error hover:bg-theme-primary text-theme-text rounded-lg flex items-center justify-center transition-all duration-200 hover:scale-105"
             title="Supprimer la mule"
           >
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -43,7 +43,7 @@
     <button
       type="button"
       @click="showAddMuleForm = !showAddMuleForm"
-      class="w-full bg-gray-700 hover:bg-gray-600 text-gray-300 hover:text-amber-400 font-medium py-3 px-4 rounded-xl border-2 border-gray-600 hover:border-amber-500 transition-all duration-200 flex items-center justify-center space-x-2 mb-6"
+      class="w-full bg-theme-bg-muted hover:bg-theme-border text-theme-text hover:text-theme-primary font-medium py-3 px-4 rounded-xl border-2 border-theme-border hover:border-theme-primary transition-all duration-200 flex items-center justify-center space-x-2 mb-6"
     >
       <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
@@ -52,7 +52,7 @@
     </button>
     
     <!-- Add mule form -->
-    <div v-if="showAddMuleForm" class="bg-gray-800 rounded-xl p-6 border border-gray-700">
+    <div v-if="showAddMuleForm" class="bg-theme-bg-muted rounded-xl p-6 border border-theme-bg-muted">
       <MuleForm 
         :classes="classes" 
         :blacklist="blacklist"

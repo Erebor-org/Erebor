@@ -1,12 +1,12 @@
 <template>
   <div>
     <div class="flex items-center space-x-3 mb-6">
-      <div class="w-8 h-8 bg-gradient-to-br from-amber-500 to-yellow-600 rounded-lg flex items-center justify-center">
-        <svg class="w-5 h-5 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <div class="w-8 h-8 bg-gradient-to-br from-theme-primary to-theme-primary-hover rounded-lg flex items-center justify-center">
+        <svg class="w-5 h-5 text-theme-bg" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
         </svg>
       </div>
-      <h2 class="text-2xl font-bold text-amber-400">Personnage Principal</h2>
+      <h2 class="text-2xl font-bold text-theme-primary">Personnage Principal</h2>
     </div>
 
     <div class="space-y-6">
@@ -16,22 +16,22 @@
         <div class="space-y-2">
           <label
             for="mainPseudo"
-            class="block text-sm font-medium text-gray-300"
+            class="block text-sm font-medium text-theme-text"
           >
-            Pseudo <span class="text-red-400">*</span>
+            Pseudo <span class="text-theme-error">*</span>
           </label>
           <input
             type="text"
             id="mainPseudo"
             v-model="character.pseudo"
-            class="w-full bg-gray-700 border-2 border-gray-600 text-white rounded-lg px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all duration-200 placeholder-gray-400"
-            :class="{ 'border-red-500 bg-red-900/20': isPseudoInvalid }"
+            class="w-full bg-theme-bg-muted border-2 border-theme-border text-theme-text rounded-lg px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-theme-primary focus:border-theme-primary transition-all duration-200 placeholder-gray-400"
+            :class="{ 'border-theme-error bg-theme-error/20': isPseudoInvalid }"
             placeholder="Entrez le pseudo du personnage"
             required
           />
           <div
             v-if="isPseudoInvalid"
-            class="flex items-center space-x-2 text-red-400 text-sm"
+            class="flex items-center space-x-2 text-theme-error text-sm"
           >
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
@@ -44,22 +44,22 @@
         <div class="space-y-2">
           <label
             for="ankamaPseudo"
-            class="block text-sm font-medium text-gray-300"
+            class="block text-sm font-medium text-theme-text"
           >
-            Pseudo Ankama <span class="text-red-400">*</span>
+            Pseudo Ankama <span class="text-theme-error">*</span>
           </label>
           <input
             type="text"
             id="ankamaPseudo"
             v-model="character.ankamaPseudo"
-            class="w-full bg-gray-700 border-2 border-gray-600 text-white rounded-lg px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all duration-200 placeholder-gray-400"
-            :class="{ 'border-red-500 bg-red-900/20': isAnkamaPseudoInvalid }"
+            class="w-full bg-theme-bg-muted border-2 border-theme-border text-theme-text rounded-lg px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-theme-primary focus:border-theme-primary transition-all duration-200 placeholder-gray-400"
+            :class="{ 'border-theme-error bg-theme-error/20': isAnkamaPseudoInvalid }"
             placeholder="Entrez le pseudo Ankama"
             required
           />
           <div
             v-if="isAnkamaPseudoInvalid"
-            class="flex items-center space-x-2 text-red-400 text-sm"
+            class="flex items-center space-x-2 text-theme-error text-sm"
           >
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
@@ -75,23 +75,23 @@
         <div class="space-y-2">
           <label
             for="recruitedAt"
-            class="block text-sm font-medium text-gray-300"
+            class="block text-sm font-medium text-theme-text"
           >
-            Date de recrutement <span class="text-red-400">*</span>
+            Date de recrutement <span class="text-theme-error">*</span>
           </label>
           <input
             type="date"
             id="recruitedAt"
             name="recruitedAt"
             v-model="character.recruitedAt"
-            class="w-full bg-gray-700 border-2 border-gray-600 text-white rounded-lg px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all duration-200"
+            class="w-full bg-theme-bg-muted border-2 border-theme-border text-theme-text rounded-lg px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-theme-primary focus:border-theme-primary transition-all duration-200"
             required
           />
         </div>
 
         <!-- Recruteur -->
         <div class="space-y-2">
-          <label class="block text-sm font-medium text-gray-300">
+          <label class="block text-sm font-medium text-theme-text">
             Recruteur
           </label>
           <RecruiterSelector 
@@ -106,8 +106,8 @@
       
       <!-- Classe Selection -->
       <div class="space-y-4">
-        <label class="block text-sm font-medium text-gray-300">
-          Classe du personnage <span class="text-red-400">*</span>
+        <label class="block text-sm font-medium text-theme-text">
+          Classe du personnage <span class="text-theme-error">*</span>
         </label>
         <div class="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-7 gap-3">
           <button
@@ -115,11 +115,11 @@
             :key="className"
             type="button"
             @click="selectClass(className)"
-            class="group relative p-3 rounded-xl border-2 transition-all duration-200 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 focus:ring-offset-gray-800"
+            class="group relative p-3 rounded-xl border-2 transition-all duration-200 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-theme-primary focus:ring-offset-2 focus:ring-offset-theme-bg-muted"
             :class="[
               character.class === className
-                ? 'border-amber-500 bg-amber-500/20 shadow-lg shadow-amber-500/25'
-                : 'border-gray-600 hover:border-amber-400 bg-gray-700 hover:bg-gray-600'
+                ? 'border-theme-primary bg-theme-primary/20 shadow-lg shadow-theme-primary/25'
+                : 'border-theme-border hover:border-theme-primary bg-theme-bg-muted hover:bg-theme-border'
             ]"
           >
             <img
@@ -130,16 +130,16 @@
             <span class="block text-xs font-medium text-center capitalize transition-colors duration-200"
                   :class="[
                     character.class === className
-                      ? 'text-amber-400'
-                      : 'text-gray-400 group-hover:text-gray-300'
+                      ? 'text-theme-primary'
+                      : 'text-theme-text-muted group-hover:text-theme-text'
                   ]">
               {{ className }}
             </span>
             
             <!-- Selection indicator -->
             <div v-if="character.class === className"
-                 class="absolute -top-1 -right-1 w-6 h-6 bg-amber-500 rounded-full flex items-center justify-center shadow-lg">
-              <svg class="w-3 h-3 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                 class="absolute -top-1 -right-1 w-6 h-6 bg-theme-primary rounded-full flex items-center justify-center shadow-lg">
+              <svg class="w-3 h-3 text-theme-bg" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
               </svg>
             </div>

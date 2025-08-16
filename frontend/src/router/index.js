@@ -6,6 +6,7 @@ import Register from '../views/RegisterPage.vue';
 import ViewWarnings from '../views/ViewWarnings.vue';
 import ManageWarnings from '../views/ManageWarnings.vue';
 import Statistiques from '../views/Statistiques.vue';
+import ThemeDemo from '../views/ThemeDemo.vue';
 
 const routes = [
   { path: '/', redirect: () => {
@@ -19,6 +20,7 @@ const routes = [
   { path: '/warnings/:id/:pseudo', name: 'ViewWarnings', component: ViewWarnings, meta: { requiresAuth: true } },
   { path: '/warnings-management', name: 'ManageWarnings', component: ManageWarnings, meta: { requiresAuth: true } },
   { path: '/statistiques', name: 'Statistiques', component: Statistiques, meta: { requiresAuth: true } },
+  { path: '/theme-demo', name: 'ThemeDemo', component: ThemeDemo },
 ];
 
 const router = createRouter({

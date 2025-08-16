@@ -54,7 +54,7 @@ const togglePassword = () => {
   >
     <!-- Form Container -->
     <div
-      class="relative w-full max-w-lg bg-yellow-50 p-8 rounded-xl shadow-lg border border-red-700 z-10"
+      class="relative w-full max-w-lg bg-theme-card p-8 rounded-xl shadow-lg border border-theme-border z-10"
     >
       <div v-if="authStore.isLoading" class="loading-spinner">🔄 Connexion en cours...</div>
       <div class="mx-auto w-24 h-24 rounded-full flex items-center justify-center">
@@ -63,29 +63,29 @@ const togglePassword = () => {
 
       <!-- Header -->
       <div class="text-center">
-        <h1 class="text-4xl font-bold text-red-800">
+        <h1 class="text-4xl font-bold text-theme-text">
           Bienvenue sur le site <span class="font-fantasy">d'Erebor</span>
         </h1>
-        <p class="text-yellow-900 mt-2">Rejoignez l'univers enchanteur de votre guilde !</p>
+        <p class="text-theme-text-muted mt-2">Rejoignez l'univers enchanteur de votre guilde !</p>
       </div>
 
       <!-- Tabs -->
       <div class="flex justify-center mt-4">
         <button
-          class="px-4 py-2 text-red-800 font-semibold rounded-t-md"
+          class="px-4 py-2 text-theme-text font-semibold rounded-t-md"
           :class="{
-            'bg-yellow-300': activeTab === 'register',
-            'bg-yellow-100': activeTab !== 'register',
+            'bg-theme-primary text-theme-bg': activeTab === 'register',
+            'bg-theme-bg-muted': activeTab !== 'register',
           }"
           @click="activeTab = 'register'"
         >
           S'enregistrer
         </button>
         <button
-          class="px-4 py-2 text-red-800 font-semibold rounded-t-md"
+          class="px-4 py-2 text-theme-text font-semibold rounded-t-md"
           :class="{
-            'bg-yellow-300': activeTab === 'login',
-            'bg-yellow-100': activeTab !== 'login',
+            'bg-theme-primary text-theme-bg': activeTab === 'login',
+            'bg-theme-bg-muted': activeTab !== 'login',
           }"
           @click="activeTab = 'login'"
         >
@@ -99,28 +99,28 @@ const togglePassword = () => {
         <form @submit.prevent="register" class="mt-8 space-y-6 grid grid-cols-1 gap-4">
           <!-- Pseudo -->
           <div>
-            <label for="pseudo" class="block text-red-800 font-semibold">Pseudo</label>
+            <label for="pseudo" class="block text-theme-text font-semibold">Pseudo</label>
             <input
               v-model="form.pseudo"
               type="text"
               id="pseudo"
               placeholder="Entrez votre pseudo en jeu"
-              class="w-full mt-2 px-4 py-2 border border-yellow-500 rounded-md shadow-sm focus:outline-none focus:ring focus:ring-yellow-300"
+              class="w-full mt-2 px-4 py-2 border border-theme-border rounded-md shadow-sm focus:outline-none focus:ring focus:ring-theme-ring"
             />
           </div>
 
           <!-- Mot de Passe -->
           <div class="relative">
-            <label for="password" class="block text-red-800 font-semibold">Mot de Passe</label>
+            <label for="password" class="block text-theme-text font-semibold">Mot de Passe</label>
             <input
               v-model="form.password"
               :type="showPassword ? 'text' : 'password'"
               id="password"
               placeholder="Entrez votre mot de passe"
-              class="w-full mt-2 px-4 py-2 border border-yellow-500 rounded-md shadow-sm focus:outline-none focus:ring focus:ring-yellow-300"
+              class="w-full mt-2 px-4 py-2 border border-theme-border rounded-md shadow-sm focus:outline-none focus:ring focus:ring-theme-ring"
             />
             <span
-              class="absolute top-9 right-3 cursor-pointer text-yellow-600"
+              class="absolute top-9 right-3 cursor-pointer text-theme-primary"
               @click="togglePassword"
             >
               <i :class="showPassword ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
@@ -129,7 +129,7 @@ const togglePassword = () => {
 
           <!-- Confirmation du Mot de Passe -->
           <div class="relative">
-            <label for="confirm-password" class="block text-red-800 font-semibold"
+            <label for="confirm-password" class="block text-theme-text font-semibold"
               >Confirmer le Mot de Passe</label
             >
             <input
@@ -138,21 +138,21 @@ const togglePassword = () => {
               id="confirm-password"
               placeholder="Confirmez votre mot de passe"
               :class="[
-                'w-full mt-2 px-4 py-2 border rounded-md shadow-sm focus:outline-none focus:ring focus:ring-yellow-300',
+                'w-full mt-2 px-4 py-2 border rounded-md shadow-sm focus:outline-none focus:ring focus:ring-theme-ring',
                 form.confirmPassword === form.password && form.confirmPassword !== ''
-                  ? 'bg-green-500'
+                  ? 'bg-theme-success'
                   : '',
               ]"
             />
             <span
-              class="absolute top-9 right-3 cursor-pointer text-yellow-600"
+              class="absolute top-9 right-3 cursor-pointer text-theme-primary"
               @click="togglePassword"
             >
               <i :class="showPassword ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
             </span>
             <p
               v-if="form.confirmPassword && form.confirmPassword && !passwordsMatch"
-              class="text-red-600 text-sm mb-4"
+              class="text-theme-error text-sm mb-4"
             >
               Les mots de passe ne correspondent pas !
             </p>
@@ -162,7 +162,7 @@ const togglePassword = () => {
           <div class="mt-6">
             <button
               type="submit"
-              class="w-full px-4 py-2 bg-red-700 text-yellow-50 font-semibold rounded-md shadow-md hover:bg-red-800 transition"
+              class="w-full px-4 py-2 bg-theme-primary text-theme-bg font-semibold rounded-md shadow-md hover:bg-theme-primary-hover transition"
             >
               S'enregistrer
             </button>
@@ -175,19 +175,19 @@ const togglePassword = () => {
         <form @submit.prevent="login" class="mt-8 space-y-6 grid grid-cols-1 gap-4">
           <!-- Pseudo -->
           <div>
-            <label for="login-pseudo" class="block text-red-800 font-semibold">Pseudo</label>
+            <label for="login-pseudo" class="block text-theme-text font-semibold">Pseudo</label>
             <input
               v-model="loginForm.pseudo"
               type="text"
               id="login-pseudo"
               placeholder="Entrez votre pseudo"
-              class="w-full mt-2 px-4 py-2 border border-yellow-500 rounded-md shadow-sm focus:outline-none focus:ring focus:ring-yellow-300"
+              class="w-full mt-2 px-4 py-2 border border-theme-border rounded-md shadow-sm focus:outline-none focus:ring focus:ring-theme-ring"
             />
           </div>
 
           <!-- Mot de Passe -->
           <div class="relative">
-            <label for="login-password" class="block text-red-800 font-semibold"
+            <label for="login-password" class="block text-theme-text font-semibold"
               >Mot de Passe</label
             >
             <input
@@ -195,10 +195,10 @@ const togglePassword = () => {
               :type="showPassword ? 'text' : 'password'"
               id="login-password"
               placeholder="Entrez votre mot de passe"
-              class="w-full mt-2 px-4 py-2 border border-yellow-500 rounded-md shadow-sm focus:outline-none focus:ring focus:ring-yellow-300"
+              class="w-full mt-2 px-4 py-2 border border-theme-border rounded-md shadow-sm focus:outline-none focus:ring focus:ring-theme-ring"
             />
             <span
-              class="absolute top-9 right-3 cursor-pointer text-yellow-600"
+              class="absolute top-9 right-3 cursor-pointer text-theme-primary"
               @click="togglePassword"
             >
               <i :class="showPassword ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
@@ -209,7 +209,7 @@ const togglePassword = () => {
           <div class="mt-6">
             <button
               type="submit"
-              class="w-full px-4 py-2 bg-red-700 text-yellow-50 font-semibold rounded-md shadow-md hover:bg-red-800 transition"
+              class="w-full px-4 py-2 bg-theme-primary text-theme-bg font-semibold rounded-md shadow-md hover:bg-theme-primary-hover transition"
             >
               Connexion
             </button>
@@ -233,9 +233,11 @@ const togglePassword = () => {
   transform: translate(-50%, -50%);
   font-size: 20px;
   font-weight: bold;
-  background: rgba(255, 255, 255, 0.8);
+  background: rgba(var(--bg-rgb), 0.9);
+  color: var(--text);
   padding: 20px;
   border-radius: 10px;
-  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
+  box-shadow: 0px 0px 10px rgba(var(--text-rgb), 0.2);
+  border: 1px solid var(--border);
 }
 </style>

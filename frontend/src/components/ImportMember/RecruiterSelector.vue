@@ -11,7 +11,7 @@
       <button
         type="button"
         @click="clearRecruiter"
-        class="text-red-500 text-lg font-bold focus:outline-none"
+        class="text-theme-error text-lg font-bold focus:outline-none"
       >
         &times;
       </button>

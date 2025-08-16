@@ -1,27 +1,27 @@
 <template>
   <div v-if="show" class="fixed inset-0 z-50 overflow-y-auto">
     <!-- Backdrop -->
-    <div class="fixed inset-0 bg-black bg-opacity-75 transition-opacity" @click="closeModal"></div>
+    <div class="fixed inset-0 bg-theme-bg bg-opacity-75 transition-opacity" @click="closeModal"></div>
     
     <!-- Modal -->
     <div class="flex min-h-full items-center justify-center p-4">
-      <div class="relative w-full max-w-4xl bg-gray-900 rounded-2xl border border-gray-800 shadow-2xl">
+      <div class="relative w-full max-w-4xl bg-theme-card rounded-2xl border border-theme-border shadow-2xl">
         <!-- Header -->
-        <div class="flex items-center justify-between p-6 border-b border-gray-800">
+        <div class="flex items-center justify-between p-6 border-b border-theme-border">
           <div class="flex items-center space-x-4">
             <img
               :src="classes[member?.member?.class]"
               :alt="`Classe ${member?.member?.class}`"
-              class="w-12 h-12 rounded-lg border-2 border-gray-600"
+              class="w-12 h-12 rounded-lg border-2 border-theme-border"
             />
             <div>
-              <h2 class="text-2xl font-bold text-amber-400">Mules de {{ member?.member?.pseudo }}</h2>
-              <p class="text-gray-400">{{ filteredMulesByCharacter(member?.id)?.length || 0 }} mule(s)</p>
+              <h2 class="text-2xl font-bold text-theme-primary">Mules de {{ member?.member?.pseudo }}</h2>
+              <p class="text-theme-text-muted">{{ filteredMulesByCharacter(member?.id)?.length || 0 }} mule(s)</p>
             </div>
           </div>
           <button
             @click="closeModal"
-            class="text-gray-400 hover:text-white transition-colors duration-200"
+            class="text-theme-text-muted hover:text-theme-text transition-colors duration-200"
           >
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
@@ -35,7 +35,7 @@
           <div class="mb-6">
             <button
               @click="openAddMuleModal"
-              class="w-full px-4 py-3 bg-amber-600 hover:bg-amber-700 text-white rounded-lg transition-colors duration-200 flex items-center justify-center space-x-2"
+              class="w-full px-4 py-3 bg-theme-primary hover:bg-theme-primary-hover text-theme-text rounded-lg transition-colors duration-200 flex items-center justify-center space-x-2"
             >
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
@@ -49,7 +49,7 @@
             <div
               v-for="mule in filteredMulesByCharacter(member?.id)"
               :key="`mule-${mule.id}`"
-              class="bg-gray-800 rounded-lg p-4 border border-gray-700 hover:border-amber-500 transition-colors duration-200"
+              class="bg-theme-bg-muted rounded-lg p-4 border border-theme-bg-muted hover:border-theme-primary transition-colors duration-200"
             >
               <div class="flex items-center justify-between">
                 <div class="flex items-center space-x-4">
@@ -75,7 +75,7 @@
                 <div class="flex items-center space-x-2">
                   <button
                     @click="openMuleModal(mule)"
-                    class="px-3 py-2 text-sm bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors duration-200"
+                    class="px-3 py-2 text-sm bg-theme-error hover:bg-theme-primary text-theme-text rounded-lg transition-colors duration-200"
                   >
                     Archiver
                   </button>
@@ -86,12 +86,12 @@
 
           <!-- No Mules State -->
           <div v-else class="text-center py-12">
-            <div class="text-gray-400">
-              <svg class="w-20 h-20 mx-auto mb-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div class="text-theme-text-muted">
+              <svg class="w-20 h-20 mx-auto mb-6 text-theme-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
               </svg>
-              <p class="text-xl font-medium text-gray-500 mb-2">Aucune mule disponible</p>
-              <p class="text-gray-600">Cliquez sur "Ajouter une mule" pour en créer une</p>
+              <p class="text-xl font-medium text-theme-text-muted mb-2">Aucune mule disponible</p>
+              <p class="text-theme-text-muted">Cliquez sur "Ajouter une mule" pour en créer une</p>
             </div>
           </div>
         </div>

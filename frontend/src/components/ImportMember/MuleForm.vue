@@ -1,12 +1,12 @@
 <template>
   <div>
     <div class="flex items-center space-x-3 mb-6">
-      <div class="w-6 h-6 bg-gradient-to-br from-amber-500 to-yellow-600 rounded-lg flex items-center justify-center">
-        <svg class="w-4 h-4 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <div class="w-6 h-6 bg-gradient-to-br from-theme-primary to-theme-primary-hover rounded-lg flex items-center justify-center">
+        <svg class="w-4 h-4 text-theme-bg" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
         </svg>
       </div>
-      <h4 class="text-lg font-bold text-amber-400">Nouvelle Mule</h4>
+      <h4 class="text-lg font-bold text-theme-primary">Nouvelle Mule</h4>
     </div>
 
     <div class="space-y-6">
@@ -16,21 +16,21 @@
         <div class="space-y-2">
           <label
             for="mulePseudo"
-            class="block text-sm font-medium text-gray-300"
+            class="block text-sm font-medium text-theme-text"
           >
-            Pseudo <span class="text-red-400">*</span>
+            Pseudo <span class="text-theme-error">*</span>
           </label>
           <input
             type="text"
             id="mulePseudo"
             v-model="mule.pseudo"
-            class="w-full bg-gray-700 border-2 border-gray-600 text-white rounded-lg px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all duration-200 placeholder-gray-400"
-            :class="{ 'border-red-500 bg-red-900/20': isPseudoInvalid }"
+            class="w-full bg-theme-bg-muted border-2 border-theme-border text-theme-text rounded-lg px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-theme-primary focus:border-theme-primary transition-all duration-200 placeholder-gray-400"
+            :class="{ 'border-theme-error bg-theme-error/20': isPseudoInvalid }"
             placeholder="Entrez le pseudo de la mule"
           />
           <div
             v-if="isPseudoInvalid"
-            class="flex items-center space-x-2 text-red-400 text-sm"
+            class="flex items-center space-x-2 text-theme-error text-sm"
           >
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
@@ -43,21 +43,21 @@
         <div class="space-y-2">
           <label
             for="muleAnkamaPseudo"
-            class="block text-sm font-medium text-gray-300"
+            class="block text-sm font-medium text-theme-text"
           >
-            Pseudo Ankama <span class="text-red-400">*</span>
+            Pseudo Ankama <span class="text-theme-error">*</span>
           </label>
           <input
             type="text"
             id="muleAnkamaPseudo"
             v-model="mule.ankamaPseudo"
-            class="w-full bg-gray-700 border-2 border-gray-600 text-white rounded-lg px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all duration-200 placeholder-gray-400"
-            :class="{ 'border-red-500 bg-red-900/20': isAnkamaPseudoInvalid }"
+            class="w-full bg-theme-bg-muted border-2 border-theme-border text-theme-text rounded-lg px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-theme-primary focus:border-theme-primary transition-all duration-200 placeholder-gray-400"
+            :class="{ 'border-theme-error bg-theme-error/20': isAnkamaPseudoInvalid }"
             placeholder="Entrez le pseudo Ankama"
           />
           <div
             v-if="isAnkamaPseudoInvalid"
-            class="flex items-center space-x-2 text-red-400 text-sm"
+            class="flex items-center space-x-2 text-theme-error text-sm"
           >
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
@@ -69,8 +69,8 @@
 
       <!-- Classe Selection -->
       <div class="space-y-4">
-        <label class="block text-sm font-medium text-gray-300">
-          Classe de la mule <span class="text-red-400">*</span>
+        <label class="block text-sm font-medium text-theme-text">
+          Classe de la mule <span class="text-theme-error">*</span>
         </label>
         <div class="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-7 gap-3">
           <button
@@ -78,11 +78,11 @@
             :key="'mule-class-'+className"
             type="button"
             @click="mule.class = className"
-            class="group relative p-3 rounded-xl border-2 transition-all duration-200 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 focus:ring-offset-gray-800"
+            class="group relative p-3 rounded-xl border-2 transition-all duration-200 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-theme-primary focus:ring-offset-2 focus:ring-offset-theme-bg-muted"
             :class="[
               mule.class === className
-                ? 'border-amber-500 bg-amber-500/20 shadow-lg shadow-amber-500/25'
-                : 'border-gray-600 hover:border-amber-400 bg-gray-700 hover:bg-gray-600'
+                ? 'border-theme-primary bg-theme-primary/20 shadow-lg shadow-theme-primary/25'
+                : 'border-theme-border hover:border-theme-primary bg-theme-bg-muted hover:bg-theme-border'
             ]"
           >
             <img
@@ -93,16 +93,16 @@
             <span class="block text-xs font-medium text-center capitalize transition-colors duration-200"
                   :class="[
                     mule.class === className
-                      ? 'text-amber-400'
-                      : 'text-gray-400 group-hover:text-gray-300'
+                      ? 'text-theme-primary'
+                      : 'text-theme-text-muted group-hover:text-theme-text'
                   ]">
               {{ className }}
             </span>
             
             <!-- Selection indicator -->
             <div v-if="mule.class === className"
-                 class="absolute -top-1 -right-1 w-5 h-5 bg-amber-500 rounded-full flex items-center justify-center shadow-lg">
-              <svg class="w-2.5 h-2.5 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                 class="absolute -top-1 -right-1 w-5 h-5 bg-theme-primary rounded-full flex items-center justify-center shadow-lg">
+              <svg class="w-2.5 h-2.5 text-theme-bg" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
               </svg>
             </div>
@@ -113,10 +113,10 @@
       <!-- Error message for mule -->
       <div
         v-if="errorMessage"
-        class="bg-red-900/50 border border-red-700 rounded-xl p-4 text-red-300"
+        class="bg-theme-error/50 border border-theme-error rounded-xl p-4 text-theme-error"
       >
         <div class="flex items-center space-x-3">
-          <svg class="w-5 h-5 text-red-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg class="w-5 h-5 text-theme-error flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
           </svg>
           <span class="font-medium">{{ errorMessage }}</span>
@@ -128,7 +128,7 @@
         <button
           type="button"
           @click="submitMule"
-          class="px-6 py-3 bg-gradient-to-r from-amber-600 to-yellow-600 hover:from-amber-700 hover:to-yellow-700 text-black font-bold rounded-xl transition-all duration-200 transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-amber-500/30 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+          class="px-6 py-3 bg-gradient-to-r from-theme-primary to-theme-primary-hover hover:from-theme-primary-hover hover:to-theme-primary-hover text-theme-bg font-bold rounded-xl transition-all duration-200 transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-theme-primary/30 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
           :disabled="!canAddMule"
         >
           <div class="flex items-center space-x-2">
