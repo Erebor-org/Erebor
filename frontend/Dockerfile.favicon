@@ -1,0 +1,45 @@
+# Dockerfile pour la génération des favicons Erebor
+FROM node:18-alpine
+
+# Installer les dépendances système
+RUN apk add --no-cache \
+    python3 \
+    make \
+    g++ \
+    cairo-dev \
+    jpeg-dev \
+    pango-dev \
+    musl-dev \
+    giflib-dev \
+    pixman-dev \
+    pangomm-dev \
+    libjpeg-turbo-dev \
+    freetype-dev
+
+# Définir le répertoire de travail
+WORKDIR /app
+
+# Copier les fichiers de configuration
+COPY package*.json ./
+COPY scripts/ ./scripts/
+
+# Installer les dépendances
+RUN npm install
+
+# Copier le logo source
+COPY src/assets/erebor_logo.png ./src/assets/
+
+# Créer le répertoire public
+RUN mkdir -p public
+
+# Générer les favicons
+RUN cd scripts && npm install && npm run generate:optimized
+
+# Vérifier que les favicons ont été générés
+RUN ls -la public/
+
+# Afficher un message de succès
+RUN echo "🎉 Favicons générés avec succès !"
+
+# Commande par défaut
+CMD ["sh", "-c", "echo 'Favicons prêts !' && ls -la public/"]

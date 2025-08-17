@@ -1,0 +1,25 @@
+{
+  "name": "Erebor - Gestion de Guilde Dofus",
+  "short_name": "Erebor",
+  "description": "Gestion de guilde Dofus moderne et intuitive",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#2563eb",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/android-chrome-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/android-chrome-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "categories": ["productivity", "games", "utilities"],
+  "lang": "fr",
+  "dir": "ltr"
+}

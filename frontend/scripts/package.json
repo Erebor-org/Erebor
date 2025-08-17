@@ -1,22 +1,16 @@
 {
-  "name": "erebor-theme-migration",
+  "name": "erebor-favicon-generator",
   "version": "1.0.0",
-  "description": "Script de migration des thèmes pour Erebor",
-  "main": "migrate-themes.js",
+  "description": "Générateur de favicons pour Erebor",
+  "main": "generate-favicons.js",
   "scripts": {
-    "migrate": "node migrate-themes.js",
-    "migrate:dry-run": "node migrate-themes.js --dry-run"
+    "generate": "node generate-favicons.js",
+    "generate:optimized": "node generate-favicons-optimized.js"
   },
   "dependencies": {
-    "glob": "^8.0.3"
+    "sharp": "^0.33.0"
   },
-  "keywords": [
-    "erebor",
-    "themes",
-    "migration",
-    "tailwind",
-    "vue"
-  ],
+  "keywords": ["favicon", "erebor", "dofus", "guild"],
   "author": "Erebor Team",
   "license": "MIT"
 }
