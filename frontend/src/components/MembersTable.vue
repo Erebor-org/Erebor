@@ -314,6 +314,10 @@ export default {
       required: false,
       default: '',
     },
+    totalActiveMembers: {
+      type: Number,
+      required: true,
+    },
   },
   emits: [
     'open-modal',

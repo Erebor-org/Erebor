@@ -9,29 +9,35 @@
       @cancel="showConfirmSwitch = false"
     />
     <!-- Table Header -->
-    <div class="bg-theme-bg-muted px-6 py-4 border-b border-theme-bg-muted">
-      <h3 class="text-xl font-bold text-theme-primary">Membres Actifs</h3>
-    </div>
 
     <!-- Table -->
     <div class="overflow-x-auto">
       <table class="w-full">
         <thead class="bg-theme-bg-muted border-b border-theme-bg-muted">
           <tr>
-            <th class="px-6 py-4 text-left text-xs font-medium text-theme-text uppercase tracking-wider">
+            <th class="px-6 py-4 text-left text-xs font-medium text-theme-text uppercase tracking-wider cursor-pointer select-none" @click="$emit('set-sort', 'pseudo')">
               Membre
+              <span v-if="sortColumn === 'pseudo'">{{ sortOrder === 'asc' ? '↑' : '↓' }}</span>
             </th>
-            <th class="px-6 py-4 text-left text-xs font-medium text-theme-text uppercase tracking-wider">
+            <th class="px-6 py-4 text-left text-xs font-medium text-theme-text uppercase tracking-wider cursor-pointer select-none" @click="$emit('set-sort', 'rank')">
               Rang
+              <span v-if="sortColumn === 'rank'">{{ sortOrder === 'asc' ? '↑' : '↓' }}</span>
             </th>
-            <th class="px-6 py-4 text-left text-xs font-medium text-theme-text uppercase tracking-wider">
+            <th class="px-6 py-4 text-left text-xs font-medium text-theme-text uppercase tracking-wider cursor-pointer select-none" @click="$emit('set-sort', 'recruiter')">
               Recruteur
+              <span v-if="sortColumn === 'recruiter'">{{ sortOrder === 'asc' ? '↑' : '↓' }}</span>
             </th>
-            <th class="px-6 py-4 text-left text-xs font-medium text-theme-text uppercase tracking-wider">
+            <th class="px-6 py-4 text-left text-xs font-medium text-theme-text uppercase tracking-wider cursor-pointer select-none" @click="$emit('set-sort', 'recruited_at')">
+              Arrivée
+              <span v-if="sortColumn === 'recruited_at'">{{ sortOrder === 'asc' ? '↑' : '↓' }}</span>
+            </th>
+            <th class="px-6 py-4 text-left text-xs font-medium text-theme-text uppercase tracking-wider cursor-pointer select-none" @click="$emit('set-sort', 'mules')">
               Mules
+              <span v-if="sortColumn === 'mules'">{{ sortOrder === 'asc' ? '↑' : '↓' }}</span>
             </th>
-            <th class="px-6 py-4 text-left text-xs font-medium text-theme-text uppercase tracking-wider">
+            <th class="px-6 py-4 text-left text-xs font-medium text-theme-text uppercase tracking-wider cursor-pointer select-none" @click="$emit('set-sort', 'warnings')">
               Avertissements
+              <span v-if="sortColumn === 'warnings'">{{ sortOrder === 'asc' ? '↑' : '↓' }}</span>
             </th>
             <th class="px-6 py-4 text-left text-xs font-medium text-theme-text uppercase tracking-wider">
               Actions
@@ -106,6 +112,12 @@
                 {{ member.member.recruiter?.pseudo || 'N/A' }}
               </span>
             </td>
+            <!-- Arrivée -->
+            <td class="px-6 py-4">
+              <span class="text-theme-text">
+                {{ member.member.createdAt ? new Date(member.member.createdAt).toLocaleDateString('fr-FR') : 'N/A' }}
+              </span>
+            </td>
 
             <!-- Mules Count -->
             <td class="px-6 py-4">
@@ -120,23 +132,29 @@
               </button>
             </td>
 
-            <!-- Warnings -->
-            <td class="px-6 py-4">
-              <div class="flex items-center space-x-2">
-                <div class="flex flex-col items-center">
-                  <svg class="w-5 h-5 text-theme-error" fill="currentColor" viewBox="0 0 20 20">
-                    <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
-                  </svg>
-                  <span class="text-sm text-theme-text">{{ characterWarningCounts[member.id] || 0 }}</span>
-                </div>
-                <button
-                  @click="viewWarnings(member.id, member.member)"
-                  class="ml-2 px-2 py-1 text-xs bg-theme-bg-muted hover:bg-theme-border text-theme-text rounded transition-colors duration-200"
-                >
-                  Voir
-                </button>
-              </div>
-            </td>
+           <!-- Warnings -->
+<td class="px-6 py-4">
+  <div class="flex items-center space-x-2">
+    <div class="flex items-center space-x-1">
+      <!-- Chiffre -->
+      <span class="text-sm text-theme-text">
+        {{ characterWarningCounts[member.id] || 0 }}
+      </span>
+      <!-- Icône -->
+      <svg class="w-5 h-5 text-theme-error" fill="currentColor" viewBox="0 0 20 20">
+        <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+      </svg>
+    </div>
+    <!-- Bouton -->
+    <button
+      @click="viewWarnings(member.id, member.member)"
+      class="ml-2 px-2 py-1 text-xs bg-theme-bg-muted hover:bg-theme-border text-theme-text rounded transition-colors duration-200"
+    >
+      Voir
+    </button>
+  </div>
+</td>
+
 
             <!-- Actions -->
             <td class="px-6 py-4">
@@ -198,6 +216,18 @@ export default {
     editPseudo: {
       type: String,
       default: '',
+    },
+    sortColumn: {
+      type: String,
+      default: 'pseudo',
+    },
+    sortOrder: {
+      type: String,
+      default: 'asc',
+    },
+    totalActiveMembers: {
+      type: Number,
+      required: true,
     },
   },
   setup() {
@@ -291,7 +321,7 @@ export default {
         });
         if (!response.ok) throw new Error('Erreur lors du switch');
         this.$emit('refresh-data');
-      } catch (e) {
+      } catch {
         this.$emit('refresh-data');
       } finally {
         this.switchMain = null;
@@ -311,6 +341,7 @@ export default {
     'open-notes-modal',
     'save-note',
     'refresh-data',
+    'set-sort',
   ],
 };
 </script>

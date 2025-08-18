@@ -65,47 +65,109 @@
       <!-- Main Content -->
       <div v-if="activeTab === 'active'" class="mt-12">
         <!-- Cards View -->
-        <MembersTable
-          v-if="viewMode === 'cards'"
-          :filtered-members="filteredMembers"
-          :classes="classes"
-          :filtered-mules-by-character="filteredMulesByCharacter"
-          :character-warning-counts="characterWarningCounts"
-          :editing-pseudo="editingPseudo"
-          :edit-pseudo="editPseudo"
-          @open-modal="openModal"
-          @view-warnings="viewWarnings"
-          @update-character-class="updateCharacterClass"
-          @update-mule-class="updateMuleClass"
-          @start-editing-pseudo="startEditingPseudo"
-          @save-pseudo="savePseudo"
-          @open-mule-modal="openMuleModal"
-          @open-add-mule-modal="openAddMuleModal"
-          @open-notes-modal="openNotesModal"
-          @save-note="saveMemberNote"
-          @refresh-data="refreshMembersAndMules"
-        />
+        <div v-if="viewMode === 'cards'">
+          <!-- Barre de filtres et tri sticky -->
+          <div class="sticky top-0 z-30 bg-theme-bg px-4 py-3 shadow-md rounded-xl flex flex-wrap gap-4 items-center mb-6 border border-theme-border">
+            <div class="flex flex-col min-w-[220px]">
+              <label class="text-xs font-semibold text-theme-text mb-1">Plage de dates</label>
+              <VueDatePicker
+                v-model="filterDateRange"
+                range
+                :dark="isDarkTheme"
+                :format="'dd/MM/yyyy'"
+                :placeholder="'Plage de dates'"
+                class="rounded-lg shadow-sm border border-theme-border focus:ring-2 focus:ring-theme-primary"
+              />
+            </div>
+            <button @click="setSort('pseudo')" :class="'p-2 rounded ' + (sortColumn === 'pseudo' ? 'bg-theme-primary text-white' : 'bg-theme-bg-muted text-theme-text')">
+              Pseudo {{ sortColumn === 'pseudo' ? (sortOrder === 'asc' ? '↑' : '↓') : '↕' }}
+            </button>
+            <button @click="setSort('rank')" :class="'p-2 rounded ' + (sortColumn === 'rank' ? 'bg-theme-primary text-white' : 'bg-theme-bg-muted text-theme-text')">
+              Rang {{ sortColumn === 'rank' ? (sortOrder === 'asc' ? '↑' : '↓') : '↕' }}
+            </button>
+            <button @click="setSort('recruiter')" :class="'p-2 rounded ' + (sortColumn === 'recruiter' ? 'bg-theme-primary text-white' : 'bg-theme-bg-muted text-theme-text')">
+              Recruteur {{ sortColumn === 'recruiter' ? (sortOrder === 'asc' ? '↑' : '↓') : '↕' }}
+            </button>
+            <button @click="setSort('recruited_at')" :class="'p-2 rounded ' + (sortColumn === 'recruited_at' ? 'bg-theme-primary text-white' : 'bg-theme-bg-muted text-theme-text')">
+              Arrivée {{ sortColumn === 'recruited_at' ? (sortOrder === 'asc' ? '↑' : '↓') : '↕' }}
+            </button>
+            <button @click="setSort('mules')" :class="'p-2 rounded ' + (sortColumn === 'mules' ? 'bg-theme-primary text-white' : 'bg-theme-bg-muted text-theme-text')">
+              Mules {{ sortColumn === 'mules' ? (sortOrder === 'asc' ? '↑' : '↓') : '↕' }}
+            </button>
+            <button @click="setSort('warnings')" :class="'p-2 rounded ' + (sortColumn === 'warnings' ? 'bg-theme-primary text-white' : 'bg-theme-bg-muted text-theme-text')">
+              Avertissements {{ sortColumn === 'warnings' ? (sortOrder === 'asc' ? '↑' : '↓') : '↕' }}
+            </button>
+            <button @click="resetCardFilters" class="ml-4 px-4 py-2 rounded-lg bg-theme-error text-white font-semibold shadow hover:bg-theme-error/80 transition-all">Réinitialiser le tri</button>
+            <span class="ml-auto text-theme-text-muted text-base">{{ filteredMembers.length }} membre(s) trouvé(s)</span>
+          </div>
+          <MembersTable
+            :filtered-members="filteredMembers"
+            :classes="classes"
+            :filtered-mules-by-character="filteredMulesByCharacter"
+            :character-warning-counts="characterWarningCounts"
+            :editing-pseudo="editingPseudo"
+            :edit-pseudo="editPseudo"
+            :total-active-members="charactersNotArchived.length"
+            @open-modal="openModal"
+            @view-warnings="viewWarnings"
+            @update-character-class="updateCharacterClass"
+            @update-mule-class="updateMuleClass"
+            @start-editing-pseudo="startEditingPseudo"
+            @save-pseudo="savePseudo"
+            @open-mule-modal="openMuleModal"
+            @open-add-mule-modal="openAddMuleModal"
+            @open-notes-modal="openNotesModal"
+            @save-note="saveMemberNote"
+            @refresh-data="refreshMembersAndMules"
+          />
+        </div>
 
         <!-- List View -->
-        <MembersTableList
-          v-else
-          :filtered-members="filteredMembers"
-          :classes="classes"
-          :filtered-mules-by-character="filteredMulesByCharacter"
-          :character-warning-counts="characterWarningCounts"
-          :editing-pseudo="editingPseudo"
-          :edit-pseudo="editPseudo"
-          @open-modal="openModal"
-          @view-warnings="viewWarnings"
-          @update-character-class="updateCharacterClass"
-          @update-mule-class="updateMuleClass"
-          @start-editing-pseudo="startEditingPseudo"
-          @save-pseudo="savePseudo"
-          @open-mule-modal="openMuleModal"
-          @open-add-mule-modal="openAddMuleModal"
-          @open-mules-modal="openMulesModal"
-          @open-notes-modal="openNotesModal"
-        />
+        <div v-else>
+          <div class="flex flex-wrap gap-4 items-center mb-4">
+            <!-- Plage de dates -->
+            <div class="flex flex-col min-w-[220px]">
+              <label class="text-xs font-semibold text-theme-text mb-1">Plage de dates</label>
+              <VueDatePicker
+                v-model="filterDateRange"
+                range
+                :dark="isDarkTheme"
+                :format="'dd/MM/yyyy'"
+                :placeholder="'Plage de dates'"
+                class="rounded-lg shadow-sm border border-theme-border focus:ring-2 focus:ring-theme-primary"
+              />
+            </div> 
+             <div class="flex-1"></div> <div class="text-center mb-8">
+      <h2 class="text-3xl font-bold text-theme-primary mb-2">Membres Actifs</h2>
+      <p class="text-theme-text-muted">{{ filteredMembers.length }} membre(s) trouvé(s)</p>
+    </div>
+            <div class="flex-1"></div>
+            <button @click="resetListSort" class="px-4 py-2 rounded-lg bg-theme-error text-white font-semibold shadow hover:bg-theme-error/80 transition-all">Réinitialiser le tri</button>
+
+          </div>
+          <MembersTableList
+            :filtered-members="filteredMembers"
+            :classes="classes"
+            :filtered-mules-by-character="filteredMulesByCharacter"
+            :character-warning-counts="characterWarningCounts"
+            :editing-pseudo="editingPseudo"
+            :edit-pseudo="editPseudo"
+            :sort-column="sortColumn"
+            :sort-order="sortOrder"
+            :total-active-members="charactersNotArchived.length"
+            @open-modal="openModal"
+            @view-warnings="viewWarnings"
+            @update-character-class="updateCharacterClass"
+            @update-mule-class="updateMuleClass"
+            @start-editing-pseudo="startEditingPseudo"
+            @save-pseudo="savePseudo"
+            @open-mule-modal="openMuleModal"
+            @open-add-mule-modal="openAddMuleModal"
+            @open-mules-modal="openMulesModal"
+            @open-notes-modal="openNotesModal"
+            @set-sort="setSort"
+          />
+        </div>
       </div>
 
       <!-- Archived Characters -->
@@ -182,8 +244,10 @@ import ArchiveModal from '@/components/ArchiveModal.vue';
 import ViewToggle from '@/components/ViewToggle.vue';
 import MulesModal from '@/components/MulesModal.vue';
 import NotesModal from '@/components/NotesModal.vue';
-// SUPPRIMER : import { useThemeStore } from '@/stores/themeStore';
-import { watch } from 'vue';
+import VueDatePicker from '@vuepic/vue-datepicker';
+import '@vuepic/vue-datepicker/dist/main.css';
+import { computed } from 'vue';
+import { useThemeStore } from '@/stores/themeStore';
 
 const images = import.meta.glob('@/assets/icon_classe/*.avif', { eager: true });
 
@@ -202,6 +266,12 @@ export default {
     ViewToggle,
     MulesModal,
     NotesModal,
+    VueDatePicker,
+  },
+  setup() {
+    const themeStore = useThemeStore();
+    const isDarkTheme = computed(() => themeStore.currentTheme === 'dark');
+    return { isDarkTheme };
   },
   data() {
     return {
@@ -255,6 +325,18 @@ export default {
       showNotesModal: false,
       selectedMemberForNotes: null,
       notesModalContent: '',
+      // Filtres avancés
+      filterPseudo: '',
+      filterRecruiter: '',
+      filterRank: '',
+      filterDateRange: [], // Tableau de deux objets Date ou []
+      filterMulesMin: null,
+      filterMulesMax: null,
+      filterWarningsMin: null,
+      filterWarningsMax: null,
+      // Tri avancé (colonne et sens)
+      sortColumn: null,
+      sortOrder: 'asc',
     };
   },
   computed: {
@@ -280,33 +362,75 @@ export default {
     },
     filteredMembers() {
       const query = this.searchQuery.toLowerCase();
-      const result = this.charactersNotArchived
+      let result = this.charactersNotArchived
         .filter(member => {
-          // Normalize strings for search matching
+          // Filtres avancés
+          if (this.filterPseudo && !member.pseudo.toLowerCase().includes(this.filterPseudo.toLowerCase())) return false;
+          if (this.filterRecruiter && (!member.recruiter || member.recruiter.pseudo !== this.filterRecruiter)) return false;
+          if (this.filterRank && (!member.rank || member.rank.name !== this.filterRank)) return false;
+          if (this.filterDateRange && Array.isArray(this.filterDateRange) && this.filterDateRange.length === 2) {
+            const [startDate, endDate] = this.filterDateRange;
+            // Utilise createdAt (format 'YYYY-MM-DD')
+            const createdAt = member.createdAt ? new Date(member.createdAt) : null;
+            if (startDate instanceof Date && !isNaN(startDate) && createdAt && createdAt < startDate) return false;
+            if (endDate instanceof Date && !isNaN(endDate) && createdAt && createdAt > endDate) return false;
+          }
+          if (this.filterMulesMin !== null && this.filterMulesMin !== undefined) {
+            if (this.filteredMulesByCharacter(member.id).length < this.filterMulesMin) return false;
+          }
+          if (this.filterMulesMax !== null && this.filterMulesMax !== undefined) {
+            if (this.filteredMulesByCharacter(member.id).length > this.filterMulesMax) return false;
+          }
+          if (this.filterWarningsMin !== null && this.filterWarningsMin !== undefined) {
+            if ((this.characterWarningCounts[member.id] || 0) < this.filterWarningsMin) return false;
+          }
+          if (this.filterWarningsMax !== null && this.filterWarningsMax !== undefined) {
+            if ((this.characterWarningCounts[member.id] || 0) > this.filterWarningsMax) return false;
+          }
+          // Recherche globale (ancienne logique)
           const normalize = str =>
             str
               .normalize('NFD')
-              .replace(/[\u0300-\u036f]/g, '')
+              .replace(/\u0300-\u036f/g, '')
               .toLowerCase();
-
-          // Match character pseudo, recruiter pseudo, rank, or mules' pseudo
           const memberPseudoMatch = normalize(member.pseudo).includes(query);
           const recruiterPseudoMatch = normalize(member.recruiter?.pseudo || '').includes(query);
           const rankMatch = normalize(member.rank?.name || '').includes(query);
-
-          // Check mules for pseudo matches
           const mulesMatch = this.filteredMulesByCharacter(member.id).some(mule =>
             normalize(mule.pseudo).includes(query)
           );
-
           return memberPseudoMatch || recruiterPseudoMatch || rankMatch || mulesMatch;
-        })
-        .map(member => ({
-          member,
-          id: member.id,
-        }));
-      
-      return result;
+        });
+
+      // Tri
+      if (this.sortColumn) {
+        const getValue = (member, col) => {
+          switch (col) {
+            case 'pseudo':
+              return member.pseudo?.toLowerCase() || '';
+            case 'rank':
+              return member.rank?.name?.toLowerCase() || '';
+            case 'recruiter':
+              return member.recruiter?.pseudo?.toLowerCase() || '';
+            case 'mules':
+              return this.filteredMulesByCharacter(member.id).length;
+            case 'warnings':
+              return this.characterWarningCounts[member.id] || 0;
+            case 'recruited_at':
+              return member.createdAt ? new Date(member.createdAt).getTime() : 0;
+            default:
+              return '';
+          }
+        };
+        result = result.slice().sort((a, b) => {
+          const va = getValue(a, this.sortColumn);
+          const vb = getValue(b, this.sortColumn);
+          if (va < vb) return this.sortOrder === 'asc' ? -1 : 1;
+          if (va > vb) return this.sortOrder === 'asc' ? 1 : -1;
+          return 0;
+        });
+      }
+      return result.map(member => ({ member, id: member.id }));
     },
     filteredArchivedMembers() {
       const query = this.archivedSearchQuery.toLowerCase();
@@ -328,6 +452,20 @@ export default {
           member,
           id: member.id,
         }));
+    },
+    activeFilterChips() {
+      const chips = [];
+      if (this.filterPseudo) chips.push({ label: `Pseudo: ${this.filterPseudo}`, clear: () => (this.filterPseudo = '') });
+      if (this.filterRecruiter) chips.push({ label: `Recruteur: ${this.filterRecruiter}`, clear: () => (this.filterRecruiter = '') });
+      if (this.filterRank) chips.push({ label: `Rang: ${this.filterRank}`, clear: () => (this.filterRank = '') });
+      if (this.filterDateRange && this.filterDateRange.length === 2) {
+        chips.push({ label: `Date: ${this.filterDateRange[0]} - ${this.filterDateRange[1]}`, clear: () => (this.filterDateRange = null) });
+      }
+      if (this.filterMulesMin !== null && this.filterMulesMin !== undefined) chips.push({ label: `Mules ≥ ${this.filterMulesMin}`, clear: () => (this.filterMulesMin = null) });
+      if (this.filterMulesMax !== null && this.filterMulesMax !== undefined) chips.push({ label: `Mules ≤ ${this.filterMulesMax}`, clear: () => (this.filterMulesMax = null) });
+      if (this.filterWarningsMin !== null && this.filterWarningsMin !== undefined) chips.push({ label: `Avert. ≥ ${this.filterWarningsMin}`, clear: () => (this.filterWarningsMin = null) });
+      if (this.filterWarningsMax !== null && this.filterWarningsMax !== undefined) chips.push({ label: `Avert. ≤ ${this.filterWarningsMax}`, clear: () => (this.filterWarningsMax = null) });
+      return chips;
     },
   },
   methods: {
@@ -544,6 +682,14 @@ export default {
       return this.notArchivedMules[characterId] || [];
     },
 
+    setSort(column) {
+      if (this.sortColumn === column) {
+        this.sortOrder = this.sortOrder === 'asc' ? 'desc' : 'asc';
+      } else {
+        this.sortColumn = column;
+        this.sortOrder = 'asc';
+      }
+    },
 
 
     async updateCharacterClass(characterId, newClass) {
@@ -678,6 +824,16 @@ export default {
       await this.fetchWarningCounts();
       this.$refs.notificationRef.showNotification('Le switch a été effectué avec succès !');
     },
+    resetCardFilters() {
+      this.filterDateRange = [];
+      this.sortColumn = null;
+      this.sortOrder = 'asc';
+    },
+    resetListSort() {
+      this.filterDateRange = [];
+      this.sortColumn = null;
+      this.sortOrder = 'asc';
+    },
   },
   async mounted() {
     try {
@@ -704,18 +860,7 @@ export default {
       console.error('Error during component initialization:', error);
     }
     // Watch for theme changes and re-apply custom colors for smooth transition
-    watch(
-      () => this.$store?.themeStore?.currentTheme,
-      () => {
-        // Apply theme immediately
-        this.$store?.themeStore?.applyCustomColors && this.$store.themeStore.applyCustomColors();
-        // Defer any heavy work to the next frame (if needed)
-        requestAnimationFrame(() => {
-          // No heavy work here, but this ensures the theme paints first
-        });
-      },
-      { immediate: true }
-    );
+    // This watch is now handled by the setup() function
   },
   beforeUnmount() {
     // Remove event listener for scroll
