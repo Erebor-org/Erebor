@@ -8,6 +8,7 @@
           <input type="text" v-model="search" placeholder="Rechercher un pseudo..." class="input input-bordered w-full max-w-xs mr-2 bg-theme-bg text-theme-text border-theme-border" />
           <button class="btn btn-sm ml-2" @click="toggleSelectAll">{{ allSelected ? 'Tout désélectionner' : 'Tout sélectionner' }}</button>
         </div>
+        <!-- Filtre chips rangs déplacé ici -->
         <div class="text-sm mb-2 font-semibold">{{ selectedCount }} sélectionné(s) sur {{ characters.length }}</div>
         <div class="flex-1 overflow-y-auto max-h-80 border border-theme-border rounded bg-theme-bg">
           <div v-for="char in filteredCharacters.length ? filteredCharacters : characters"
@@ -44,10 +45,23 @@
           <img :src="getClassIcon(lastEliminated.class)" alt="class icon" class="w-8 h-8 inline-block mr-2" />
           <span class="text-lg">{{ lastEliminated.pseudo }}</span>
         </div>
-        <div v-if="winner" class="mt-6 text-center">
-          <div class="text-2xl font-bold text-theme-success">🎉 Gagnant : {{ winner.pseudo }} 🎉</div>
-          <img :src="getClassIcon(winner.class)" alt="class icon" class="w-12 h-12 inline-block" />
-        </div>
+        <transition name="winner-pop">
+          <div v-if="winner" class="mt-6 text-center winner-anim">
+            <div class="text-2xl font-bold text-theme-success">🎉 Gagnant : {{ winner.pseudo }} 🎉</div>
+            <img :src="getClassIcon(winner.class)" alt="class icon" class="w-12 h-12 inline-block" />
+          </div>
+        </transition>
+        <!-- Contrôles -->
+    <div class="flex gap-4 mt-6">
+      <button class="btn btn-secondary" @click="undoElimination" :disabled="eliminatedHistory.length === 0">Annuler élimination</button>
+      <button class="btn btn-warning" @click="resetWheel">Réinitialiser</button>
+    </div>
+    <div class="flex items-center mt-4">
+      <label class="flex items-center">
+        <input type="checkbox" v-model="tirageInstantane" class="mr-2" />
+        Tirage instantané (pas d'élimination)
+      </label>
+    </div>
       </div>
       <!-- Historique des éliminés -->
       <div class="bg-theme-card border border-theme-border rounded shadow p-4 flex flex-col">
@@ -59,18 +73,39 @@
           </div>
         </div>
       </div>
+      <!-- Filtre chips rangs SOUS la colonne historique, dans un bloc séparé -->
+      <div class="mt-4 bg-theme-bg-muted border border-theme-border rounded-2xl shadow flex flex-wrap justify-center gap-2 p-4">
+        <button
+          v-for="rank in ranks.slice().sort((a, b) => a.id - b.id)"
+          :key="rank.id"
+          class="flex items-center gap-2 px-4 py-2 rounded-full border font-medium transition-colors duration-150 focus:outline-none"
+          :class="checkedRanks.includes(rank.id)
+            ? 'bg-theme-primary text-theme-bg border-theme-primary shadow-md scale-105'
+            : 'bg-theme-bg-muted text-theme-text border-theme-border hover:bg-theme-primary/10 hover:border-theme-primary'"
+          @click="toggleRankCheckbox(rank.id)"
+          :title="rank.description || ''"
+          type="button"
+        >
+          <span>{{ rank.name }}</span>
+          <span v-if="rankMemberCount(rank.id) > 0"
+            class="ml-2 px-2 py-0.5 rounded-full text-xs font-bold border"
+            :class="checkedRanks.includes(rank.id)
+              ? 'bg-theme-bg text-theme-primary border-theme-primary'
+              : 'bg-theme-bg text-theme-primary border-theme-primary'"
+          >
+            {{ rankMemberCount(rank.id) }}
+          </span>
+        </button>
+      </div>
     </div>
-    <!-- Contrôles -->
-    <div class="flex gap-4 mt-6">
-      <button class="btn btn-secondary" @click="undoElimination" :disabled="eliminatedHistory.length === 0">Annuler élimination</button>
-      <button class="btn btn-warning" @click="resetWheel">Réinitialiser</button>
-    </div>
+    
   </div>
 </template>
 
 <script lang="ts" setup>
 import { ref, computed, onMounted, watch } from 'vue';
 import axios from 'axios';
+import confetti from 'canvas-confetti';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -80,6 +115,7 @@ interface Character {
   class: string;
   selected: boolean;
   eliminated: boolean;
+  rank?: { id: number; name: string };
 }
 
 const characters = ref<Character[]>([]);
@@ -91,6 +127,7 @@ const eliminatedHistory = ref<Character[]>([]);
 const wheelCanvas = ref<HTMLCanvasElement | null>(null);
 let spinOrder: Character[] = [];    // snapshot du tour en cours (ordre et contenu figés)
 let spinIds: number[] = [];         // ids pour élimination fiable
+const tirageInstantane = ref(false);
 
 
 let selectedIndex = 0;
@@ -100,6 +137,7 @@ let targetAngle = 0;
 let spinStart = 0;
 let spinDuration = 0;
 let currentAngle = 0;
+
 
 const fetchCharacters = async () => {
   try {
@@ -112,6 +150,8 @@ const fetchCharacters = async () => {
         class: c.class,
         selected: false,
         eliminated: false,
+        // Correction : toujours un objet ou null
+        rank: c.rank && typeof c.rank === 'object' && c.rank.id ? { id: c.rank.id, name: c.rank.name } : null,
       }));
     resetWheel();
   } catch (error: any) {
@@ -119,10 +159,27 @@ const fetchCharacters = async () => {
   }
 };
 
-onMounted(fetchCharacters);
+// Ajout : liste complète des rangs
+const ranks = ref<{ id: number; name: string }[]>([]);
+
+const fetchRanks = async () => {
+  try {
+    const { data } = await axios.get(`${API_URL}/ranks`);
+    ranks.value = data;
+  } catch (error: any) {
+    console.error('Erreur lors du chargement des rangs:', error?.response?.data || error.message);
+  }
+};
+
+onMounted(() => {
+  fetchCharacters();
+  fetchRanks();
+});
 
 const filteredCharacters = computed(() => {
-  return characters.value.filter(c => c.pseudo.toLowerCase().includes(search.value.toLowerCase()));
+  return characters.value.filter(c =>
+    c.pseudo.toLowerCase().includes(search.value.toLowerCase()) 
+  );
 });
 
 const selectedCount = computed(() => characters.value.filter(c => c.selected && !c.eliminated).length);
@@ -181,14 +238,17 @@ function animateWheel(now?: number) {
     // Fin du spin : élimine **le snapshot** sélectionné
     const eliminatedId = spinIds[selectedIndex];
     const char = characters.value.find(c => c.id === eliminatedId);
-    if (char && !char.eliminated) {
-      char.eliminated = true;
-      eliminatedHistory.value.unshift(char);
-      lastEliminated.value = char;
-    }
-
-    if (remainingPlayers.value.length === 1) {
-      winner.value = remainingPlayers.value[0];
+    if (tirageInstantane.value) {
+      winner.value = char || null;
+    } else {
+      if (char && !char.eliminated) {
+        char.eliminated = true;
+        eliminatedHistory.value.unshift(char);
+        lastEliminated.value = char;
+      }
+      if (remainingPlayers.value.length === 1) {
+        winner.value = remainingPlayers.value[0];
+      }
     }
 
     spinning.value = false;
@@ -198,7 +258,16 @@ function animateWheel(now?: number) {
   }
 }
 
+const iconCache: Record<string, HTMLImageElement> = {};
 
+function getIcon(className: string): HTMLImageElement {
+  if (!iconCache[className]) {
+    const img = new Image();
+    img.src = getClassIcon(className);
+    iconCache[className] = img;
+  }
+  return iconCache[className];
+}
 function drawWheel(angle = 0, nOverride?: number, playersOverride?: Character[] | null) {
   const canvas = wheelCanvas.value;
   if (!canvas) return;
@@ -235,25 +304,25 @@ function drawWheel(angle = 0, nOverride?: number, playersOverride?: Character[] 
     const iconX = centerX + Math.cos(midAngle) * iconRadius - iconSize / 2;
     const iconY = centerY + Math.sin(midAngle) * iconRadius - iconSize / 2;
     // Icône de classe
-    const icon = new window.Image();
+    const icon = getIcon(players[i].class);
     icon.src = getClassIcon(players[i].class);
     icon.onload = () => {
       ctx.save();
-      ctx.beginPath();
-      ctx.arc(iconX + iconSize / 2, iconY + iconSize / 2, iconSize / 2, 0, 2 * Math.PI);
-      ctx.closePath();
-      ctx.clip();
-      ctx.drawImage(icon, iconX, iconY, iconSize, iconSize);
-      ctx.restore();
+    ctx.beginPath();
+    ctx.arc(iconX + iconSize / 2, iconY + iconSize / 2, iconSize / 2, 0, 2 * Math.PI);
+    ctx.closePath();
+    ctx.clip();
+    ctx.drawImage(icon, iconX, iconY, iconSize, iconSize);
+    ctx.restore();
     };
     if (icon.complete) {
-      ctx.save();
-      ctx.beginPath();
-      ctx.arc(iconX + iconSize / 2, iconY + iconSize / 2, iconSize / 2, 0, 2 * Math.PI);
-      ctx.closePath();
-      ctx.clip();
-      ctx.drawImage(icon, iconX, iconY, iconSize, iconSize);
-      ctx.restore();
+   ctx.save();
+ctx.beginPath();
+ctx.arc(iconX + iconSize / 2, iconY + iconSize / 2, iconSize / 2, 0, 2 * Math.PI);
+ctx.closePath();
+ctx.clip();
+ctx.drawImage(icon, iconX, iconY, iconSize, iconSize);
+ctx.restore();
     }
     // Texte pseudo SOUS l’icône, à 82% du rayon
     const textRadius = radius * 0.82;
@@ -317,7 +386,57 @@ function resetWheel() {
 
 watch(remainingPlayers, () => {
   drawWheel();
+  if (remainingPlayers.value.length === 1) {
+    winner.value = remainingPlayers.value[0];
+  } else if (remainingPlayers.value.length > 1) {
+    winner.value = null;
+  }
 });
+
+watch(winner, (newWinner, oldWinner) => {
+  if (newWinner && newWinner !== oldWinner) {
+    confetti({
+      particleCount: 120,
+      spread: 80,
+      origin: { y: 0.6 },
+      zIndex: 9999,
+      colors: ['#2563eb', '#fbbf24', '#22c55e', '#ef4444', '#a21caf']
+    });
+  }
+});
+
+// Calcule la liste des rangs distincts présents dans les personnages (avec id et name)
+const availableRanks = computed(() => {
+  const map = new Map<number, string>();
+  characters.value.forEach(c => {
+    if (c.rank && c.rank.id && c.rank.name) map.set(c.rank.id, c.rank.name);
+  });
+  return Array.from(map.entries()).map(([id, name]) => ({ id, name }));
+});
+
+// Map des rangs cochés (pour l'état des checkbox)
+const checkedRanks = ref<number[]>([]);
+
+function toggleRankCheckbox(rankId: number) {
+  const isChecked = checkedRanks.value.includes(rankId);
+  if (isChecked) {
+    // Désélectionne tous les persos de ce rang
+    characters.value.forEach(c => {
+      if (c.rank && c.rank.id === rankId) c.selected = false;
+    });
+    checkedRanks.value = checkedRanks.value.filter(r => r !== rankId);
+  } else {
+    // Sélectionne tous les persos de ce rang (non éliminés)
+    characters.value.forEach(c => {
+      if (c.rank && c.rank.id === rankId && !c.eliminated) c.selected = true;
+    });
+    checkedRanks.value.push(rankId);
+  }
+}
+
+function rankMemberCount(rankId: number) {
+  return characters.value.filter(c => c.rank && c.rank.id === rankId).length;
+}
 </script>
 
 <style scoped>
@@ -335,5 +454,28 @@ watch(remainingPlayers, () => {
 }
 .btn-warning {
   @apply bg-theme-warning text-gray-900 hover:bg-yellow-500;
+}
+/* SUPPRIME tout le CSS chips custom ici */
+.winner-pop-enter-active {
+  transition: all 0.5s cubic-bezier(.68,-0.55,.27,1.55);
+}
+.winner-pop-leave-active {
+  transition: all 0.3s ease;
+}
+.winner-pop-enter-from {
+  opacity: 0;
+  transform: scale(0.7) rotate(-10deg);
+}
+.winner-pop-enter-to {
+  opacity: 1;
+  transform: scale(1) rotate(0deg);
+}
+.winner-pop-leave-from {
+  opacity: 1;
+  transform: scale(1);
+}
+.winner-pop-leave-to {
+  opacity: 0;
+  transform: scale(0.7) rotate(10deg);
 }
 </style>
