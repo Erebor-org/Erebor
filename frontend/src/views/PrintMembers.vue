@@ -79,6 +79,7 @@
                 class="rounded-lg shadow-sm border border-theme-border focus:ring-2 focus:ring-theme-primary"
               />
             </div>
+            <div class="flex-1"></div>
             <button @click="setSort('pseudo')" :class="'p-2 rounded ' + (sortColumn === 'pseudo' ? 'bg-theme-primary text-white' : 'bg-theme-bg-muted text-theme-text')">
               Pseudo {{ sortColumn === 'pseudo' ? (sortOrder === 'asc' ? '↑' : '↓') : '↕' }}
             </button>
@@ -97,8 +98,8 @@
             <button @click="setSort('warnings')" :class="'p-2 rounded ' + (sortColumn === 'warnings' ? 'bg-theme-primary text-white' : 'bg-theme-bg-muted text-theme-text')">
               Avertissements {{ sortColumn === 'warnings' ? (sortOrder === 'asc' ? '↑' : '↓') : '↕' }}
             </button>
+            <div class="flex-1"></div>
             <button @click="resetCardFilters" class="ml-4 px-4 py-2 rounded-lg bg-theme-error text-white font-semibold shadow hover:bg-theme-error/80 transition-all">Réinitialiser le tri</button>
-            <span class="ml-auto text-theme-text-muted text-base">{{ filteredMembers.length }} membre(s) trouvé(s)</span>
           </div>
           <MembersTable
             :filtered-members="filteredMembers"
