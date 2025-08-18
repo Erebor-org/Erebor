@@ -10,7 +10,6 @@ import NavigationBar from './components/NavigationBar.vue'
         <NavigationBar />
         </nav>
     </header>
-
     <RouterView class="h-[calc(100vh-128px)] overflow-auto"/>
   </div>
 </template>

@@ -248,6 +248,17 @@
         </div>
       </div>
     </div>
+    <button
+      v-if="showScrollToTop"
+      @click="scrollToTop"
+      class="fixed bottom-8 right-8 z-[9999] w-16 h-16 bg-gradient-to-br from-theme-card to-theme-bg hover:from-theme-bg-muted hover:to-theme-card text-theme-primary rounded-full shadow-2xl hover:shadow-theme-primary/25 transition-all duration-500 transform hover:scale-110 focus:outline-none focus:ring-4 focus:ring-theme-primary/30 border-2 border-theme-primary/50 hover:border-theme-primary"
+      title="Retour en haut de page"
+    >
+      <div class="absolute inset-0 bg-gradient-to-br from-theme-primary/20 to-transparent rounded-full"></div>
+      <svg class="w-7 h-7 mx-auto relative z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18" />
+      </svg>
+    </button>
   </div>
 </template>
 
@@ -275,6 +286,7 @@ export default {
       recruiters: [],
       classChart: null,
       rolesChart: null,
+      showScrollToTop: false, // New state for scroll-to-top button visibility
       classIcons: {
         sram: new URL('@/assets/icon_classe/sram.avif', import.meta.url).href,
         forgelance: new URL('@/assets/icon_classe/forgelance.avif', import.meta.url).href,
@@ -365,6 +377,19 @@ export default {
     getClassIcon(className) {
       return this.classIcons[className.toLowerCase()] || '';
     },
+    // Watch for scroll events to show/hide the button
+    handleScroll() {
+      // Get the scrollable container (RouterView)
+      const scrollContainer = document.querySelector('.h-\\[calc\\(100vh-128px\\)\\]');
+      if (scrollContainer) {
+        const scrollTop = scrollContainer.scrollTop;
+        this.showScrollToTop = scrollTop > 300;
+      } else {
+        // Fallback to window scroll
+        const scrollY = window.scrollY || window.pageYOffset || 0;
+        this.showScrollToTop = scrollY > 300;
+      }
+    },
     getClassColor(className) {
       return this.classColors[className.toLowerCase()] || '#6b7280';
     },
@@ -404,6 +429,32 @@ export default {
         this.$refs.notificationRef?.showNotification('Erreur lors de la récupération des statistiques', 'error');
       } finally {
         this.loading = false;
+      }
+    },
+    // Scroll to top logic
+    scrollToTop() {
+      try {
+        // Get the scrollable container (RouterView)
+        const scrollContainer = document.querySelector('.h-\\[calc\\(100vh-128px\\)\\]');
+        if (scrollContainer) {
+          scrollContainer.scrollTo({
+            top: 0,
+            behavior: 'smooth',
+          });
+        } else {
+          // Fallback to window scroll
+          window.scrollTo({
+            top: 0,
+            behavior: 'smooth',
+          });
+        }
+        
+        // Force update of scroll state after a short delay
+        setTimeout(() => {
+          this.handleScroll();
+        }, 100);
+      } catch (error) {
+        console.error('Error scrolling to top:', error);
       }
     },
     renderCharts() {
@@ -505,7 +556,18 @@ export default {
         }
       });
     }
-  }
+  },
+  beforeUnmount() {
+    // Remove event listener for scroll
+    const scrollContainer = document.querySelector('.h-\\[calc\\(100vh-128px\\)\\]');
+    if (scrollContainer) {
+      scrollContainer.removeEventListener('scroll', this.handleScroll);
+    } else {
+      // Remove fallback listeners
+      window.removeEventListener('scroll', this.handleScroll);
+      document.removeEventListener('scroll', this.handleScroll);
+    }
+  },
 };
 </script>
 

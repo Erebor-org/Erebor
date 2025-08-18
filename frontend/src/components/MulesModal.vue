@@ -1,5 +1,13 @@
 <template>
   <div v-if="show" class="fixed inset-0 z-50 overflow-y-auto">
+    <ConfirmModal
+      :show="showConfirmSwitch"
+      title="Confirmer le switch"
+      :message="confirmSwitchMessage"
+      confirmText="Oui, switcher"
+      @confirm="doSwitchWithMule"
+      @cancel="showConfirmSwitch = false"
+    />
     <!-- Backdrop -->
     <div class="fixed inset-0 bg-theme-bg bg-opacity-75 transition-opacity" @click="closeModal"></div>
     
@@ -79,6 +87,12 @@
                   >
                     Archiver
                   </button>
+                  <button
+                    @click="confirmSwitchWithMule(member.member, mule)"
+                    class="px-3 py-2 text-xs bg-theme-primary hover:bg-theme-primary/80 text-white font-semibold rounded-lg border border-theme-primary transition-all duration-200 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-theme-primary/30 shadow-sm hover:shadow-md"
+                  >
+                    Switch avec ce main
+                  </button>
                 </div>
               </div>
             </div>
@@ -103,12 +117,28 @@
 <script>
 import EditablePseudo from './EditablePseudo.vue';
 import ClassDropdown from './ClassDropdown.vue';
+import ConfirmModal from './ConfirmModal.vue';
+const API_URL = import.meta.env.VITE_API_URL;
 
 export default {
   name: 'MulesModal',
+  data() {
+    return {
+      showConfirmSwitch: false,
+      switchMain: null,
+      switchMule: null,
+    };
+  },
   components: {
     EditablePseudo,
     ClassDropdown,
+    ConfirmModal,
+  },
+  computed: {
+    confirmSwitchMessage() {
+      if (!this.switchMain || !this.switchMule) return '';
+      return `Êtes-vous sûr de vouloir échanger ${this.switchMain.pseudo} avec la mule ${this.switchMule.pseudo} ?`;
+    },
   },
   props: {
     show: {
@@ -142,6 +172,7 @@ export default {
     'update-mule-class',
     'open-mule-modal',
     'open-add-mule-modal',
+    'refresh-data',
   ],
   methods: {
     closeModal() {
@@ -158,6 +189,27 @@ export default {
     },
     openAddMuleModal() {
       this.$emit('open-add-mule-modal', this.member);
+    },
+    async confirmSwitchWithMule(main, mule) {
+      this.switchMain = main;
+      this.switchMule = mule;
+      this.showConfirmSwitch = true;
+    },
+    async doSwitchWithMule() {
+      this.showConfirmSwitch = false;
+      try {
+        const response = await fetch(`${API_URL}/characters/${this.switchMain.id}/switch-with-mule/${this.switchMule.id}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+        });
+        if (!response.ok) throw new Error('Erreur lors du switch');
+        this.$emit('refresh-data');
+      } catch (e) {
+        this.$emit('refresh-data');
+      } finally {
+        this.switchMain = null;
+        this.switchMule = null;
+      }
     },
   },
 };

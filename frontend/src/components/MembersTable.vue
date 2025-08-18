@@ -179,15 +179,24 @@
                     </p>
                   </div>
                 </div>
-                <button
-                  @click="openMuleModal(mule)"
-                  class="p-2 text-theme-text-muted hover:text-theme-error hover:bg-theme-error/20 rounded-lg transition-all duration-200"
-                  title="Archiver la mule"
-                >
-                  <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
-                  </svg>
-                </button>
+                <div class="flex flex-col items-end space-y-2">
+                  <button
+                    @click="openMuleModal(mule)"
+                    class="p-2 text-theme-text-muted hover:text-theme-error hover:bg-theme-error/20 rounded-lg transition-all duration-200"
+                    title="Archiver la mule"
+                  >
+                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
+                    </svg>
+                  </button>
+                  <button
+                    @click="confirmSwitchWithMule(member, mule)"
+                    class="p-2 text-theme-primary hover:bg-theme-primary/10 rounded-lg transition-all duration-200 text-xs font-semibold border border-theme-primary"
+                    title="Échanger ce personnage principal avec cette mule"
+                  >
+                    Switch avec ce main
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -239,18 +248,29 @@
       <p class="text-xl font-medium mb-2">Aucun membre trouvé</p>
       <p class="text-theme-text-muted">Essayez de modifier vos critères de recherche</p>
     </div>
+    <ConfirmModal
+      :show="showConfirmSwitch"
+      title="Confirmer le switch"
+      :message="confirmSwitchMessage"
+      confirmText="Oui, switcher"
+      @confirm="doSwitchWithMule"
+      @cancel="showConfirmSwitch = false"
+    />
   </div>
 </template>
 
 <script>
 import ClassDropdown from './ClassDropdown.vue';
 import EditablePseudo from './EditablePseudo.vue';
+import ConfirmModal from './ConfirmModal.vue';
+const API_URL = import.meta.env.VITE_API_URL;
 
 export default {
   name: 'MembersTable',
   components: {
     ClassDropdown,
     EditablePseudo,
+    ConfirmModal,
   },
   data() {
     return {
@@ -261,6 +281,10 @@ export default {
       editableNotes: {},
       editingNoteId: null,
       editingNoteValue: '',
+      switchLoading: false,
+      showConfirmSwitch: false,
+      switchMain: null,
+      switchMule: null,
     };
   },
   props: {
@@ -302,7 +326,14 @@ export default {
     'open-add-mule-modal',
     'open-notes-modal',
     'save-note',
+    'refresh-data',
   ],
+  computed: {
+    confirmSwitchMessage() {
+      if (!this.switchMain || !this.switchMule) return '';
+      return `Êtes-vous sûr de vouloir échanger ${this.switchMain.pseudo} avec la mule ${this.switchMule.pseudo} ?`;
+    },
+  },
   methods: {
     toggleExpand(memberId) {
       this.localExpandedRows[memberId] = !this.localExpandedRows[memberId];
@@ -359,6 +390,29 @@ export default {
       this.$emit('save-note', id, this.editingNoteValue);
       this.editingNoteId = null;
       this.editingNoteValue = '';
+    },
+    async confirmSwitchWithMule(main, mule) {
+      this.switchMain = main;
+      this.switchMule = mule;
+      this.showConfirmSwitch = true;
+    },
+    async doSwitchWithMule() {
+      this.showConfirmSwitch = false;
+      this.switchLoading = true;
+      try {
+        const response = await fetch(`${API_URL}/characters/${this.switchMain.id}/switch-with-mule/${this.switchMule.id}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+        });
+        if (!response.ok) throw new Error('Erreur lors du switch');
+        this.$emit('refresh-data');
+      } catch (e) {
+        this.$emit('refresh-data');
+      } finally {
+        this.switchLoading = false;
+        this.switchMain = null;
+        this.switchMule = null;
+      }
     },
   },
 };

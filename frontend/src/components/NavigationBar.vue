@@ -1,12 +1,15 @@
 <script setup>
   import { useAuthStore } from '@/stores/authStore';
-  import { computed, ref } from 'vue';
+  import { computed, ref, onMounted, onBeforeUnmount } from 'vue';
   import { useRouter } from 'vue-router';
   import ThemeToggle from './ThemeToggle.vue';
-  
+  import erebor_logo from '@/assets/erebor_logo.png';
+  import profile_icon from '@/assets/profile_icon.png';
+
   const authStore = useAuthStore();
   const router = useRouter();
   const isMobileMenuOpen = ref(false);
+  const showScrollToTop = ref(false);
   
   const logout = () => {
     authStore.logout();
@@ -22,6 +25,19 @@
   
   const toggleMobileMenu = () => {
     isMobileMenuOpen.value = !isMobileMenuOpen.value;
+  };
+
+  const handleScroll = () => {
+    showScrollToTop.value = window.scrollY > 100;
+  };
+  onMounted(() => {
+    window.addEventListener('scroll', handleScroll);
+  });
+  onBeforeUnmount(() => {
+    window.removeEventListener('scroll', handleScroll);
+  });
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 </script>
 
@@ -204,6 +220,17 @@
         </RouterLink>
       </div>
     </div>
+    <button
+      v-if="showScrollToTop"
+      @click="scrollToTop"
+      class="fixed bottom-8 right-8 z-[9999] w-14 h-14 bg-theme-primary hover:bg-theme-primary-hover text-white rounded-full shadow-2xl flex items-center justify-center transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-theme-primary/30 border-2 border-theme-primary/50 hover:border-theme-primary"
+      title="Remonter en haut de la page"
+      style="box-shadow: 0 8px 32px rgba(0,0,0,0.18);"
+    >
+      <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18" />
+      </svg>
+    </button>
   </nav>
 </template>
 

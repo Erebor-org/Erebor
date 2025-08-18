@@ -6,6 +6,7 @@ use App\Entity\Characters;
 use App\Entity\Mule;
 use App\Repository\CharactersRepository;
 use App\Repository\RanksRepository; // Ensure this is correctly imported
+use App\Repository\MuleRepository; // Added for switchWithMule
 use App\Service\NotificationService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -461,5 +462,95 @@ class CharactersController extends AbstractController
         $em->flush();
 
         return $this->json(['message' => 'Mule unarchived successfully']);
+    }
+
+    #[Route('/characters/{characterId}/switch-with-mule/{muleId}', name: 'character_switch_with_mule', methods: ['POST'])]
+    public function switchWithMule(
+        int $characterId,
+        int $muleId,
+        CharactersRepository $charactersRepository,
+        MuleRepository $muleRepository,
+        EntityManagerInterface $em
+    ): JsonResponse {
+        $character = $charactersRepository->find($characterId);
+        $mule = $muleRepository->find($muleId);
+        if (!$character || !$mule) {
+            return $this->json(['error' => 'Character or Mule not found'], 404);
+        }
+        if ($mule->getMainCharacter()->getId() !== $character->getId()) {
+            return $this->json(['error' => 'This mule does not belong to the specified main character'], 400);
+        }
+        // Backup all mules except the one being promoted
+        $allMules = $character->getMules()->toArray();
+        $otherMules = array_filter($allMules, fn($m) => $m->getId() !== $mule->getId());
+        // Create new Character from mule
+        $newCharacter = new Characters();
+        $newCharacter->setUserId($character->getUserId())
+            ->setPseudo($mule->getPseudo())
+            ->setAnkamaPseudo($mule->getAnkamaPseudo())
+            ->setClass($mule->getClass())
+            ->setIsArchived($mule->isArchived())
+            ->setRecruitedAt($character->getRecruitedAt())
+            ->setRank($character->getRank())
+            ->setNotes($character->getNotes())
+            ->setRecruiter($character->getRecruiter());
+        $em->persist($newCharacter);
+        $em->flush(); // Pour que $newCharacter ait un ID
+        // Réassigner les warnings de l'ancien main vers le nouveau main
+        $connection = $em->getConnection();
+        // Logguer le nombre de warnings réassignés
+        $updatedWarnings = $connection->executeStatement(
+            'UPDATE warnings SET character_id = :newId WHERE character_id = :oldId',
+            ['newId' => $newCharacter->getId(), 'oldId' => $character->getId()]
+        );
+        error_log("[SWITCH] Nombre de warnings réassignés de l'ancien main (ID={$character->getId()}) vers le nouveau main (ID={$newCharacter->getId()}): $updatedWarnings");
+        // Vérifier combien de warnings pointent encore vers l'ancien main
+        $remainingWarnings = $connection->fetchOne(
+            'SELECT COUNT(*) FROM warnings WHERE character_id = :oldId',
+            ['oldId' => $character->getId()]
+        );
+        error_log("[SWITCH] Nombre de warnings qui pointent ENCORE vers l'ancien main (ID={$character->getId()}): $remainingWarnings");
+        if ($remainingWarnings > 0) {
+            throw new \RuntimeException("Il reste $remainingWarnings warning(s) liés à l'ancien main (ID=" . $character->getId() . "). Switch annulé pour éviter la suppression de l'historique.");
+        }
+        // IMPORTANT : vider le UnitOfWork pour éviter que Doctrine ne tente de réécrire l'ancien état
+        $em->clear();
+        // Recharger les entités nécessaires
+        $newCharacter = $charactersRepository->find($newCharacter->getId());
+        $mule = $muleRepository->find($mule->getId());
+        $character = $charactersRepository->find($character->getId());
+        // Créer la nouvelle mule et réassigner les autres mules
+        $newMule = new \App\Entity\Mule();
+        $newMule->setPseudo($character->getPseudo())
+            ->setAnkamaPseudo($character->getAnkamaPseudo())
+            ->setClass($character->getClass())
+            ->setIsArchived($character->isArchived())
+            ->setMainCharacter($newCharacter);
+        $em->persist($newMule);
+        foreach ($otherMules as $otherMule) {
+            $otherMuleEntity = $em->getRepository(\App\Entity\Mule::class)->find($otherMule->getId());
+            if ($otherMuleEntity) {
+                $otherMuleEntity->setMainCharacter($newCharacter);
+            }
+        }
+        // Supprimer l'ancien main et la mule
+        $em->remove($character);
+        $em->remove($mule);
+        $em->flush();
+        return $this->json([
+            'message' => 'Switch successful',
+            'newMain' => [
+                'id' => $newCharacter->getId(),
+                'pseudo' => $newCharacter->getPseudo(),
+                'ankamaPseudo' => $newCharacter->getAnkamaPseudo(),
+                'class' => $newCharacter->getClass(),
+            ],
+            'newMule' => [
+                'id' => $newMule->getId(),
+                'pseudo' => $newMule->getPseudo(),
+                'ankamaPseudo' => $newMule->getAnkamaPseudo(),
+                'class' => $newMule->getClass(),
+            ]
+        ]);
     }
 }

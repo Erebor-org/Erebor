@@ -1,5 +1,13 @@
 <template>
   <div class="bg-theme-card rounded-2xl border border-theme-border overflow-hidden shadow-xl">
+    <ConfirmModal
+      :show="showConfirmSwitch"
+      title="Confirmer le switch"
+      :message="confirmSwitchMessage"
+      confirmText="Oui, switcher"
+      @confirm="doSwitchWithMule"
+      @cancel="showConfirmSwitch = false"
+    />
     <!-- Table Header -->
     <div class="bg-gradient-to-r from-theme-bg-muted to-theme-card px-6 py-4 border-b border-theme-bg-muted">
       <h3 class="text-xl font-bold text-theme-primary">Membres Actifs</h3>
@@ -139,12 +147,6 @@
                 >
                   Archiver
                 </button>
-                <button
-                  @click="openMuleModal(member)"
-                  class="px-3 py-2 text-xs bg-theme-primary hover:bg-theme-primary-hover text-white font-medium rounded-lg transition-all duration-200 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-theme-primary/30 shadow-sm hover:shadow-md"
-                >
-                  Gérer Mules
-                </button>
                 <button @click="$emit('open-notes-modal', member.member)" class="ml-2 text-theme-primary hover:text-theme-primary-hover text-xs font-medium flex items-center">
                   <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536M9 13h3l8-8a2.828 2.828 0 10-4-4l-8 8v3z" /></svg> Note
                 </button>
@@ -161,12 +163,15 @@
 import { reactive } from 'vue';
 import EditablePseudo from './EditablePseudo.vue';
 import ClassDropdown from './ClassDropdown.vue';
+import ConfirmModal from './ConfirmModal.vue';
+const API_URL = import.meta.env.VITE_API_URL;
 
 export default {
   name: 'MembersTableList',
   components: {
     EditablePseudo,
     ClassDropdown,
+    ConfirmModal,
   },
   props: {
     filteredMembers: {
@@ -206,7 +211,16 @@ export default {
       showTooltip: null,
       editingNoteId: null,
       editingNoteValue: '',
+      showConfirmSwitch: false,
+      switchMain: null,
+      switchMule: null,
     };
+  },
+  computed: {
+    confirmSwitchMessage() {
+      if (!this.switchMain || !this.switchMule) return '';
+      return `Êtes-vous sûr de vouloir échanger ${this.switchMain.pseudo} avec la mule ${this.switchMule.pseudo} ?`;
+    },
   },
   methods: {
     savePseudo(entity, type, newPseudo) {
@@ -259,6 +273,27 @@ export default {
       this.editingNoteId = null;
       this.editingNoteValue = '';
     },
+    async confirmSwitchWithMule(main, mule) {
+      this.switchMain = main;
+      this.switchMule = mule;
+      this.showConfirmSwitch = true;
+    },
+    async doSwitchWithMule() {
+      this.showConfirmSwitch = false;
+      try {
+        const response = await fetch(`${API_URL}/characters/${this.switchMain.id}/switch-with-mule/${this.switchMule.id}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+        });
+        if (!response.ok) throw new Error('Erreur lors du switch');
+        this.$emit('refresh-data');
+      } catch (e) {
+        this.$emit('refresh-data');
+      } finally {
+        this.switchMain = null;
+        this.switchMule = null;
+      }
+    },
   },
   emits: [
     'save-pseudo',
@@ -271,6 +306,7 @@ export default {
     'open-mules-modal',
     'open-notes-modal',
     'save-note',
+    'refresh-data',
   ],
 };
 </script>

@@ -26,6 +26,7 @@
       @update-mule-class="updateMuleClass"
       @open-mule-modal="openMuleModal"
       @open-add-mule-modal="openAddMuleModal"
+      @refresh-data="refreshMembersAndMules"
     />
 
     <!-- Notes Modal -->
@@ -82,6 +83,7 @@
           @open-add-mule-modal="openAddMuleModal"
           @open-notes-modal="openNotesModal"
           @save-note="saveMemberNote"
+          @refresh-data="refreshMembersAndMules"
         />
 
         <!-- List View -->
@@ -669,6 +671,12 @@ export default {
       } catch (error) {
         this.$refs.notificationRef.showNotification('Erreur lors de la mise à jour de la note.', 'error');
       }
+    },
+    async refreshMembersAndMules() {
+      await this.fetchCharacters();
+      await this.fetchAllMules();
+      await this.fetchWarningCounts();
+      this.$refs.notificationRef.showNotification('Le switch a été effectué avec succès !');
     },
   },
   async mounted() {
