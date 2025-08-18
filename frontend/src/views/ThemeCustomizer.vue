@@ -230,6 +230,7 @@
       <!-- Add preview cancel banner -->
       <div v-if="isPreviewing" class="fixed bottom-8 left-1/2 transform -translate-x-1/2 z-50 bg-theme-warning text-theme-text px-6 py-3 rounded-xl shadow-lg flex items-center gap-4 border-2 border-theme-warning animate-fade-in">
         <span>Vous êtes en mode prévisualisation du thème.</span>
+        <button @click="applyCustomTheme" class="bg-theme-success text-white px-4 py-2 rounded-lg font-medium hover:bg-theme-success/80 transition-all">Sauvegarder</button>
         <button @click="cancelPreview" class="bg-theme-error text-white px-4 py-2 rounded-lg font-medium hover:bg-theme-error/80 transition-all">Annuler la prévisualisation</button>
       </div>
 
@@ -283,16 +284,16 @@ const defaultColors = {
     error: '#dc2626'
   },
   dark: {
-    bg: '#0E0E10',
-    'bg-muted': '#FBF1C7',
-    card: '#0E0E10',
-    border: '#F0CF6B',
-    text: '#8C6A0B',
-    'text-muted': '#8C6A0B',
-    primary: '#D4A017',
-    'primary-hover': '#D4A017',
-    link: '#D4A017',
-    ring: '#D4A017',
+    bg: '#0b0b0f',
+    'bg-muted': '#121218',
+    card: '#14141b',
+    border: '#262633',
+    text: '#f4f6fb',
+    'text-muted': '#a8adbb',
+    primary: '#d946ef',
+    'primary-hover': '#c026d3',
+    link: '#e879f9',
+    ring: '#f0abfc',
     success: '#22c55e',
     warning: '#facc15',
     error: '#ef4444'
@@ -341,23 +342,13 @@ const saveCustomColors = () => {
 
 const isPreviewing = ref(false)
 let previousColors = null
-let previousCustomColors = null
-let originalCustomColors = null
-
-// Watch for any change in customColors to save a snapshot before modifications (if not previewing)
-watch(customColors, (newVal, oldVal) => {
-  if (!isPreviewing.value && !originalCustomColors) {
-    originalCustomColors = JSON.parse(JSON.stringify(oldVal))
-  }
-}, { deep: true })
 
 const previewCustomTheme = () => {
-  // Store current theme colors before preview
-  const stored = localStorage.getItem('erebor-custom-colors')
-  previousColors = stored ? JSON.parse(stored) : null
-  previousCustomColors = JSON.parse(JSON.stringify(customColors.value))
-  // Do not update originalCustomColors here (it should be the state before any modification)
-
+  // Sauvegarde l'état du localStorage AVANT preview
+  previousColors = localStorage.getItem('erebor-custom-colors')
+    ? JSON.parse(localStorage.getItem('erebor-custom-colors'))
+    : null
+  // Applique le thème custom en CSS variables (sans sauvegarder)
   const root = document.documentElement
   const colors = customColors.value[currentMode.value]
   Object.entries(colors).forEach(([key, value]) => {
@@ -370,20 +361,20 @@ const previewCustomTheme = () => {
     }
   })
   isPreviewing.value = true
-  showNotificationMessage('info', 'Prévisualisation', 'Votre thème est en mode prévisualisation. Cliquez sur "Sauver" pour l\'appliquer ou "Annuler" pour revenir en arrière.')
+  showNotificationMessage('info', 'Prévisualisation', 'Votre thème est en mode prévisualisation. Cliquez sur "Sauvegarder" pour l\'appliquer ou "Annuler" pour revenir en arrière.')
 }
 
 const cancelPreview = () => {
-  if (previousColors && originalCustomColors) {
-    // Restore previous theme colors in localStorage and in the UI
+  // Restaure le localStorage et recharge l'UI
+  if (previousColors) {
     localStorage.setItem('erebor-custom-colors', JSON.stringify(previousColors))
-    customColors.value = JSON.parse(JSON.stringify(originalCustomColors))
-    themeStore.applyCustomColors()
+  } else {
+    localStorage.removeItem('erebor-custom-colors')
   }
+  themeStore.applyCustomColors()
+  loadCustomColors()
   isPreviewing.value = false
   previousColors = null
-  previousCustomColors = null
-  originalCustomColors = null
   showNotification.value = false
 }
 
@@ -410,9 +401,8 @@ const applyCustomTheme = () => {
   showNotificationMessage('success', 'Thème Appliqué', 'Votre thème personnalisé a été appliqué avec succès !')
   isPreviewing.value = false
   previousColors = null
-  previousCustomColors = null
   // Update the snapshot to the new saved state
-  originalCustomColors = JSON.parse(JSON.stringify(customColors.value))
+  // originalCustomColors = JSON.parse(JSON.stringify(customColors.value)) // This line is removed
 }
 
 // Reapply default themes with their initial colors
