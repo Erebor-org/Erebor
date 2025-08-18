@@ -81,14 +81,6 @@
           >
             Statistiques
           </RouterLink>
-          
-          <RouterLink 
-            to="/theme-customizer" 
-            class="nav-link"
-            active-class="nav-link-active"
-          >
-            🎨 Personnaliser
-          </RouterLink>
         </div>
 
         <!-- Right Section - User Menu & Auth -->
@@ -123,6 +115,9 @@
                 :src="profile_icon" 
                 alt="Profile" 
                 class="w-10 h-10 rounded-full border-2 border-theme-border hover:border-theme-primary transition-all duration-300 cursor-pointer group-hover:scale-110"
+                @click="router.push('/theme-customizer')"
+                title="Personnalisation du profil"
+                style="cursor:pointer;"
               />
               <div class="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-2 h-2 bg-theme-success rounded-full border border-theme-bg"></div>
             </div>
@@ -206,15 +201,6 @@
           @click="isMobileMenuOpen = false"
         >
           Statistiques
-        </RouterLink>
-        
-        <RouterLink 
-          to="/theme-customizer" 
-          class="mobile-nav-link"
-          active-class="mobile-nav-link-active"
-          @click="isMobileMenuOpen = false"
-        >
-          🎨 Personnaliser
         </RouterLink>
       </div>
     </div>

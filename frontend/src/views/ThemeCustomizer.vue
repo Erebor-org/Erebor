@@ -12,61 +12,86 @@
     <div class="max-w-7xl mx-auto">
       <!-- Header -->
       <div class="text-center mb-8">
-        <h1 class="text-4xl font-bold text-theme-primary mb-4">🎨 Personnalisateur de Thème</h1>
-        <p class="text-theme-text-muted text-lg">Personnalisez vos couleurs de thème pour les modes clair et sombre</p>
+        <h1 class="text-4xl font-bold text-theme-primary mb-4">🎨 Personnalisation</h1>
+        <p class="text-theme-text-muted text-lg">Gérez vos préférences et personnalisez votre expérience</p>
       </div>
 
-      <!-- Theme Mode Toggle -->
-      <div class="flex justify-center mb-8">
-        <div class="bg-theme-card rounded-lg p-4 shadow-lg">
-          <div class="flex items-center space-x-4">
-            <button
-              @click="currentMode = 'light'"
-              :class="[
-                'px-6 py-3 rounded-lg font-medium transition-all duration-200',
-                currentMode === 'light'
-                  ? 'bg-theme-primary text-white shadow-lg'
-                  : 'bg-theme-bg-muted text-theme-text-muted hover:bg-theme-border'
-              ]"
-            >
-              ☀️ Light Mode
-            </button>
-            <button
-              @click="currentMode = 'dark'"
-              :class="[
-                'px-6 py-3 rounded-lg font-medium transition-all duration-200',
-                currentMode === 'dark'
-                  ? 'bg-theme-primary text-white shadow-lg'
-                  : 'bg-theme-bg-muted text-theme-text-muted hover:bg-theme-border'
-              ]"
-            >
-              🌙 Dark Mode
-            </button>
+      <!-- Default Preferences Section -->
+      <div class="bg-theme-card rounded-lg p-6 shadow-lg mb-12 border border-theme-border">
+        <div class="mb-4">
+          <h3 class="text-xl font-semibold text-theme-primary mb-4">👥 Vue par défaut des membres</h3>
+          <div class="flex items-center gap-6">
+            <label class="flex items-center gap-2 cursor-pointer">
+              <input type="radio" name="defaultMemberView" value="cards" v-model="defaultMemberView" @change="saveDefaultMemberView" />
+              <span>Carte</span>
+            </label>
+            <label class="flex items-center gap-2 cursor-pointer">
+              <input type="radio" name="defaultMemberView" value="list" v-model="defaultMemberView" @change="saveDefaultMemberView" />
+              <span>Liste</span>
+            </label>
+          </div>
+          <p class="text-theme-text-muted mt-2 text-sm">Choisissez la vue par défaut pour la gestion des membres.</p>
+        </div>
+      </div>
+      <!-- Theme Information -->
+      <div class="bg-theme-card rounded-lg p-6 shadow-lg mb-10">
+        <h3 class="text-2xl font-bold text-theme-primary mb-6 flex items-center gap-2">ℹ️ <span>Informations sur le Thème</span></h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div>
+            <div class="flex items-center gap-3 mb-2">
+              <span class="text-lg">🎨</span>
+              <span class="font-semibold text-theme-text text-lg">Mode :</span>
+              <span :class="currentMode === 'light' ? 'bg-theme-primary/10 text-theme-primary' : 'bg-theme-warning/10 text-theme-warning'" class="px-3 py-1 rounded-full font-bold text-base ml-2">{{ currentMode === 'light' ? 'Clair' : 'Sombre' }}</span>
+            </div>
+            <div class="flex items-center gap-3 mb-2">
+              <span class="text-lg">🛠️</span>
+              <span class="font-semibold text-theme-text text-lg">Personnalisé :</span>
+              <span :class="isCustomTheme ? 'bg-theme-success/10 text-theme-success' : 'bg-theme-error/10 text-theme-error'" class="px-3 py-1 rounded-full font-bold text-base ml-2">{{ isCustomTheme ? 'Oui' : 'Non' }}</span>
+            </div>
+            <p class="text-theme-text-muted text-sm ml-8">Indique si vous avez modifié les couleurs par défaut.</p>
+          </div>
+          <div>
           </div>
         </div>
       </div>
 
-      <!-- Default Member View Setting -->
-      <div class="bg-theme-card rounded-lg p-6 shadow-lg mb-8">
-        <h3 class="text-xl font-semibold text-theme-primary mb-4">👥 Vue par défaut des membres</h3>
-        <div class="flex items-center gap-6">
-          <label class="flex items-center gap-2 cursor-pointer">
-            <input type="radio" name="defaultMemberView" value="cards" v-model="defaultMemberView" @change="saveDefaultMemberView" />
-            <span>Carte</span>
-          </label>
-          <label class="flex items-center gap-2 cursor-pointer">
-            <input type="radio" name="defaultMemberView" value="list" v-model="defaultMemberView" @change="saveDefaultMemberView" />
-            <span>Liste</span>
-          </label>
+      <!-- Theme Customization Section -->
+      <div class="bg-theme-card rounded-lg p-6 shadow-lg border border-theme-border">
+        <h2 class="text-2xl font-semibold text-theme-primary mb-4">🎨 Personnalisation du thème</h2>
+        <!-- Theme Mode Toggle (compact pill style) -->
+        <div class="flex justify-center mb-8">
+          <div class="inline-flex rounded-full bg-theme-bg-muted border border-theme-border p-1">
+            <button
+              @click="currentMode = 'light'"
+              :class="[
+                'px-3 py-1.5 rounded-full text-sm font-medium transition-all duration-200',
+                currentMode === 'light'
+                  ? 'bg-theme-primary text-white shadow'
+                  : 'bg-transparent text-theme-text-muted hover:bg-theme-border'
+              ]"
+              title="Mode clair"
+            >
+              ☀️
+            </button>
+            <button
+              @click="currentMode = 'dark'"
+              :class="[
+                'px-3 py-1.5 rounded-full text-sm font-medium transition-all duration-200',
+                currentMode === 'dark'
+                  ? 'bg-theme-primary text-white shadow'
+                  : 'bg-transparent text-theme-text-muted hover:bg-theme-border'
+              ]"
+              title="Mode sombre"
+            >
+              🌙
+            </button>
+          </div>
         </div>
-        <p class="text-theme-text-muted mt-2 text-sm">Choisissez la vue par défaut pour la gestion des membres.</p>
-      </div>
-
-      <!-- Color Customization Grid -->
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-        <!-- Background Colors -->
-        <div class="bg-theme-card rounded-lg p-6 shadow-lg">
-                      <h3 class="text-xl font-semibold text-theme-primary mb-4">🎨 Couleurs d'Arrière-plan</h3>
+        <!-- Color Customization Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+          <!-- Background Colors -->
+          <div class="bg-theme-card rounded-lg p-6 shadow-lg">
+            <h3 class="text-xl font-semibold text-theme-primary mb-4">🎨 Couleurs d'Arrière-plan</h3>
             <div class="space-y-4">
               <ColorPicker
                 label="Arrière-plan Principal"
@@ -84,158 +109,133 @@
                 description="Arrière-plans des composants et cartes"
               />
             </div>
-        </div>
-
-        <!-- Text Colors -->
-        <div class="bg-theme-card rounded-lg p-6 shadow-lg">
-          <h3 class="text-xl font-semibold text-theme-primary mb-4">📝 Couleurs de Texte</h3>
-          <div class="space-y-4">
-            <ColorPicker
-              label="Texte Principal"
-              v-model="customColors[currentMode].text"
-              description="Couleur principale du texte"
-            />
-            <ColorPicker
-              label="Texte Atténué"
-              v-model="customColors[currentMode]['text-muted']"
-              description="Texte secondaire, étiquettes, etc."
-            />
           </div>
-        </div>
-
-        <!-- Accent Colors -->
-        <div class="bg-theme-card rounded-lg p-6 shadow-lg">
-          <h3 class="text-xl font-semibold text-theme-primary mb-4">✨ Couleurs d'Accent</h3>
-          <div class="space-y-4">
-            <ColorPicker
-              label="Couleur Principale"
-              v-model="customColors[currentMode].primary"
-              description="Accent principal, boutons, liens"
-            />
-            <ColorPicker
-              label="Survol Principal"
-              v-model="customColors[currentMode]['primary-hover']"
-              description="États de survol pour les éléments principaux"
-            />
-            <ColorPicker
-              label="Couleur des Liens"
-              v-model="customColors[currentMode].link"
-              description="Couleur du texte des liens"
-            />
-            <ColorPicker
-              label="Couleur des Anneaux"
-              v-model="customColors[currentMode].ring"
-              description="Anneaux de focus et contours"
-            />
+          <!-- Text Colors -->
+          <div class="bg-theme-card rounded-lg p-6 shadow-lg">
+            <h3 class="text-xl font-semibold text-theme-primary mb-4">📝 Couleurs de Texte</h3>
+            <div class="space-y-4">
+              <ColorPicker
+                label="Texte Principal"
+                v-model="customColors[currentMode].text"
+                description="Couleur principale du texte"
+              />
+              <ColorPicker
+                label="Texte Atténué"
+                v-model="customColors[currentMode]['text-muted']"
+                description="Texte secondaire, étiquettes, etc."
+              />
+            </div>
           </div>
-        </div>
-
-        <!-- Status Colors -->
-        <div class="bg-theme-card rounded-lg p-6 shadow-lg">
-          <h3 class="text-xl font-semibold text-theme-primary mb-4">🚦 Couleurs de Statut</h3>
-          <div class="space-y-4">
-            <ColorPicker
-              label="Succès"
-              v-model="customColors[currentMode].success"
-              description="Messages de succès, confirmations"
-            />
-            <ColorPicker
-              label="Avertissement"
-              v-model="customColors[currentMode].warning"
-              description="Messages d'avertissement, alertes"
-            />
-            <ColorPicker
-              label="Erreur"
-              v-model="customColors[currentMode].error"
-              description="Messages d'erreur, échecs"
-            />
+          <!-- Accent Colors -->
+          <div class="bg-theme-card rounded-lg p-6 shadow-lg">
+            <h3 class="text-xl font-semibold text-theme-primary mb-4">✨ Couleurs d'Accent</h3>
+            <div class="space-y-4">
+              <ColorPicker
+                label="Couleur Principale"
+                v-model="customColors[currentMode].primary"
+                description="Accent principal, boutons, liens"
+              />
+              <ColorPicker
+                label="Survol Principal"
+                v-model="customColors[currentMode]['primary-hover']"
+                description="États de survol pour les éléments principaux"
+              />
+              <ColorPicker
+                label="Couleur des Liens"
+                v-model="customColors[currentMode].link"
+                description="Couleur du texte des liens"
+              />
+              <ColorPicker
+                label="Couleur des Anneaux"
+                v-model="customColors[currentMode].ring"
+                description="Anneaux de focus et contours"
+              />
+            </div>
           </div>
-        </div>
-
-        <!-- Border Colors -->
-        <div class="bg-theme-card rounded-lg p-6 shadow-lg">
-          <h3 class="text-xl font-semibold text-theme-primary mb-4">🔲 Couleurs de Bordure</h3>
-          <div class="space-y-4">
-            <ColorPicker
-              label="Couleur de Bordure"
-              v-model="customColors[currentMode].border"
-              description="Bordures générales et séparateurs"
-            />
+          <!-- Status Colors -->
+          <div class="bg-theme-card rounded-lg p-6 shadow-lg">
+            <h3 class="text-xl font-semibold text-theme-primary mb-4">🚦 Couleurs de Statut</h3>
+            <div class="space-y-4">
+              <ColorPicker
+                label="Succès"
+                v-model="customColors[currentMode].success"
+                description="Messages de succès, confirmations"
+              />
+              <ColorPicker
+                label="Avertissement"
+                v-model="customColors[currentMode].warning"
+                description="Messages d'avertissement, alertes"
+              />
+              <ColorPicker
+                label="Erreur"
+                v-model="customColors[currentMode].error"
+                description="Messages d'erreur, échecs"
+              />
+            </div>
           </div>
-        </div>
-
-        <!-- Preview -->
-        <div class="bg-theme-card rounded-lg p-6 shadow-lg">
-          <h3 class="text-xl font-semibold text-theme-primary mb-4">👁️ Aperçu en Temps Réel</h3>
-          <div class="space-y-4">
-            <div class="p-4 rounded-lg border-2 border-theme-border">
-              <h4 class="font-semibold mb-2">Exemple de Carte</h4>
-              <p class="text-theme-text-muted mb-3">Ceci montre comment vos couleurs apparaîtront</p>
-              <button class="bg-theme-primary hover:bg-theme-primary-hover text-white px-4 py-2 rounded-lg transition-colors">
-                Bouton Exemple
-              </button>
+          <!-- Border Colors -->
+          <div class="bg-theme-card rounded-lg p-6 shadow-lg">
+            <h3 class="text-xl font-semibold text-theme-primary mb-4">🔲 Couleurs de Bordure</h3>
+            <div class="space-y-4">
+              <ColorPicker
+                label="Couleur de Bordure"
+                v-model="customColors[currentMode].border"
+                description="Bordures générales et séparateurs"
+              />
             </div>
           </div>
         </div>
-      </div>
-
-      <!-- Action Buttons -->
-      <div class="flex justify-center space-x-4 mb-8">
-        <button
-          @click="applyCustomTheme"
-          class="bg-theme-success hover:bg-theme-success/80 text-white px-8 py-3 rounded-lg font-medium transition-colors shadow-lg"
-        >
-          ✅ Appliquer le Thème Personnalisé
-        </button>
-        
-        <button
-          @click="previewCustomTheme"
-          class="bg-theme-primary hover:bg-theme-primary-hover text-white px-8 py-3 rounded-lg font-medium transition-colors shadow-lg"
-        >
-          👁️ Prévisualiser
-        </button>
-        <button
-          @click="resetToDefault"
-          class="bg-theme-warning hover:bg-theme-warning/80 text-white px-8 py-3 rounded-lg font-medium transition-colors shadow-lg"
-        >
-          🔄 Réinitialiser aux Couleurs Initiales
-        </button>
-        <button
-          @click="reapplyDefaultThemes"
-          class="bg-theme-link hover:bg-theme-primary-hover text-white px-8 py-3 rounded-lg font-medium transition-colors shadow-lg"
-        >
-          🎨 Réappliquer les Thèmes
-        </button>
-        <button
-          @click="exportTheme"
-          class="bg-theme-primary hover:bg-theme-primary-hover text-white px-8 py-3 rounded-lg font-medium transition-colors shadow-lg"
-        >
-          📤 Exporter le Thème
-        </button>
-        <button
-          @click="importTheme"
-          class="bg-theme-link hover:bg-theme-primary-hover text-white px-8 py-3 rounded-lg font-medium transition-colors shadow-lg"
-        >
-          📥 Importer un Thème
-        </button>
-      </div>
-
-      <!-- Theme Information -->
-      <div class="bg-theme-card rounded-lg p-6 shadow-lg">
-        <h3 class="text-xl font-semibold text-theme-primary mb-4">ℹ️ Informations sur le Thème</h3>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <h4 class="font-semibold text-theme-text mb-2">Thème Actuel</h4>
-            <p class="text-theme-text-muted">Mode: <span class="font-mono">{{ currentMode === 'light' ? 'Clair' : 'Sombre' }}</span></p>
-            <p class="text-theme-text-muted">Personnalisé: <span class="font-mono">{{ isCustomTheme ? 'Oui' : 'Non' }}</span></p>
-          </div>
-          <div>
-            <h4 class="font-semibold text-theme-text mb-2">Stockage</h4>
-            <p class="text-theme-text-muted">Thème: <span class="font-mono">{{ storedTheme === 'light' ? 'Clair' : storedTheme === 'dark' ? 'Sombre' : 'Système' }}</span></p>
-            <p class="text-theme-text-muted">Couleurs personnalisées sauvegardées dans localStorage</p>
-          </div>
+        <!-- Action Buttons moved here -->
+      <div class="flex justify-center mb-8">
+        <div class="inline-flex gap-3">
+          <button
+            @click="applyCustomTheme"
+            class="px-4 py-2 rounded-xl text-base font-medium transition-all duration-200 bg-theme-success text-white hover:bg-theme-success/80 focus:outline-none flex items-center gap-2"
+            title="Sauvegarder le thème"
+          >
+            💾 <span>Sauver</span>
+          </button>
+          <button
+            @click="previewCustomTheme"
+            class="px-4 py-2 rounded-xl text-base font-medium transition-all duration-200 bg-theme-primary text-white hover:bg-theme-primary-hover focus:outline-none flex items-center gap-2"
+            title="Prévisualiser le thème"
+          >
+            👁️ <span>Voir</span>
+          </button>
+          <button
+            @click="resetToDefault"
+            class="px-4 py-2 rounded-xl text-base font-medium transition-all duration-200 bg-theme-warning text-white hover:bg-theme-warning/80 focus:outline-none flex items-center gap-2"
+            title="Réinitialiser aux couleurs initiales"
+          >
+            🔄 <span>Reset</span>
+          </button>
+          <button
+            @click="exportTheme"
+            class="px-4 py-2 rounded-xl text-base font-medium transition-all duration-200 bg-theme-primary text-white hover:bg-theme-primary-hover focus:outline-none flex items-center gap-2"
+            title="Exporter le thème"
+          >
+            📤 <span>Exporter</span>
+          </button>
+          <button
+            @click="importTheme"
+            class="px-4 py-2 rounded-xl text-base font-medium transition-all duration-200 bg-theme-link text-white hover:bg-theme-primary-hover focus:outline-none flex items-center gap-2"
+            title="Importer un thème"
+          >
+            📥 <span>Importer</span>
+          </button>
         </div>
       </div>
+      </div>
+
+      <!-- Add preview cancel banner -->
+      <div v-if="isPreviewing" class="fixed bottom-8 left-1/2 transform -translate-x-1/2 z-50 bg-theme-warning text-theme-text px-6 py-3 rounded-xl shadow-lg flex items-center gap-4 border-2 border-theme-warning animate-fade-in">
+        <span>Vous êtes en mode prévisualisation du thème.</span>
+        <button @click="cancelPreview" class="bg-theme-error text-white px-4 py-2 rounded-lg font-medium hover:bg-theme-error/80 transition-all">Annuler la prévisualisation</button>
+      </div>
+
+      
+
+      
 
       <!-- Hidden file input for import -->
       <input
@@ -339,16 +339,29 @@ const saveCustomColors = () => {
   localStorage.setItem('erebor-custom-colors', JSON.stringify(customColors.value))
 }
 
-// Preview custom theme without applying it permanently
+const isPreviewing = ref(false)
+let previousColors = null
+let previousCustomColors = null
+let originalCustomColors = null
+
+// Watch for any change in customColors to save a snapshot before modifications (if not previewing)
+watch(customColors, (newVal, oldVal) => {
+  if (!isPreviewing.value && !originalCustomColors) {
+    originalCustomColors = JSON.parse(JSON.stringify(oldVal))
+  }
+}, { deep: true })
+
 const previewCustomTheme = () => {
+  // Store current theme colors before preview
+  const stored = localStorage.getItem('erebor-custom-colors')
+  previousColors = stored ? JSON.parse(stored) : null
+  previousCustomColors = JSON.parse(JSON.stringify(customColors.value))
+  // Do not update originalCustomColors here (it should be the state before any modification)
+
   const root = document.documentElement
   const colors = customColors.value[currentMode.value]
-  
-  // Apply all colors as CSS variables temporarily
   Object.entries(colors).forEach(([key, value]) => {
     root.style.setProperty(`--${key}`, value)
-    
-    // Also set RGB versions for opacity usage
     if (value.startsWith('#')) {
       const rgb = hexToRgb(value)
       if (rgb) {
@@ -356,12 +369,24 @@ const previewCustomTheme = () => {
       }
     }
   })
-  
-  // Show preview notification
-  showNotificationMessage('info', 'Prévisualisation', 'Votre thème est en mode prévisualisation. Cliquez sur "Appliquer" pour le sauvegarder définitivement.')
+  isPreviewing.value = true
+  showNotificationMessage('info', 'Prévisualisation', 'Votre thème est en mode prévisualisation. Cliquez sur "Sauver" pour l\'appliquer ou "Annuler" pour revenir en arrière.')
 }
 
-// Apply custom theme to CSS variables
+const cancelPreview = () => {
+  if (previousColors && originalCustomColors) {
+    // Restore previous theme colors in localStorage and in the UI
+    localStorage.setItem('erebor-custom-colors', JSON.stringify(previousColors))
+    customColors.value = JSON.parse(JSON.stringify(originalCustomColors))
+    themeStore.applyCustomColors()
+  }
+  isPreviewing.value = false
+  previousColors = null
+  previousCustomColors = null
+  originalCustomColors = null
+  showNotification.value = false
+}
+
 const applyCustomTheme = () => {
   const root = document.documentElement
   const colors = customColors.value[currentMode.value]
@@ -383,6 +408,11 @@ const applyCustomTheme = () => {
   
   // Show success notification
   showNotificationMessage('success', 'Thème Appliqué', 'Votre thème personnalisé a été appliqué avec succès !')
+  isPreviewing.value = false
+  previousColors = null
+  previousCustomColors = null
+  // Update the snapshot to the new saved state
+  originalCustomColors = JSON.parse(JSON.stringify(customColors.value))
 }
 
 // Reapply default themes with their initial colors
