@@ -8,7 +8,7 @@
       <!-- Page Header -->
       <div class="text-center mb-12">
         <h1 class="text-6xl font-bold text-theme-primary mb-6">Avertissements de {{ characterPseudo }}</h1>
-        <div class="w-32 h-1 bg-gradient-to-r from-theme-primary via-yellow-500 to-theme-primary mx-auto rounded-full shadow-lg shadow-theme-primary/50"></div>
+        <div class="w-32 h-1 bg-theme-primary mx-auto rounded-full shadow-lg shadow-theme-primary/50"></div>
         <p class="text-theme-text-muted mt-6 text-lg">Gérez les avertissements de ce personnage</p>
       </div>
 
@@ -16,7 +16,7 @@
       <div class="mb-8 flex justify-center">
         <button
           @click="goBack"
-          class="px-6 py-3 bg-gradient-to-r from-theme-bg-muted to-theme-bg-muted hover:from-theme-text-muted hover:to-theme-bg-muted text-theme-text font-semibold rounded-xl transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-theme-text-muted/30 flex items-center space-x-2"
+          class="px-6 py-3 bg-theme-bg-muted hover:bg-theme-text-muted text-theme-text font-semibold rounded-xl transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-theme-text-muted/30 flex items-center space-x-2"
         >
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
@@ -28,10 +28,10 @@
       <!-- Main Content -->
       <div class="bg-theme-card rounded-2xl border border-theme-border shadow-2xl overflow-hidden">
         <!-- Header with gradient -->
-        <div class="bg-gradient-to-r from-theme-bg-muted to-theme-card border-b border-theme-bg-muted p-6">
+        <div class="bg-theme-bg-muted border-b border-theme-bg-muted p-6">
           <div class="flex items-center justify-between">
             <div class="flex items-center space-x-4">
-              <div class="w-12 h-12 bg-gradient-to-br from-theme-primary to-theme-warning rounded-xl flex items-center justify-center shadow-lg">
+              <div class="w-12 h-12 bg-theme-primary rounded-xl flex items-center justify-center shadow-lg">
                 <svg class="w-7 h-7 text-theme-bg" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
                 </svg>
@@ -44,7 +44,7 @@
             
             <button
               @click="openAddWarningModal"
-              class="px-6 py-3 bg-gradient-to-r from-theme-primary-hover to-theme-warning hover:from-theme-primary-hover hover:to-theme-warning text-white font-bold rounded-xl transition-all duration-200 transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-theme-primary/30 flex items-center space-x-2"
+              class="px-6 py-3 bg-theme-primary hover:bg-theme-warning text-white font-bold rounded-xl transition-all duration-200 transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-theme-primary/30 flex items-center space-x-2"
             >
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
@@ -137,10 +137,10 @@
     >
       <div class="w-full max-w-2xl bg-theme-card border border-theme-border rounded-2xl shadow-2xl relative">
         <!-- Header -->
-        <div class="bg-gradient-to-r from-theme-bg-muted to-theme-card border-b border-theme-bg-muted p-6 rounded-t-2xl">
+        <div class="bg-theme-bg-muted border-b border-theme-bg-muted p-6 rounded-t-2xl">
           <div class="flex items-center justify-between">
             <div class="flex items-center space-x-3">
-              <div class="w-8 h-8 bg-gradient-to-br from-theme-primary to-theme-warning rounded-lg flex items-center justify-center">
+              <div class="w-8 h-8 bg-theme-primary rounded-lg flex items-center justify-center">
                 <svg class="w-5 h-5 text-theme-bg" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                 </svg>
@@ -237,7 +237,7 @@
             </button>
             <button
               @click="addWarning"
-              class="px-6 py-2 bg-gradient-to-r from-theme-primary-hover to-theme-warning hover:from-theme-primary-hover hover:to-theme-warning text-theme-bg font-bold rounded-lg transition-all duration-200 transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-theme-primary/30"
+              class="px-6 py-2 bg-theme-primary hover:bg-theme-warning text-theme-bg font-bold rounded-lg transition-all duration-200 transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-theme-primary/30"
               :disabled="isSubmitting"
             >
               {{ isSubmitting ? 'Enregistrement...' : 'Enregistrer' }}
@@ -255,10 +255,10 @@
     >
       <div class="w-full max-w-2xl bg-theme-card border border-theme-border rounded-2xl shadow-2xl relative">
         <!-- Header -->
-        <div class="bg-gradient-to-r from-theme-bg-muted to-theme-card border-b border-theme-bg-muted p-6 rounded-t-2xl">
+        <div class="bg-theme-bg-muted border-b border-theme-bg-muted p-6 rounded-t-2xl">
           <div class="flex items-center justify-between">
             <div class="flex items-center space-x-3">
-              <div class="w-8 h-8 bg-gradient-to-br from-theme-primary to-theme-primary-hover rounded-lg flex items-center justify-center">
+              <div class="w-8 h-8 bg-theme-primary-hover rounded-lg flex items-center justify-center">
                 <svg class="w-5 h-5 text-theme-bg" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                 </svg>
@@ -309,7 +309,7 @@
             </button>
             <button
               @click="updateWarning"
-              class="px-6 py-2 bg-gradient-to-r from-theme-primary to-theme-primary-hover hover:from-theme-primary-hover hover:to-theme-primary-hover text-theme-bg font-bold rounded-lg transition-all duration-200 transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-theme-primary/30"
+              class="px-6 py-2 bg-theme-primary hover:bg-theme-primary-hover text-theme-bg font-bold rounded-lg transition-all duration-200 transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-theme-primary/30"
               :disabled="isSubmitting"
             >
               {{ isSubmitting ? 'Enregistrement...' : 'Enregistrer' }}
@@ -327,7 +327,7 @@
     >
       <div class="w-full max-w-md bg-theme-card border border-theme-border rounded-2xl shadow-2xl">
         <!-- Header -->
-        <div class="bg-gradient-to-r from-theme-error to-theme-error border-b border-theme-error p-6 rounded-t-2xl">
+        <div class="bg-theme-error border-b border-theme-error p-6 rounded-t-2xl">
           <div class="flex items-center space-x-3">
             <div class="w-8 h-8 bg-theme-error rounded-lg flex items-center justify-center">
               <svg class="w-5 h-5 text-theme-text" fill="none" stroke="currentColor" viewBox="0 0 24 24">

@@ -19,7 +19,7 @@
       <div class="absolute right-3 top-1/2 transform -translate-y-1/2 flex space-x-2">
         <button
           @click="savePseudo"
-          class="w-6 h-6 bg-gradient-to-r from-theme-primary to-theme-primary-hover text-theme-bg rounded-full flex items-center justify-center hover:from-theme-primary hover:to-theme-primary-hover transition-all duration-300 shadow-lg"
+          class="w-6 h-6 bg-theme-primary hover:bg-theme-primary-hover text-theme-bg rounded-full flex items-center justify-center transition-all duration-300 shadow-lg"
           title="Sauvegarder"
         >
           <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">

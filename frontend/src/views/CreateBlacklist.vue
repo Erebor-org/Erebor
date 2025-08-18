@@ -8,7 +8,7 @@
       <!-- Page Header -->
       <div class="text-center mb-12">
         <h1 class="text-6xl font-bold text-theme-primary mb-6">Blacklist de la Guilde</h1>
-        <div class="w-32 h-1 bg-gradient-to-r from-theme-primary via-yellow-500 to-theme-primary mx-auto rounded-full shadow-lg shadow-theme-primary/50"></div>
+        <div class="w-32 h-1 bg-theme-primary mx-auto rounded-full shadow-lg shadow-theme-primary/50"></div>
         <p class="text-theme-text-muted mt-6 text-lg">Gérez la liste des personnages bannis d'Erebor</p>
       </div>
 

@@ -42,7 +42,7 @@
       <!-- Page Header -->
       <div class="text-center mb-12">
         <h1 class="text-6xl font-bold text-theme-primary mb-6">Gestion des Membres</h1>
-        <div class="w-32 h-1 bg-gradient-to-r from-theme-primary via-yellow-500 to-theme-primary mx-auto rounded-full shadow-lg shadow-theme-primary/50"></div>
+        <div class="w-32 h-1 bg-theme-primary mx-auto rounded-full shadow-lg shadow-theme-primary/50"></div>
       </div>
 
       <!-- Search Header -->
@@ -132,10 +132,10 @@
     <button
       v-if="showScrollToTop"
       @click="scrollToTop"
-      class="fixed bottom-8 right-8 z-[9999] w-16 h-16 bg-gradient-to-br from-theme-card to-theme-bg hover:from-theme-bg-muted hover:to-theme-card text-theme-primary rounded-full shadow-2xl hover:shadow-theme-primary/25 transition-all duration-500 transform hover:scale-110 focus:outline-none focus:ring-4 focus:ring-theme-primary/30 border-2 border-theme-primary/50 hover:border-theme-primary"
+      class="fixed bottom-8 right-8 z-[9999] w-16 h-16 bg-theme-card hover:bg-theme-bg-muted text-theme-primary rounded-full shadow-2xl hover:shadow-theme-primary/25 transition-all duration-500 transform hover:scale-110 focus:outline-none focus:ring-4 focus:ring-theme-primary/30 border-2 border-theme-primary/50 hover:border-theme-primary"
       title="Retour en haut de page"
     >
-      <div class="absolute inset-0 bg-gradient-to-br from-theme-primary/20 to-transparent rounded-full"></div>
+      <div class="absolute inset-0 bg-theme-primary/20 rounded-full"></div>
       <svg class="w-7 h-7 mx-auto relative z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18" />
       </svg>
@@ -182,7 +182,7 @@ import ArchiveModal from '@/components/ArchiveModal.vue';
 import ViewToggle from '@/components/ViewToggle.vue';
 import MulesModal from '@/components/MulesModal.vue';
 import NotesModal from '@/components/NotesModal.vue';
-import { useThemeStore } from '@/stores/themeStore';
+// SUPPRIMER : import { useThemeStore } from '@/stores/themeStore';
 import { watch } from 'vue';
 
 const images = import.meta.glob('@/assets/icon_classe/*.avif', { eager: true });
@@ -705,10 +705,10 @@ export default {
     }
     // Watch for theme changes and re-apply custom colors for smooth transition
     watch(
-      () => themeStore.currentTheme,
+      () => this.$store?.themeStore?.currentTheme,
       () => {
         // Apply theme immediately
-        themeStore.applyCustomColors();
+        this.$store?.themeStore?.applyCustomColors && this.$store.themeStore.applyCustomColors();
         // Defer any heavy work to the next frame (if needed)
         requestAnimationFrame(() => {
           // No heavy work here, but this ensures the theme paints first

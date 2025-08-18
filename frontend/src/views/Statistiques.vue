@@ -8,7 +8,7 @@
       <!-- Page Header -->
       <div class="text-center mb-12">
         <h1 class="text-6xl font-bold text-theme-primary mb-6">Statistiques de la Guilde</h1>
-        <div class="w-32 h-1 bg-gradient-to-r from-theme-primary via-yellow-500 to-theme-primary mx-auto rounded-full shadow-lg shadow-theme-primary/50"></div>
+        <div class="w-32 h-1 bg-theme-primary mx-auto rounded-full shadow-lg shadow-theme-primary/50"></div>
         <p class="text-theme-text-muted mt-6 text-lg">Analysez les performances et la composition de votre communauté</p>
       </div>
 
@@ -21,7 +21,7 @@
               :class="[
                 'px-6 py-3 text-sm font-medium rounded-lg transition-all duration-200',
                 filter === 'global' 
-                  ? 'bg-gradient-to-r from-theme-primary to-theme-primary-hover text-theme-bg shadow-lg' 
+                  ? 'bg-theme-primary text-theme-bg shadow-lg' 
                   : 'text-theme-text-muted hover:text-theme-text hover:bg-theme-bg-muted'
               ]"
             >
@@ -32,7 +32,7 @@
               :class="[
                 'px-6 py-3 text-sm font-medium rounded-lg transition-all duration-200',
                 filter === 'byRole' 
-                  ? 'bg-gradient-to-r from-theme-primary to-theme-primary-hover text-theme-bg shadow-lg' 
+                  ? 'bg-theme-primary text-theme-bg shadow-lg' 
                   : 'text-theme-text-muted hover:text-theme-text hover:bg-theme-bg-muted'
               ]"
             >
@@ -43,7 +43,7 @@
               :class="[
                 'px-6 py-3 text-sm font-medium rounded-lg transition-all duration-200',
                 filter === 'byRecruiter' 
-                  ? 'bg-gradient-to-r from-theme-primary to-theme-primary-hover text-theme-bg shadow-lg' 
+                  ? 'bg-theme-primary text-theme-bg shadow-lg' 
                   : 'text-theme-text-muted hover:text-theme-text hover:bg-theme-bg-muted'
               ]"
             >
@@ -82,7 +82,7 @@
         <!-- Character Stats -->
         <div class="bg-theme-card rounded-2xl border border-theme-border shadow-2xl p-6">
           <div class="flex items-center space-x-3 mb-6">
-            <div class="w-8 h-8 bg-gradient-to-br from-theme-primary to-theme-primary-hover rounded-lg flex items-center justify-center">
+            <div class="w-8 h-8 bg-theme-primary rounded-lg flex items-center justify-center">
               <svg class="w-5 h-5 text-theme-bg" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
               </svg>
@@ -109,7 +109,7 @@
         <!-- Booty Distribution -->
         <div class="bg-theme-card rounded-2xl border border-theme-border shadow-2xl p-6">
           <div class="flex items-center space-x-3 mb-6">
-            <div class="w-8 h-8 bg-gradient-to-br from-theme-primary to-theme-primary rounded-lg flex items-center justify-center">
+            <div class="w-8 h-8 bg-theme-primary rounded-lg flex items-center justify-center">
               <svg class="w-5 h-5 text-theme-text" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
               </svg>
@@ -130,7 +130,7 @@
         <!-- Member Roles Distribution -->
         <div class="bg-theme-card rounded-2xl border border-theme-border shadow-2xl p-6">
           <div class="flex items-center space-x-3 mb-6">
-            <div class="w-8 h-8 bg-gradient-to-br from-theme-primary to-theme-primary rounded-lg flex items-center justify-center">
+            <div class="w-8 h-8 bg-theme-primary rounded-lg flex items-center justify-center">
               <svg class="w-5 h-5 text-theme-text" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
               </svg>
@@ -164,7 +164,7 @@
         <!-- Class Distribution Chart -->
         <div class="bg-theme-card rounded-2xl border border-theme-border shadow-2xl p-6">
           <div class="flex items-center space-x-3 mb-6">
-            <div class="w-8 h-8 bg-gradient-to-br from-theme-primary to-theme-primary rounded-lg flex items-center justify-center">
+            <div class="w-8 h-8 bg-theme-primary rounded-lg flex items-center justify-center">
               <svg class="w-5 h-5 text-theme-text" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
               </svg>
@@ -193,7 +193,7 @@
         <!-- Recruiter Performance -->
         <div class="bg-theme-card rounded-2xl border border-theme-border shadow-2xl p-6">
           <div class="flex items-center space-x-3 mb-6">
-            <div class="w-8 h-8 bg-gradient-to-br from-theme-success to-theme-success rounded-lg flex items-center justify-center">
+            <div class="w-8 h-8 bg-theme-success rounded-lg flex items-center justify-center">
               <svg class="w-5 h-5 text-theme-text" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
               </svg>
@@ -251,10 +251,10 @@
     <button
       v-if="showScrollToTop"
       @click="scrollToTop"
-      class="fixed bottom-8 right-8 z-[9999] w-16 h-16 bg-gradient-to-br from-theme-card to-theme-bg hover:from-theme-bg-muted hover:to-theme-card text-theme-primary rounded-full shadow-2xl hover:shadow-theme-primary/25 transition-all duration-500 transform hover:scale-110 focus:outline-none focus:ring-4 focus:ring-theme-primary/30 border-2 border-theme-primary/50 hover:border-theme-primary"
+      class="fixed bottom-8 right-8 z-[9999] w-16 h-16 bg-theme-card hover:bg-theme-bg-muted text-theme-primary rounded-full shadow-2xl hover:shadow-theme-primary/25 transition-all duration-500 transform hover:scale-110 focus:outline-none focus:ring-4 focus:ring-theme-primary/30 border-2 border-theme-primary/50 hover:border-theme-primary"
       title="Retour en haut de page"
     >
-      <div class="absolute inset-0 bg-gradient-to-br from-theme-primary/20 to-transparent rounded-full"></div>
+      <div class="absolute inset-0 bg-theme-primary/20 rounded-full"></div>
       <svg class="w-7 h-7 mx-auto relative z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18" />
       </svg>

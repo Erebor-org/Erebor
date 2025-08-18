@@ -9,7 +9,7 @@
       @cancel="showConfirmSwitch = false"
     />
     <!-- Table Header -->
-    <div class="bg-gradient-to-r from-theme-bg-muted to-theme-card px-6 py-4 border-b border-theme-bg-muted">
+    <div class="bg-theme-bg-muted px-6 py-4 border-b border-theme-bg-muted">
       <h3 class="text-xl font-bold text-theme-primary">Membres Actifs</h3>
     </div>
 

@@ -9,10 +9,10 @@
       class="w-full max-w-7xl bg-theme-card border border-theme-border rounded-2xl shadow-2xl relative max-h-[90vh] overflow-hidden flex flex-col"
     >
       <!-- Header with gradient -->
-      <div class="bg-gradient-to-r from-theme-bg-muted to-theme-card border-b border-theme-bg-muted p-6">
+      <div class="bg-theme-bg-muted border-b border-theme-bg-muted p-6">
         <div class="flex items-center justify-between">
           <div class="flex items-center space-x-4">
-            <div class="w-12 h-12 bg-gradient-to-br from-theme-primary to-theme-primary-hover rounded-xl flex items-center justify-center shadow-lg">
+            <div class="w-12 h-12 bg-theme-primary rounded-xl flex items-center justify-center shadow-lg">
               <svg class="w-7 h-7 text-theme-bg" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
               </svg>
@@ -113,7 +113,7 @@
               <button
                 type="button"
                 @click="submitForm"
-                class="px-8 py-4 bg-gradient-to-r from-theme-primary to-theme-primary-hover hover:from-theme-primary-hover hover:to-theme-primary-hover text-theme-bg font-bold rounded-xl transition-all duration-200 transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-theme-primary/30 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                class="px-8 py-4 bg-theme-primary hover:bg-theme-primary-hover text-theme-bg font-bold rounded-xl transition-all duration-200 transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-theme-primary/30 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
                 :disabled="isSubmitting || !character.class"
               >
                 <div class="flex items-center space-x-3">
