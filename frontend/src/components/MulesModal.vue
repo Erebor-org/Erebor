@@ -118,6 +118,7 @@
 import EditablePseudo from './EditablePseudo.vue';
 import ClassDropdown from './ClassDropdown.vue';
 import ConfirmModal from './ConfirmModal.vue';
+import { useAuthStore } from '@/stores/authStore';
 const API_URL = import.meta.env.VITE_API_URL;
 
 export default {
@@ -198,9 +199,12 @@ export default {
     async doSwitchWithMule() {
       this.showConfirmSwitch = false;
       try {
+        const authStore = useAuthStore();
+        const userPseudo = authStore.user?.username || '';
         const response = await fetch(`${API_URL}/characters/${this.switchMain.id}/switch-with-mule/${this.switchMule.id}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ switchedBy: userPseudo })
         });
         if (!response.ok) throw new Error('Erreur lors du switch');
         this.$emit('refresh-data');

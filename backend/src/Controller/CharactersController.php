@@ -466,6 +466,7 @@ class CharactersController extends AbstractController
 
     #[Route('/characters/{characterId}/switch-with-mule/{muleId}', name: 'character_switch_with_mule', methods: ['POST'])]
     public function switchWithMule(
+        Request $request,
         int $characterId,
         int $muleId,
         CharactersRepository $charactersRepository,
@@ -537,6 +538,33 @@ class CharactersController extends AbstractController
         $em->remove($character);
         $em->remove($mule);
         $em->flush();
+
+        // Notification Discord via NotificationService avec switchedBy (robuste)
+        // DEBUG : log le body brut reçu
+        $rawBody = $request->getContent();
+        $requestBody = json_decode($rawBody, true);
+        $switchedBy = $requestBody['switchedBy'] ?? null;
+        if (!$switchedBy) {
+            $user = $this->getUser();
+            if ($user && method_exists($user, 'getUsername')) {
+                $switchedBy = $user->getUsername();
+            } elseif ($character && $character->getUserId()) {
+                $userRepo = $em->getRepository(\App\Entity\User::class);
+                $userEntity = $userRepo->find($character->getUserId());
+                if ($userEntity && method_exists($userEntity, 'getUsername')) {
+                    $switchedBy = $userEntity->getUsername();
+                }
+            }
+        }
+        if (!$switchedBy) {
+            $switchedBy = 'Un utilisateur inconnu';
+        }
+        $this->notificationService->notify('switch_main', [
+            'oldMain' => $character ? $character->getPseudo() : '',
+            'newMain' => $newCharacter ? $newCharacter->getPseudo() : '',
+            'switchedBy' => $switchedBy,
+        ]);
+
         return $this->json([
             'message' => 'Switch successful',
             'newMain' => [

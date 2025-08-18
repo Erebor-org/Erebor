@@ -17,6 +17,7 @@ class NotificationService
         'warning_added' => 'https://n8n.neitosden.fr/webhook/warning',
         'archivage_added' => 'https://n8n.neitosden.fr/webhook/archivage',
         'mule_import' => 'https://n8n.neitosden.fr/webhook/mule_import',
+        'switch_main' => 'https://n8n.neitosden.fr/webhook/switchMain', // Ajouté
     ];
 
     public function __construct(HttpClientInterface $httpClient)
@@ -55,6 +56,9 @@ class NotificationService
             ],
             'mule_import' => [
                 'embeds' => [$this->buildMuleImportEmbed($data)],
+            ],
+            'switch_main' => [
+                'embeds' => [$this->buildSwitchMainEmbed($data)],
             ],
             default => throw new \InvalidArgumentException(sprintf('Unsupported event type: %s', $eventType)),
         };
@@ -181,6 +185,28 @@ class NotificationService
                 $character->getClass()
             ),
             'color' => 9807270, // Bleu-gris
+            'timestamp' => (new \DateTime())->format(\DateTime::ATOM),
+            'footer' => [
+                'text' => 'Système Erebor',
+            ],
+        ];
+    }
+
+    private function buildSwitchMainEmbed(array $data): array
+    {
+        $oldMain = $data['oldMain'] ?? '';
+        $newMain = $data['newMain'] ?? '';
+        $switchedBy = $data['switchedBy'] ?? '';
+        return [
+            'title' => 'Switch de main effectué 🔄',
+            'description' => sprintf(
+                "**%s** a effectué un switch de main pour **%s** :\n\nAncien main : **%s**\nNouveau main : **%s**",
+                $switchedBy ?: 'Un utilisateur inconnu',
+                $oldMain,
+                $oldMain,
+                $newMain
+            ),
+            'color' => 3447003, // Bleu
             'timestamp' => (new \DateTime())->format(\DateTime::ATOM),
             'footer' => [
                 'text' => 'Système Erebor',
