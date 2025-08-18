@@ -102,6 +102,16 @@
           </p>
         </div>
 
+            <!-- Notes Modal Trigger -->
+            <div class="mt-4 mb-4">
+              <button
+                @click="openNotesModal(member)"
+                class="w-full flex items-center justify-center gap-2 px-4 py-3 bg-theme-bg-muted hover:bg-theme-primary/10 border border-theme-primary rounded-xl text-theme-primary hover:text-theme-primary-hover font-semibold text-base transition-all duration-200 shadow-sm focus:outline-none focus:ring-2 focus:ring-theme-primary/30"
+              >
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536M9 13h3l8-8a2.828 2.828 0 10-4-4l-8 8v3z" /></svg>
+                <span>{{ member.notes && member.notes.trim() !== '' ? 'Voir la note' : 'Ajouter une note' }}</span>
+              </button>
+            </div>
         <!-- Mules Section -->
         <div class="border-t border-theme-border pt-6">
           <div class="flex items-center justify-between mb-4">
@@ -246,6 +256,11 @@ export default {
     return {
       localExpandedRows: {},
       ankamaDisplayed: {}, // New state for Ankama ID display
+      showTooltip: null,
+      expandedNotes: {},
+      editableNotes: {},
+      editingNoteId: null,
+      editingNoteValue: '',
     };
   },
   props: {
@@ -285,6 +300,8 @@ export default {
     'save-pseudo',
     'open-mule-modal',
     'open-add-mule-modal',
+    'open-notes-modal',
+    'save-note',
   ],
   methods: {
     toggleExpand(memberId) {
@@ -316,6 +333,32 @@ export default {
     },
     openAddMuleModal(member) {
       this.$emit('open-add-mule-modal', member);
+    },
+    openNotesModal(member) {
+      this.$emit('open-notes-modal', member);
+    },
+    toggleNotesExpand(memberId) {
+      this.expandedNotes[memberId] = !this.expandedNotes[memberId];
+      if (this.expandedNotes[memberId]) {
+        this.editableNotes[memberId] = this.filteredMembers.find(m => m.member.id === memberId)?.member.notes || '';
+      }
+    },
+    saveNote(memberId) {
+      // Emit event to parent to save note (API call should be handled in parent)
+      this.$emit('save-note', memberId, this.editableNotes[memberId]);
+    },
+    startEditingNote(id, value) {
+      this.editingNoteId = id;
+      this.editingNoteValue = value || '';
+    },
+    cancelEditingNote() {
+      this.editingNoteId = null;
+      this.editingNoteValue = '';
+    },
+    saveEditingNote(id) {
+      this.$emit('save-note', id, this.editingNoteValue);
+      this.editingNoteId = null;
+      this.editingNoteValue = '';
     },
   },
 };

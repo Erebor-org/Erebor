@@ -46,6 +46,22 @@
         </div>
       </div>
 
+      <!-- Default Member View Setting -->
+      <div class="bg-theme-card rounded-lg p-6 shadow-lg mb-8">
+        <h3 class="text-xl font-semibold text-theme-primary mb-4">👥 Vue par défaut des membres</h3>
+        <div class="flex items-center gap-6">
+          <label class="flex items-center gap-2 cursor-pointer">
+            <input type="radio" name="defaultMemberView" value="cards" v-model="defaultMemberView" @change="saveDefaultMemberView" />
+            <span>Carte</span>
+          </label>
+          <label class="flex items-center gap-2 cursor-pointer">
+            <input type="radio" name="defaultMemberView" value="list" v-model="defaultMemberView" @change="saveDefaultMemberView" />
+            <span>Liste</span>
+          </label>
+        </div>
+        <p class="text-theme-text-muted mt-2 text-sm">Choisissez la vue par défaut pour la gestion des membres.</p>
+      </div>
+
       <!-- Color Customization Grid -->
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
         <!-- Background Colors -->
@@ -288,6 +304,12 @@ const customColors = ref({
   light: { ...defaultColors.light },
   dark: { ...defaultColors.dark }
 })
+
+// Default member view setting
+const defaultMemberView = ref(localStorage.getItem('erebor-default-member-view') || 'cards')
+const saveDefaultMemberView = () => {
+  localStorage.setItem('erebor-default-member-view', defaultMemberView.value)
+}
 
 // Computed properties
 const isCustomTheme = computed(() => {

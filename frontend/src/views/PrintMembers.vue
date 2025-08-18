@@ -28,6 +28,14 @@
       @open-add-mule-modal="openAddMuleModal"
     />
 
+    <!-- Notes Modal -->
+    <NotesModal
+      :show="showNotesModal"
+      :initial-notes="notesModalContent"
+      @close="showNotesModal = false"
+      @save="saveMemberNote"
+    />
+
     <!-- Main Container -->
     <div ref="mainContainer" class="container mx-auto px-4 py-8">
       <!-- Page Header -->
@@ -72,6 +80,8 @@
           @save-pseudo="savePseudo"
           @open-mule-modal="openMuleModal"
           @open-add-mule-modal="openAddMuleModal"
+          @open-notes-modal="openNotesModal"
+          @save-note="saveMemberNote"
         />
 
         <!-- List View -->
@@ -92,6 +102,7 @@
           @open-mule-modal="openMuleModal"
           @open-add-mule-modal="openAddMuleModal"
           @open-mules-modal="openMulesModal"
+          @open-notes-modal="openNotesModal"
         />
       </div>
 
@@ -168,6 +179,7 @@ import ArchivedMembersTableList from '@/components/ArchivedMembersTableList.vue'
 import ArchiveModal from '@/components/ArchiveModal.vue';
 import ViewToggle from '@/components/ViewToggle.vue';
 import MulesModal from '@/components/MulesModal.vue';
+import NotesModal from '@/components/NotesModal.vue';
 
 const images = import.meta.glob('@/assets/icon_classe/*.avif', { eager: true });
 
@@ -185,6 +197,7 @@ export default {
     ArchiveModal,
     ViewToggle,
     MulesModal,
+    NotesModal,
   },
   data() {
     return {
@@ -211,7 +224,7 @@ export default {
 
       activeTab: 'active',
       archivedSearchQuery: '',
-      viewMode: 'cards', // New property for view mode (cards or list)
+      viewMode: (localStorage.getItem('erebor-default-member-view') === 'list') ? 'list' : 'cards', // Set from localStorage before render
       classes: {
         sram: images['/src/assets/icon_classe/sram.avif'].default,
         forgelance: images['/src/assets/icon_classe/forgelance.avif'].default,
@@ -235,6 +248,9 @@ export default {
       },
       characterWarningCounts: {},
       selectedUnarchivedCharacter: null,
+      showNotesModal: false,
+      selectedMemberForNotes: null,
+      notesModalContent: '',
     };
   },
   computed: {
@@ -460,7 +476,7 @@ export default {
         this.selectedMule = null;
       } catch (error) {
         console.error('Error archiving mule:', error.response?.data || error.message);
-        this.$refs.notificationRef.showNotification('Erreur lors de l’archivage.');
+        this.$refs.notificationRef.showNotification('Erreur lors de l’archivage.', 'error');
       }
     },
     async fetchAllMules() {
@@ -542,7 +558,7 @@ export default {
         this.$refs.notificationRef.showNotification('Classe mise à jour avec succès !');
       } catch (error) {
         console.error('Erreur lors de la mise à jour de la classe:', error.message);
-        this.$refs.notificationRef.showNotification('Échec de la mise à jour de la classe.');
+        this.$refs.notificationRef.showNotification('Échec de la mise à jour de la classe.', 'error');
       }
     },
     async updateMuleClass(muleId, newClass) {
@@ -561,7 +577,7 @@ export default {
         this.$refs.notificationRef.showNotification('Mule class updated successfully!');
       } catch (error) {
         console.error('Error updating mule class:', error.message);
-        this.$refs.notificationRef.showNotification('Failed to update mule class.');
+        this.$refs.notificationRef.showNotification('Failed to update mule class.', 'error');
       }
     },
 
@@ -618,6 +634,39 @@ export default {
     closeMulesModal() {
       this.showMulesModal = false;
       this.selectedMemberForMules = null;
+    },
+
+    openNotesModal(member) {
+      this.selectedMemberForNotes = member;
+      this.notesModalContent = member.notes || '';
+      this.showNotesModal = true;
+    },
+    async saveMemberNote(idOrNote, noteMaybe) {
+      // Support both modal and card view: (note) or (id, note)
+      let memberId, newNote;
+      if (typeof noteMaybe === 'string') {
+        memberId = idOrNote;
+        newNote = noteMaybe;
+      } else {
+        memberId = this.selectedMemberForNotes?.id;
+        newNote = idOrNote;
+      }
+      if (!memberId) return;
+      try {
+        await axios.put(`${API_URL}/characters/${memberId}`, {
+          notes: newNote,
+        });
+        // Update local state
+        const char = this.charactersData.find(c => c.id === memberId);
+        if (char) char.notes = newNote;
+        if (this.selectedMemberForNotes && this.selectedMemberForNotes.id === memberId) {
+          this.selectedMemberForNotes.notes = newNote;
+        }
+        this.showNotesModal = false;
+        this.$refs.notificationRef.showNotification('Note mise à jour avec succès !');
+      } catch (error) {
+        this.$refs.notificationRef.showNotification('Erreur lors de la mise à jour de la note.', 'error');
+      }
     },
   },
   async mounted() {

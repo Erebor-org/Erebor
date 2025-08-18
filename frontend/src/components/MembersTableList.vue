@@ -59,6 +59,28 @@
                   <p class="text-sm text-theme-text-muted truncate">
                     {{ member.member.ankama_pseudo }}
                   </p>
+                  <!-- Notes Read/Edit UX -->
+                  <div class="mt-2">
+                    <div v-if="editingNoteId !== member.member.id">
+                      <div v-if="member.member.notes && member.member.notes.trim() !== ''" class="whitespace-pre-line text-theme-text mb-1">{{ member.member.notes }}</div>
+                      <div v-else class="italic text-theme-text-muted mb-1">Aucune note pour ce membre.</div>
+                      <button @click="startEditingNote(member.member.id, member.member.notes)" class="text-theme-primary hover:text-theme-primary-hover text-xs font-medium flex items-center">
+                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536M9 13h3l8-8a2.828 2.828 0 10-4-4l-8 8v3z" /></svg> Éditer
+                      </button>
+                    </div>
+                    <div v-else>
+                      <textarea
+                        v-model="editingNoteValue"
+                        class="w-full bg-theme-bg-muted border border-theme-border rounded-lg px-3 py-2 text-sm text-theme-text focus:outline-none focus:ring-2 focus:ring-theme-primary"
+                        rows="3"
+                        placeholder="Ajouter ou modifier la note de ce membre..."
+                      ></textarea>
+                      <div class="flex justify-end mt-2 space-x-2">
+                        <button @click="cancelEditingNote" class="px-3 py-1 bg-theme-bg-muted text-theme-text rounded hover:bg-theme-border text-xs font-medium">Annuler</button>
+                        <button @click="saveEditingNote(member.member.id)" class="px-3 py-1 bg-theme-primary text-white rounded hover:bg-theme-primary-hover text-xs font-medium">Sauvegarder</button>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </td>
@@ -123,6 +145,9 @@
                 >
                   Gérer Mules
                 </button>
+                <button @click="$emit('open-notes-modal', member.member)" class="ml-2 text-theme-primary hover:text-theme-primary-hover text-xs font-medium flex items-center">
+                  <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536M9 13h3l8-8a2.828 2.828 0 10-4-4l-8 8v3z" /></svg> Note
+                </button>
               </div>
             </td>
           </tr>
@@ -176,7 +201,13 @@ export default {
       localExpandedRows,
     };
   },
-
+  data() {
+    return {
+      showTooltip: null,
+      editingNoteId: null,
+      editingNoteValue: '',
+    };
+  },
   methods: {
     savePseudo(entity, type, newPseudo) {
       this.$emit('save-pseudo', entity, type, newPseudo);
@@ -202,6 +233,32 @@ export default {
     openMulesModal(member) {
       this.$emit('open-mules-modal', member);
     },
+    openNotesModal(member) {
+      this.$emit('open-notes-modal', member);
+    },
+    toggleNotesExpand(memberId) {
+      this.expandedNotes[memberId] = !this.expandedNotes[memberId];
+      if (this.expandedNotes[memberId]) {
+        this.editableNotes[memberId] = this.filteredMembers.find(m => m.member.id === memberId)?.member.notes || '';
+      }
+    },
+    saveNote(memberId) {
+      // Emit event to parent to save note (API call should be handled in parent)
+      this.$emit('save-note', memberId, this.editableNotes[memberId]);
+    },
+    startEditingNote(id, value) {
+      this.editingNoteId = id;
+      this.editingNoteValue = value || '';
+    },
+    cancelEditingNote() {
+      this.editingNoteId = null;
+      this.editingNoteValue = '';
+    },
+    saveEditingNote(id) {
+      this.$emit('save-note', id, this.editingNoteValue);
+      this.editingNoteId = null;
+      this.editingNoteValue = '';
+    },
   },
   emits: [
     'save-pseudo',
@@ -212,6 +269,8 @@ export default {
     'update-mule-class',
     'open-add-mule-modal',
     'open-mules-modal',
+    'open-notes-modal',
+    'save-note',
   ],
 };
 </script>

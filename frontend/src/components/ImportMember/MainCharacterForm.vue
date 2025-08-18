@@ -146,6 +146,19 @@
           </button>
         </div>
       </div>
+      <!-- Notes Field -->
+      <div class="space-y-2">
+        <label for="notes" class="block text-sm font-medium text-theme-text">
+          Notes (facultatif)
+        </label>
+        <textarea
+          id="notes"
+          v-model="character.notes"
+          class="w-full bg-theme-bg-muted border-2 border-theme-border text-theme-text rounded-lg px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-theme-primary focus:border-theme-primary transition-all duration-200 placeholder-gray-400"
+          rows="3"
+          placeholder="Contexte de recrutement ou information(s) pertinente(s) sur le membre..."
+        ></textarea>
+      </div>
     </div>
   </div>
 </template>
@@ -181,6 +194,7 @@ export default {
         recruiterId: null,
         isArchived: false,
         userId: null,
+        notes: '',
       },
       recruiters: [],
       selectedRecruiterName: '',
@@ -269,6 +283,7 @@ export default {
         recruiterId: null,
         isArchived: false,
         userId: null,
+        notes: '',
       };
       this.errorMessage = '';
       this.emitUpdate();
@@ -295,6 +310,9 @@ export default {
       this.emitUpdate();
     },
     'character.recruitedAt'() {
+      this.emitUpdate();
+    },
+    'character.notes'() {
       this.emitUpdate();
     }
   }

@@ -100,15 +100,20 @@ class NotificationService
             $mulesText .= implode(", ", $mulesList);
         }
 
+        $notesText = '';
+        if ($character->getNotes() && trim($character->getNotes()) !== '') {
+            $notesText = sprintf("\n\n**Notes** : %s", $character->getNotes());
+        }
         return [
             'title' => 'Import de personnage ⚔️',
             'description' => sprintf(
-                "**%s** a recruté un nouveau joueur :\n\n**Pseudo** : %s\n**Pseudo Ankama** : %s\n**Classe** : %s%s",
+                "**%s** a recruté un nouveau joueur :\n\n**Pseudo** : %s\n**Pseudo Ankama** : %s\n**Classe** : %s%s%s",
                 $recruiterPseudo,
                 $character->getPseudo(),
                 $character->getAnkamaPseudo(),
                 $character->getClass(),
-                $mulesText
+                $mulesText,
+                $notesText
             ),
             'color' => 3066993, // Vert clair
             'timestamp' => (new \DateTime())->format(\DateTime::ATOM),

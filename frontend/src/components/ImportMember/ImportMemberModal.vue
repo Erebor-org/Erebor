@@ -197,6 +197,7 @@ export default {
         recruiterId: null,
         isArchived: false,
         userId: null,
+        notes: '',
       },
       mules: [],
       blacklist: [],
@@ -247,7 +248,7 @@ export default {
     },
     
     updateCharacter(characterData) {
-      this.character = characterData;
+      this.character = { ...this.character, ...characterData };
     },
     
     updateMules(mulesData) {
@@ -270,7 +271,7 @@ export default {
         this.isSubmitting = true;
         
         // Prepare main character data with mules
-        const characterData = { ...this.character };
+        const characterData = { ...this.character, notes: this.character.notes || '' };
 
         // Add mules if there are any
         if (this.mules.length > 0) {

@@ -69,6 +69,7 @@ class CharactersController extends AbstractController
                     'name' => $character->getRank()->getName(),
                 ] : null,
                 'mules' => $muleList,
+                'notes' => $character->getNotes(),
             ];
         }, $characters);
 
@@ -119,7 +120,8 @@ class CharactersController extends AbstractController
                 ->setClass($data['class'])
                 ->setRecruitedAt($recruitedAt)
                 ->setRank($rank)
-                ->setIsArchived($data['isArchived'] ?? false);
+                ->setIsArchived($data['isArchived'] ?? false)
+                ->setNotes($data['notes'] ?? null);
                 
         // Handle the Recruiter
         if (isset($data['recruiterId'])) {
@@ -175,7 +177,8 @@ class CharactersController extends AbstractController
                 'id' => $character->getRank()->getId(),
                 'name' => $character->getRank()->getName(),
             ] : null,
-            'mules' => []
+            'mules' => [],
+            'notes' => $character->getNotes(),
         ];
         
         // Ajouter les mules à la réponse
@@ -320,9 +323,12 @@ class CharactersController extends AbstractController
         $character->setUserId($data['userId'] ?? $character->getUserId())
                 ->setPseudo($data['pseudo'] ?? $character->getPseudo())
                 ->setAnkamaPseudo($data['ankamaPseudo'] ?? $character->getAnkamaPseudo())
-                ->setRecruitedAt($recruitedAt) ?? $character->setRecruitedAt()
                 ->setClass($data['class'] ?? $character->getClass())
-                ->setIsArchived($data['isArchived'] ?? $character->isArchived());
+                ->setIsArchived($data['isArchived'] ?? $character->isArchived())
+                ->setNotes($data['notes'] ?? $character->getNotes());
+        if (isset($data['recruitedAt'])) {
+            $character->setRecruitedAt(new \DateTime($data['recruitedAt']));
+        }
 
         // Handle recruiter assignment
         if (isset($data['recruiterId'])) {
