@@ -118,25 +118,24 @@
             <h4 class="text-sm font-semibold text-theme-text uppercase tracking-wider">Mules</h4>
             <button
               v-if="filteredMulesByCharacter && filteredMulesByCharacter(id) && filteredMulesByCharacter(id).length > 0"
-              @click="toggleExpand(id)"
+              @click="openAddMuleModal(member)"
               class="text-theme-primary hover:text-theme-primary text-sm font-medium transition-colors duration-200 flex items-center space-x-2"
             >
-              <span>{{ filteredMulesByCharacter(id).length }} mule(s)</span>
-              <svg 
-                class="w-4 h-4 transition-transform duration-200"
-                :class="{ 'rotate-180': localExpandedRows[id] }"
-                fill="none" 
-                viewBox="0 0 24 24" 
-                stroke="currentColor"
-              >
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+              <span>Ajouter une mule</span>
+              <svg class="w-4 h-4 transition-transform duration-200" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
               </svg>
             </button>
-            <span v-else class="text-theme-text-muted text-sm">Aucune mule</span>
           </div>
+          <span v-if="!filteredMulesByCharacter || !filteredMulesByCharacter(id) || filteredMulesByCharacter(id).length === 0" class="text-theme-text-muted text-sm">Aucune mule sur ce personnage</span>
 
           <!-- Expanded Mules -->
           <div v-if="localExpandedRows[id]" class="space-y-4">
+            <div class="flex justify-end mb-2">
+              <button @click="toggleExpand(id)" class="px-3 py-1 bg-theme-bg-muted hover:bg-theme-primary/10 border border-theme-primary rounded-lg text-theme-primary hover:text-theme-primary-hover font-semibold text-xs transition-all duration-200 shadow-sm focus:outline-none focus:ring-2 focus:ring-theme-primary/30">
+                Réduire
+              </button>
+            </div>
             <div
               v-for="(mule, muleIndex) in filteredMulesByCharacter(id)"
               :key="`mule-${mule.id}-${muleIndex}`"
@@ -410,7 +409,7 @@ export default {
         });
         if (!response.ok) throw new Error('Erreur lors du switch');
         this.$emit('refresh-data');
-      } catch (e) {
+      } catch {
         this.$emit('refresh-data');
       } finally {
         this.switchLoading = false;
