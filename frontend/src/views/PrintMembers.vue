@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen bg-theme-bg text-theme-text">
+  <div class="min-h-screen">
     <!-- Notification -->
     <Notification ref="notificationRef" />
     
@@ -180,6 +180,8 @@ import ArchiveModal from '@/components/ArchiveModal.vue';
 import ViewToggle from '@/components/ViewToggle.vue';
 import MulesModal from '@/components/MulesModal.vue';
 import NotesModal from '@/components/NotesModal.vue';
+import { useThemeStore } from '@/stores/themeStore';
+import { watch } from 'vue';
 
 const images = import.meta.glob('@/assets/icon_classe/*.avif', { eager: true });
 
@@ -693,6 +695,19 @@ export default {
     } catch (error) {
       console.error('Error during component initialization:', error);
     }
+    // Watch for theme changes and re-apply custom colors for smooth transition
+    watch(
+      () => themeStore.currentTheme,
+      () => {
+        // Apply theme immediately
+        themeStore.applyCustomColors();
+        // Defer any heavy work to the next frame (if needed)
+        requestAnimationFrame(() => {
+          // No heavy work here, but this ensures the theme paints first
+        });
+      },
+      { immediate: true }
+    );
   },
   beforeUnmount() {
     // Remove event listener for scroll
