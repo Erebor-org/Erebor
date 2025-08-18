@@ -46,7 +46,7 @@
           <span class="text-lg">{{ lastEliminated.pseudo }}</span>
         </div>
         <transition name="winner-pop">
-          <div v-if="winner" class="mt-6 text-center winner-anim">
+          <div v-if="winner && hasSpun && lastSpinPlayersCount > 1 && !spinning" class="mt-6 text-center winner-anim">
             <div class="text-2xl font-bold text-theme-success">🎉 Gagnant : {{ winner.pseudo }} 🎉</div>
             <img :src="getClassIcon(winner.class)" alt="class icon" class="w-12 h-12 inline-block" />
           </div>
@@ -100,10 +100,16 @@
     </div>
     
   </div>
+  <div v-if="spinning" class="fixed inset-0 z-50 flex items-center justify-center bg-black/80">
+    <div class="flex flex-col items-center justify-center relative">
+      <canvas ref="wheelCanvas" width="1000" height="1000" class="border-8 border-theme-primary rounded-full shadow-2xl bg-theme-bg transition-all duration-300" style="max-width:95vw; max-height:95vh;"></canvas>
+      <div class="mt-8 text-white text-xl font-bold animate-pulse">Tirage en cours...</div>
+    </div>
+  </div>
 </template>
 
 <script lang="ts" setup>
-import { ref, computed, onMounted, watch } from 'vue';
+import { ref, computed, onMounted, watch, nextTick } from 'vue';
 import axios from 'axios';
 import confetti from 'canvas-confetti';
 
@@ -128,6 +134,8 @@ const wheelCanvas = ref<HTMLCanvasElement | null>(null);
 let spinOrder: Character[] = [];    // snapshot du tour en cours (ordre et contenu figés)
 let spinIds: number[] = [];         // ids pour élimination fiable
 const tirageInstantane = ref(false);
+const hasSpun = ref(false);
+let lastSpinPlayersCount = 0;
 
 
 let selectedIndex = 0;
@@ -199,9 +207,9 @@ function getClassIcon(className: string) {
 
 function spinWheel() {
   if (spinning.value || remainingPlayers.value.length < 2) return;
-
-  // Verrouille la sélection pendant le spin (simple flag)
+  lastSpinPlayersCount = remainingPlayers.value.length;
   spinning.value = true;
+  hasSpun.value = false;
 
   // 1) Snapshot des joueurs restants dans l'ordre **visible au dessin**
   spinOrder = remainingPlayers.value.map(c => c);
@@ -250,11 +258,9 @@ function animateWheel(now?: number) {
         winner.value = remainingPlayers.value[0];
       }
     }
-
     spinning.value = false;
-
-    // Redessine à l’angle 0 avec l’état **actuel**
-    drawWheel(0, undefined, undefined);
+    hasSpun.value = true;
+    nextTick(() => drawWheel(0, undefined, undefined));
   }
 }
 
@@ -381,6 +387,8 @@ function resetWheel() {
   eliminatedHistory.value = [];
   lastEliminated.value = null;
   winner.value = null;
+  checkedRanks.value = [];
+  hasSpun.value = false;
   drawWheel();
 }
 
@@ -394,7 +402,12 @@ watch(remainingPlayers, () => {
 });
 
 watch(winner, (newWinner, oldWinner) => {
-  if (newWinner && newWinner !== oldWinner) {
+  if (
+    newWinner &&
+    newWinner !== oldWinner &&
+    hasSpun.value &&
+    lastSpinPlayersCount > 1 // On ne fait pas de confetti si on n'a jamais spin à plus d'un joueur
+  ) {
     confetti({
       particleCount: 120,
       spread: 80,
@@ -477,5 +490,19 @@ function rankMemberCount(rankId: number) {
 .winner-pop-leave-to {
   opacity: 0;
   transform: scale(0.7) rotate(10deg);
+}
+.arm-shake {
+  animation: armShake 0.7s cubic-bezier(.68,-0.55,.27,1.55) infinite;
+}
+@keyframes armShake {
+  0% { transform: rotate(-10deg); }
+  20% { transform: rotate(8deg); }
+  40% { transform: rotate(-6deg); }
+  60% { transform: rotate(5deg); }
+  80% { transform: rotate(-3deg); }
+  100% { transform: rotate(0deg); }
+}
+.arm-svg {
+  pointer-events: none;
 }
 </style>
