@@ -97,6 +97,15 @@
           >
             Statistiques
           </RouterLink>
+
+          <RouterLink 
+            to="/wheel" 
+            v-if="isLoggedIn"
+            class="nav-link"
+            active-class="nav-link-active"
+          >
+            Roue Dofus
+          </RouterLink>
         </div>
 
         <!-- Right Section - User Menu & Auth -->
@@ -217,6 +226,16 @@
           @click="isMobileMenuOpen = false"
         >
           Statistiques
+        </RouterLink>
+
+        <RouterLink 
+          to="/wheel" 
+          v-if="isLoggedIn"
+          class="mobile-nav-link"
+          active-class="mobile-nav-link-active"
+          @click="isMobileMenuOpen = false"
+        >
+          Roue Dofus
         </RouterLink>
       </div>
     </div>

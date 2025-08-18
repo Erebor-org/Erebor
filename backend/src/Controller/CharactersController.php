@@ -581,4 +581,16 @@ class CharactersController extends AbstractController
             ]
         ]);
     }
+
+    #[Route('/api/characters', name: 'api_characters', methods: ['GET'])]
+    public function getActiveCharacters(CharactersRepository $repository): JsonResponse
+    {
+        $characters = $repository->findBy(['isArchived' => false]);
+        $data = array_map(fn($c) => [
+            'id' => $c->getId(),
+            'pseudo' => $c->getPseudo(),
+            'class' => $c->getClass(),
+        ], $characters);
+        return $this->json($data);
+    }
 }
