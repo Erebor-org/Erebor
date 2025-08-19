@@ -124,6 +124,14 @@
             Statistiques
           </RouterLink>
 
+          <RouterLink 
+            to="/dofusdle/classic" 
+            class="nav-link"
+            active-class="nav-link-active"
+          >
+            Dofusdle Classic
+          </RouterLink>
+
           <div v-if="isLoggedIn" class="relative">
             <button
               id="wheel-dropdown-btn"
@@ -279,6 +287,15 @@
           @click="isMobileMenuOpen = false"
         >
           Statistiques
+        </RouterLink>
+
+        <RouterLink 
+          to="/erebor/dofusdle/classic" 
+          class="mobile-nav-link"
+          active-class="mobile-nav-link-active"
+          @click="isMobileMenuOpen = false"
+        >
+          Dofusdle Classic
         </RouterLink>
 
         <div v-if="isLoggedIn" class="">
