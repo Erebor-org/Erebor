@@ -14,18 +14,28 @@
   const showWheelDropdown = ref(false);
   let wheelDropdownTimeout = null;
 
-  const openWheelDropdown = () => {
-    if (wheelDropdownTimeout) clearTimeout(wheelDropdownTimeout);
-    showWheelDropdown.value = true;
-  };
-  const delayedCloseWheelDropdown = () => {
-    wheelDropdownTimeout = setTimeout(() => {
-      showWheelDropdown.value = false;
-    }, 150);
-  };
-  const cancelCloseWheelDropdown = () => {
-    if (wheelDropdownTimeout) clearTimeout(wheelDropdownTimeout);
-  };
+  function toggleWheelDropdown() {
+    showWheelDropdown.value = !showWheelDropdown.value;
+  }
+
+  function closeWheelDropdown() {
+    showWheelDropdown.value = false;
+  }
+
+  // Fermer le menu si on clique ailleurs
+  function handleClickOutside(event) {
+    const dropdown = document.getElementById('wheel-dropdown-menu');
+    const button = document.getElementById('wheel-dropdown-btn');
+    if (dropdown && !dropdown.contains(event.target) && button && !button.contains(event.target)) {
+      closeWheelDropdown();
+    }
+  }
+  onMounted(() => {
+    document.addEventListener('mousedown', handleClickOutside);
+  });
+  onBeforeUnmount(() => {
+    document.removeEventListener('mousedown', handleClickOutside);
+  });
   
   const logout = () => {
     authStore.logout();
@@ -114,31 +124,28 @@
             Statistiques
           </RouterLink>
 
-          <div v-if="isLoggedIn" class="relative group"
-            @mouseenter="openWheelDropdown"
-            @mouseleave="delayedCloseWheelDropdown"
-          >
+          <div v-if="isLoggedIn" class="relative">
             <button
+              id="wheel-dropdown-btn"
               class="nav-link flex items-center gap-1"
-              @focus="openWheelDropdown"
-              @blur="delayedCloseWheelDropdown"
-              @mouseenter="openWheelDropdown"
-              @mouseleave="delayedCloseWheelDropdown"
+              @click="toggleWheelDropdown"
+              :aria-expanded="showWheelDropdown"
+              aria-haspopup="true"
+              type="button"
             >
               Roue
               <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
             </button>
             <div
               v-if="showWheelDropdown"
+              id="wheel-dropdown-menu"
               class="absolute left-0 mt-2 w-48 bg-theme-card border border-theme-border rounded-lg shadow-lg z-50"
-              @mouseenter="cancelCloseWheelDropdown"
-              @mouseleave="delayedCloseWheelDropdown"
             >
               <RouterLink
                 to="/wheel"
                 class="block px-4 py-3 nav-link"
                 :class="{ 'nav-link-active': route.path === '/wheel' }"
-                @click="showWheelDropdown = false"
+                @click="closeWheelDropdown"
               >
                 Roue Dofus (Membres)
               </RouterLink>
@@ -146,7 +153,7 @@
                 to="/wheel-classes"
                 class="block px-4 py-3 nav-link"
                 :class="{ 'nav-link-active': route.path === '/wheel-classes' }"
-                @click="showWheelDropdown = false"
+                @click="closeWheelDropdown"
               >
                 Roue des Classes
               </RouterLink>
