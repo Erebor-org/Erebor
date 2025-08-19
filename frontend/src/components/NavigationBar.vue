@@ -1,15 +1,31 @@
 <script setup>
   import { useAuthStore } from '@/stores/authStore';
   import { computed, ref, onMounted, onBeforeUnmount } from 'vue';
-  import { useRouter } from 'vue-router';
+  import { useRouter, useRoute } from 'vue-router';
   import ThemeToggle from './ThemeToggle.vue';
   import erebor_logo from '@/assets/erebor_logo.png';
   import profile_icon from '@/assets/profile_icon.png';
 
   const authStore = useAuthStore();
   const router = useRouter();
+  const route = useRoute();
   const isMobileMenuOpen = ref(false);
   const showScrollToTop = ref(false);
+  const showWheelDropdown = ref(false);
+  let wheelDropdownTimeout = null;
+
+  const openWheelDropdown = () => {
+    if (wheelDropdownTimeout) clearTimeout(wheelDropdownTimeout);
+    showWheelDropdown.value = true;
+  };
+  const delayedCloseWheelDropdown = () => {
+    wheelDropdownTimeout = setTimeout(() => {
+      showWheelDropdown.value = false;
+    }, 150);
+  };
+  const cancelCloseWheelDropdown = () => {
+    if (wheelDropdownTimeout) clearTimeout(wheelDropdownTimeout);
+  };
   
   const logout = () => {
     authStore.logout();
@@ -98,14 +114,44 @@
             Statistiques
           </RouterLink>
 
-          <RouterLink 
-            to="/wheel" 
-            v-if="isLoggedIn"
-            class="nav-link"
-            active-class="nav-link-active"
+          <div v-if="isLoggedIn" class="relative group"
+            @mouseenter="openWheelDropdown"
+            @mouseleave="delayedCloseWheelDropdown"
           >
-            Roue Dofus
-          </RouterLink>
+            <button
+              class="nav-link flex items-center gap-1"
+              @focus="openWheelDropdown"
+              @blur="delayedCloseWheelDropdown"
+              @mouseenter="openWheelDropdown"
+              @mouseleave="delayedCloseWheelDropdown"
+            >
+              Roue
+              <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+            </button>
+            <div
+              v-if="showWheelDropdown"
+              class="absolute left-0 mt-2 w-48 bg-theme-card border border-theme-border rounded-lg shadow-lg z-50"
+              @mouseenter="cancelCloseWheelDropdown"
+              @mouseleave="delayedCloseWheelDropdown"
+            >
+              <RouterLink
+                to="/wheel"
+                class="block px-4 py-3 nav-link"
+                :class="{ 'nav-link-active': route.path === '/wheel' }"
+                @click="showWheelDropdown = false"
+              >
+                Roue Dofus (Membres)
+              </RouterLink>
+              <RouterLink
+                to="/wheel-classes"
+                class="block px-4 py-3 nav-link"
+                :class="{ 'nav-link-active': route.path === '/wheel-classes' }"
+                @click="showWheelDropdown = false"
+              >
+                Roue des Classes
+              </RouterLink>
+            </div>
+          </div>
         </div>
 
         <!-- Right Section - User Menu & Auth -->
@@ -228,15 +274,25 @@
           Statistiques
         </RouterLink>
 
-        <RouterLink 
-          to="/wheel" 
-          v-if="isLoggedIn"
-          class="mobile-nav-link"
-          active-class="mobile-nav-link-active"
-          @click="isMobileMenuOpen = false"
-        >
-          Roue Dofus
-        </RouterLink>
+        <div v-if="isLoggedIn" class="">
+          <div class="font-semibold text-theme-primary mb-1">Roue</div>
+          <RouterLink 
+            to="/wheel" 
+            class="mobile-nav-link"
+            :class="{ 'mobile-nav-link-active': route.path === '/wheel' }"
+            @click="isMobileMenuOpen = false"
+          >
+            Roue Dofus (Membres)
+          </RouterLink>
+          <RouterLink 
+            to="/wheel-classes" 
+            class="mobile-nav-link"
+            :class="{ 'mobile-nav-link-active': route.path === '/wheel-classes' }"
+            @click="isMobileMenuOpen = false"
+          >
+            Roue des Classes
+          </RouterLink>
+        </div>
       </div>
     </div>
     <button
@@ -252,21 +308,6 @@
     </button>
   </nav>
 </template>
-
-<script>
-import erebor_logo from '@/assets/erebor_logo.png';
-import profile_icon from '@/assets/profile_icon.png';
-
-export default {
-  name: "NavigationBar",
-  data() {
-    return {
-      erebor_logo,
-      profile_icon
-    };
-  },
-};
-</script>
 
 <style scoped>
 /* Navigation Link Styles */

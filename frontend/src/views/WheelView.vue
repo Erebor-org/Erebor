@@ -1,5 +1,8 @@
 <template>
   <div class="min-h-screen bg-theme-bg text-theme-text flex flex-col items-center p-4">
+    <div class="w-full flex justify-end mb-4">
+      <RouterLink to="/wheel-classes" class="btn btn-secondary">Basculer vers la roue des classes</RouterLink>
+    </div>
     <h1 class="text-2xl font-bold mb-4 text-theme-primary">Roue de sélection Dofus</h1>
     <div class="w-full max-w-6xl grid grid-cols-1 md:grid-cols-3 gap-6">
       <!-- Sélecteur de personnages -->
@@ -8,7 +11,7 @@
           <input type="text" v-model="search" placeholder="Rechercher un pseudo..." class="input input-bordered w-full max-w-xs mr-2 bg-theme-bg text-theme-text border-theme-border" />
           <button class="btn btn-sm ml-2" @click="toggleSelectAll">{{ allSelected ? 'Tout désélectionner' : 'Tout sélectionner' }}</button>
         </div>
-        <!-- Filtre chips rangs déplacé ici -->
+        <!-- SUPPRIME le bloc chips ici -->
         <div class="text-sm mb-2 font-semibold">{{ selectedCount }} sélectionné(s) sur {{ characters.length }}</div>
         <div class="flex-1 overflow-y-auto max-h-80 border border-theme-border rounded bg-theme-bg">
           <div v-for="char in filteredCharacters.length ? filteredCharacters : characters"
@@ -73,12 +76,14 @@
           </div>
         </div>
       </div>
-      <!-- Filtre chips rangs SOUS la colonne historique, dans un bloc séparé -->
-      <div class="mt-4 bg-theme-bg-muted border border-theme-border rounded-2xl shadow flex flex-wrap justify-center gap-2 p-4">
+      <!-- Remets le bloc chips rangs ici, sur 2 rangées à l'horizontal -->
+      
+    </div>
+    <div class="mt-4 bg-theme-bg-muted border border-theme-border rounded-2xl shadow grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2 p-4 justify-items-center w-full px-2">
         <button
           v-for="rank in ranks.slice().sort((a, b) => a.id - b.id)"
           :key="rank.id"
-          class="flex items-center gap-2 px-4 py-2 rounded-full border font-medium transition-colors duration-150 focus:outline-none"
+          class="flex items-center gap-2 px-4 py-2 rounded-full border font-medium transition-colors duration-150 focus:outline-none w-full justify-center"
           :class="checkedRanks.includes(rank.id)
             ? 'bg-theme-primary text-theme-bg border-theme-primary shadow-md scale-105'
             : 'bg-theme-bg-muted text-theme-text border-theme-border hover:bg-theme-primary/10 hover:border-theme-primary'"
@@ -97,7 +102,6 @@
           </span>
         </button>
       </div>
-    </div>
     
   </div>
   <div v-if="spinning" class="fixed inset-0 z-50 flex items-center justify-center bg-black/80">
@@ -112,6 +116,7 @@
 import { ref, computed, onMounted, watch, nextTick } from 'vue';
 import axios from 'axios';
 import confetti from 'canvas-confetti';
+import { RouterLink } from 'vue-router';
 
 const API_URL = import.meta.env.VITE_API_URL;
 

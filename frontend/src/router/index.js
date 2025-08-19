@@ -10,6 +10,7 @@ import ThemeDemo from '../views/ThemeDemo.vue';
 import ThemeCustomizer from '../views/ThemeCustomizer.vue';
 import ThemeCustomizerDemo from '../views/ThemeCustomizerDemo.vue';
 import WheelView from '../views/WheelView.vue';
+import WheelClassesView from '../views/WheelClassesView.vue';
 
 const routes = [
   { path: '/', redirect: () => {
@@ -27,6 +28,7 @@ const routes = [
   { path: '/theme-customizer', name: 'ThemeCustomizer', component: ThemeCustomizer },
   { path: '/theme-customizer-demo', name: 'ThemeCustomizerDemo', component: ThemeCustomizerDemo },
   { path: '/wheel', name: 'Wheel', component: WheelView, meta: { requiresAuth: true } },
+  { path: '/wheel-classes', name: 'WheelClasses', component: WheelClassesView, meta: { requiresAuth: true } },
 ];
 
 const router = createRouter({
