@@ -12,7 +12,8 @@ class RanksController extends AbstractController
     #[Route('/ranks', name: 'ranks_list', methods: ['GET'])]
     public function getAllRanks(RanksRepository $repository): JsonResponse
     {
-        $ranks = $repository->findAll();
+        // Récupérer les rangs triés par requiredDays en ordre croissant
+        $ranks = $repository->findAllOrderedByRequiredDays();
 
         $formattedRanks = array_map(function ($rank) {
             return [

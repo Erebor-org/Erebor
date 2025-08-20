@@ -468,7 +468,7 @@ function rankMemberCount(rankId: number) {
   @apply bg-theme-primary text-white hover:bg-theme-primary-hover;
 }
 .btn-secondary {
-  @apply bg-theme-bg-muted text-theme-text hover:bg-theme-border;
+  @apply bg-theme-bg-muted text-theme-text hover:bg-theme-text-muted border border-theme-border;
 }
 .btn-warning {
   @apply bg-theme-warning text-gray-900 hover:bg-yellow-500;

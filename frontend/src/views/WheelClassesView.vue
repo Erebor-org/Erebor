@@ -215,7 +215,7 @@ function drawWheel(angle = 0, nOverride?: number, classesOverride?: typeof class
   @apply bg-theme-primary text-white hover:bg-theme-primary-hover;
 }
 .btn-secondary {
-  @apply bg-theme-primary text-white hover:bg-theme-primary-hover;
+  @apply bg-theme-bg-muted text-theme-text hover:bg-theme-text-muted border border-theme-border;
 }
 .winner-pop-enter-active {
   transition: all 0.5s cubic-bezier(.68,-0.55,.27,1.55);

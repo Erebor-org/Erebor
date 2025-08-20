@@ -30,13 +30,13 @@ class CharactersController extends AbstractController
     #[Route('/characters/', name: 'characters_list', methods: ['GET'])]
     public function getAllCharacters(CharactersRepository $repository): JsonResponse
     {
-        // Fetch characters ordered by rank.id
+        // Fetch characters ordered by rank.requiredDays
         $characters = $repository->createQueryBuilder('c')
             ->leftJoin('c.rank', 'r')
             ->leftJoin('c.recruiter', 'recruiter')
             ->leftJoin('c.mules', 'mules')
             ->addSelect('r', 'recruiter', 'mules')
-            ->orderBy('r.id', 'ASC')
+            ->orderBy('r.requiredDays', 'DESC')
             ->addOrderBy('c.id', 'ASC')
             ->getQuery()
             ->getResult();
@@ -398,6 +398,8 @@ class CharactersController extends AbstractController
             ->join('c.rank', 'r')
             ->where('r.lead = :lead')
             ->setParameter('lead', true)
+            ->orderBy('r.requiredDays', 'DESC')
+            ->addOrderBy('c.id', 'ASC')
             ->getQuery()
             ->getResult();
 

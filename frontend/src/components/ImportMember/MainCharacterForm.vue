@@ -86,7 +86,19 @@
             v-model="character.recruitedAt"
             class="w-full bg-theme-bg-muted border-2 border-theme-border text-theme-text rounded-lg px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-theme-primary focus:border-theme-primary transition-all duration-200"
             required
+            @change="validateDate"
+            :max="new Date().toISOString().slice(0, 10)"
+            style="color-scheme: light dark;"
           />
+          <div
+            v-if="dateError"
+            class="flex items-center space-x-2 text-theme-error text-sm"
+          >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+            </svg>
+            <span>{{ dateError }}</span>
+          </div>
         </div>
 
         <!-- Recruteur -->
@@ -186,11 +198,12 @@ export default {
   data() {
     return {
       errorMessage: '',
+      dateError: '',
       character: {
         pseudo: '',
         ankamaPseudo: '',
         class: '',
-        recruitedAt: new Date().toISOString().substr(0, 10),
+        recruitedAt: new Date().toISOString().slice(0, 10),
         recruiterId: null,
         isArchived: false,
         userId: null,
@@ -270,6 +283,11 @@ export default {
         return false;
       }
       
+      // Validate date
+      if (!this.validateDate()) {
+        return false;
+      }
+      
       this.errorMessage = '';
       return true;
     },
@@ -279,13 +297,14 @@ export default {
         pseudo: '',
         ankamaPseudo: '',
         class: '',
-        recruitedAt: new Date().toISOString().substr(0, 10),
+        recruitedAt: new Date().toISOString().slice(0, 10),
         recruiterId: null,
         isArchived: false,
         userId: null,
         notes: '',
       };
       this.errorMessage = '';
+      this.dateError = '';
       this.emitUpdate();
     },
     
@@ -296,11 +315,72 @@ export default {
       } catch (error) {
         console.error('Error fetching recruiters:', error);
       }
+    },
+    
+    validateDate() {
+      this.dateError = '';
+      
+      console.log('Validating date:', this.character.recruitedAt);
+      
+      if (!this.character.recruitedAt) {
+        this.dateError = 'La date de recrutement est requise.';
+        return false;
+      }
+      
+      // Check if the date string is valid
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(this.character.recruitedAt)) {
+        this.dateError = 'Format de date invalide.';
+        console.error('Invalid date format:', this.character.recruitedAt);
+        return false;
+      }
+      
+      const selectedDate = new Date(this.character.recruitedAt + 'T00:00:00');
+      const today = new Date();
+      
+      console.log('Selected date:', selectedDate);
+      console.log('Today:', today);
+      
+      // Check if the date is valid
+      if (isNaN(selectedDate.getTime())) {
+        this.dateError = 'Date invalide.';
+        console.error('Invalid date object:', selectedDate);
+        return false;
+      }
+      
+      if (selectedDate > today) {
+        this.dateError = 'La date de recrutement ne peut pas être dans le futur.';
+        return false;
+      }
+      
+      if (selectedDate < new Date('2000-01-01')) {
+        this.dateError = 'La date de recrutement semble invalide.';
+        return false;
+      }
+      
+      console.log('Date validation passed');
+      return true;
+    },
+    
+    setupDateFallback() {
+      // For browsers that don't support date input, we could implement a custom date picker
+      // For now, just log a warning
+      console.warn('Consider implementing a custom date picker for better browser compatibility');
     }
   },
   mounted() {
     this.fetchRecruiters();
     this.emitUpdate();
+    
+    // Check if the browser supports the date input
+    const dateInput = document.getElementById('recruitedAt');
+    if (dateInput && dateInput.type === 'date') {
+      // Browser supports date input
+      console.log('Date input supported');
+    } else {
+      // Fallback for browsers that don't support date input
+      console.warn('Date input not supported, using fallback');
+      this.setupDateFallback();
+    }
   },
   watch: {
     'character.pseudo'() {

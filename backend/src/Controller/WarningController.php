@@ -66,9 +66,28 @@ class WarningController extends AbstractController
         $characters = [];
         
         foreach ($ranks as $rank) {
-            $charactersWithRank = $charactersRepository->findBy(['rank' => $rank, 'isArchived' => false]);
+            $charactersWithRank = $charactersRepository->createQueryBuilder('c')
+                ->where('c.rank = :rank')
+                ->andWhere('c.isArchived = :isArchived')
+                ->setParameter('rank', $rank)
+                ->setParameter('isArchived', false)
+                ->orderBy('c.id', 'ASC')
+                ->getQuery()
+                ->getResult();
             $characters = array_merge($characters, $charactersWithRank);
         }
+        
+        // Trier les personnages par requiredDays du rang (ordre décroissant)
+        usort($characters, function($a, $b) {
+            $rankA = $a->getRank();
+            $rankB = $b->getRank();
+            
+            if ($rankA->getRequiredDays() === $rankB->getRequiredDays()) {
+                return $a->getId() - $b->getId();
+            }
+            
+            return $rankB->getRequiredDays() - $rankA->getRequiredDays();
+        });
         
         $formattedCharacters = array_map(function ($character) {
             return [
