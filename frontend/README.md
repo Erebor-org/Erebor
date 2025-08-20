@@ -33,3 +33,5 @@ npm run build
 ```sh
 npm run lint
 ```
+
+## php -d memory_limit=-1 bin/console erebor:dofusdle:sync:monsters

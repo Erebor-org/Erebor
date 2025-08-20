@@ -3,18 +3,23 @@
 namespace App\Service;
 
 use Symfony\Contracts\HttpClient\HttpClientInterface;
+use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
 
 class DofusdleDofusDbClient
 {
     private string $baseUrl;
     private HttpClientInterface $client;
     private string $referer;
+    private int $maxRetries;
+    private int $retryDelay;
 
     public function __construct(HttpClientInterface $client)
     {
         $this->baseUrl = 'https://api.dofusdb.fr';
         $this->client = $client;
         $this->referer = 'Erebor';
+        $this->maxRetries = 3;
+        $this->retryDelay = 1000; // 1 seconde
     }
 
     public function request(string $endpoint, array $query = []): array
@@ -26,9 +31,48 @@ class DofusdleDofusDbClient
                 'Accept' => 'application/json',
             ],
             'query' => $query,
+            'timeout' => 30, // 30 secondes de timeout
+            'max_duration' => 60, // 60 secondes max total
         ];
-        $response = $this->client->request('GET', $url, $options);
-        return $response->toArray();
+
+        $attempts = 0;
+        $lastException = null;
+
+        while ($attempts < $this->maxRetries) {
+            try {
+                $response = $this->client->request('GET', $url, $options);
+                return $response->toArray();
+            } catch (TransportExceptionInterface $e) {
+                $lastException = $e;
+                $attempts++;
+                
+                // Log de l'erreur
+                error_log(sprintf(
+                    "Tentative %d/%d échouée pour %s: %s",
+                    $attempts,
+                    $this->maxRetries,
+                    $url,
+                    $e->getMessage()
+                ));
+
+                if ($attempts < $this->maxRetries) {
+                    // Attendre avant de réessayer
+                    usleep($this->retryDelay * 1000);
+                    // Augmenter le délai pour la prochaine tentative
+                    $this->retryDelay *= 2;
+                }
+            }
+        }
+
+        // Si toutes les tentatives ont échoué, on retourne un tableau vide
+        // et on log l'erreur finale
+        error_log(sprintf(
+            "Toutes les tentatives ont échoué pour %s. Dernière erreur: %s",
+            $url,
+            $lastException ? $lastException->getMessage() : 'Unknown error'
+        ));
+
+        return [];
     }
 
     private function extractFrFields(array $results, array $fields = ['name', 'description']): array
@@ -87,24 +131,57 @@ class DofusdleDofusDbClient
     public function getMonsterRaceName(int $raceId): ?string
     {
         if (!$raceId) return 'Inconnue';
-        try {
-            $result = $this->request('/monster-races/' . $raceId);
-            return $result['name']['fr'] ?? 'Inconnue';
-        } catch (\Symfony\Contracts\HttpClient\Exception\ClientExceptionInterface $e) {
-            // 404 not found, race inconnue
+        
+        $result = $this->request('/monster-races/' . $raceId);
+        
+        // Si la requête échoue, on retourne 'Inconnue'
+        if (empty($result)) {
             return 'Inconnue';
         }
+        
+        return $result['name']['fr'] ?? 'Inconnue';
     }
 
     public function getMonsterSuperRaceName(?int $superRaceId): ?string
     {
-        if (!$superRaceId) return null;
-        try {
-            $result = $this->request('/monster-super-races/' . $superRaceId);
-            return $result['name']['fr'] ?? null;
-        } catch (\Symfony\Contracts\HttpClient\Exception\ClientExceptionInterface $e) {
-            return null;
+        if (!$superRaceId) return 'Inconnue';
+        
+        $result = $this->request('/monster-super-races/' . $superRaceId);
+        
+        // Si la requête échoue, on retourne 'Inconnue'
+        if (empty($result)) {
+            return 'Inconnue';
         }
+        
+        return $result['name']['fr'] ?? 'Inconnue';
+    }
+
+    public function getSubareaName(int $subareaId): ?string
+    {
+        if (!$subareaId) return 'Inconnue';
+        
+        $result = $this->request('/subareas/' . $subareaId);
+        
+        // Si la requête échoue, on retourne 'Inconnue'
+        if (empty($result)) {
+            return 'Inconnue';
+        }
+        
+        return $result['name']['fr'] ?? 'Inconnue';
+    }
+
+    public function getAreaName(int $areaId): ?string
+    {
+        if (!$areaId) return 'Inconnue';
+        
+        $result = $this->request('/areas/' . $areaId);
+        
+        // Si la requête échoue, on retourne 'Inconnue'
+        if (empty($result)) {
+            return 'Inconnue';
+        }
+        
+        return $result['name']['fr'] ?? 'Inconnue';
     }
 
     public function getSubareaNamesAndAreas(array $subareaIds): array
@@ -112,16 +189,16 @@ class DofusdleDofusDbClient
         $subareas = [];
         $areas = [];
         foreach ($subareaIds as $id) {
-            try {
-                $sub = $this->request('/subareas/' . $id);
+            $sub = $this->request('/subareas/' . $id);
+            if (!empty($sub)) {
                 $subareas[] = $sub['name']['fr'] ?? null;
                 if (isset($sub['areaId'])) {
-                    try {
-                        $area = $this->request('/areas/' . $sub['areaId']);
+                    $area = $this->request('/areas/' . $sub['areaId']);
+                    if (!empty($area)) {
                         $areas[] = $area['name']['fr'] ?? null;
-                    } catch (\Symfony\Contracts\HttpClient\Exception\ClientExceptionInterface $e) {}
+                    }
                 }
-            } catch (\Symfony\Contracts\HttpClient\Exception\ClientExceptionInterface $e) {}
+            }
         }
         return ['subareas' => array_filter($subareas), 'areas' => array_filter($areas)];
     }
@@ -129,11 +206,14 @@ class DofusdleDofusDbClient
     public function getMiniBossName(?int $miniBossId): ?string
     {
         if (!$miniBossId) return null;
-        try {
-            $result = $this->request('/monsters/' . $miniBossId);
-            return $result['name']['fr'] ?? null;
-        } catch (\Symfony\Contracts\HttpClient\Exception\ClientExceptionInterface $e) {
+        
+        $result = $this->request('/monsters/' . $miniBossId);
+        
+        // Si la requête échoue, on retourne null
+        if (empty($result)) {
             return null;
         }
+        
+        return $result['name']['fr'] ?? null;
     }
 }

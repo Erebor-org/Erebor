@@ -5,6 +5,7 @@
     <div class="mb-2 flex items-center gap-2">
       <input v-model="selectedGuessId" type="number" placeholder="guess dofusdb_id" class="border px-2 py-1 rounded" style="width: 120px;" />
       <button @click="debugCompare" class="bg-theme-primary text-white px-3 py-1 rounded">Debug compare</button>
+      <button @click="testGuessEndpoint" class="bg-blue-500 text-white px-3 py-1 rounded">Test Guess API</button>
     </div>
     <div v-if="debugResult" class="bg-theme-bg-muted p-4 rounded-xl my-2">
       <div class="font-bold mb-2">Comparaison champ par champ :</div>
@@ -52,6 +53,7 @@
         </div>
       </div>
       <DofusdleMonsterPicker
+        ref="monsterPickerRef"
         :items="suggestions"
         :loading="searching"
         :error="searchError"
@@ -88,16 +90,27 @@ const dailyMonster = ref(null)
 const selectedGuessId = ref('')
 const debugResult = ref(null)
 const showVictory = ref(false)
+const monsterPickerRef = ref(null)
 
 async function loadDaily() {
-  const res = await axios.get('/erebor/dofusdle/api/classic/daily')
-  dailyMonster.value = res.data.monster
-  await fetchDaily()
+  try {
+    const res = await axios.get('/erebor/dofusdle/api/classic/daily')
+    dailyMonster.value = res.data.monster
+    // IMPORTANT: fetchDaily() du store doit être appelé pour initialiser puzzleId
+    await fetchDaily()
+  } catch (error) {
+    console.error('Erreur lors du chargement du daily:', error)
+  }
 }
 
 onMounted(async () => {
   await loadDaily()
   fetchAllMonsters()
+  
+  // Reset initial de l'input
+  if (monsterPickerRef.value) {
+    monsterPickerRef.value.closeDropdown()
+  }
 })
 
 watch(() => correct.value, (val) => {
@@ -112,15 +125,23 @@ let searchAbort = null
 function onSearch(query) {
   if (!query) {
     suggestions.value = []
+    searching.value = false
+    searchError.value = ''
     return
   }
+  
   searching.value = true
   searchError.value = ''
   lastSearch = query
+  
   try {
     const items = searchMonsters(query)
     if (lastSearch === query) {
       suggestions.value = items.slice(0, 20)
+      // Si aucun résultat, on ne met pas d'erreur
+      if (items.length === 0) {
+        searchError.value = ''
+      }
     }
   } catch (e) {
     searchError.value = 'Erreur de recherche'
@@ -131,13 +152,36 @@ function onSearch(query) {
 
 async function onSelectMonster(monster) {
   if (!monster || correct.value) return
-  await guessMonster(monster)
+  
+  console.log('🎯 Monstre sélectionné:', monster)
+  console.log('🔑 PuzzleId du store:', store.puzzleId)
+  console.log('📅 Date du store:', store.date)
+  
+  try {
+    const result = await guessMonster(monster)
+    console.log('✅ Résultat du guess:', result)
+    
+    // Reset l'input et ferme le dropdown après le guess
+    if (monsterPickerRef.value) {
+      monsterPickerRef.value.closeDropdown()
+    }
+    // Vide aussi les suggestions
+    suggestions.value = []
+  } catch (error) {
+    console.error('❌ Erreur lors du guess:', error)
+  }
 }
 
 async function regenDaily() {
   await axios.post('/erebor/dofusdle/api/classic/regen-daily')
   await loadDaily()
   store.attempts.length = 0
+  
+  // Reset aussi l'input et les suggestions
+  if (monsterPickerRef.value) {
+    monsterPickerRef.value.closeDropdown()
+  }
+  suggestions.value = []
 }
 
 async function debugCompare() {
@@ -147,6 +191,26 @@ async function debugCompare() {
     guessId: Number(selectedGuessId.value)
   })
   debugResult.value = res.data
+}
+
+async function testGuessEndpoint() {
+  if (!dailyMonster.value?.dofusdb_id || !selectedGuessId.value) {
+    alert('Veuillez entrer un dofusdb_id à tester')
+    return
+  }
+  
+  try {
+    console.log('🧪 Test de l\'endpoint guess...')
+    const res = await axios.post('/erebor/dofusdle/api/classic/guess', {
+      puzzleId: store.puzzleId,
+      guessId: Number(selectedGuessId.value)
+    })
+    console.log('✅ Endpoint guess fonctionne:', res.data)
+    alert(`API fonctionne! Réponse: ${JSON.stringify(res.data, null, 2)}`)
+  } catch (error) {
+    console.error('❌ Erreur endpoint guess:', error)
+    alert(`Erreur API: ${error.message}`)
+  }
 }
 
 function formatVal(val) {

@@ -1,22 +1,22 @@
 <template>
-  <div class="rounded-2xl shadow-xl border border-theme-border bg-theme-card overflow-hidden animate-fadein">
-    <table class="w-full min-w-[900px] divide-y divide-theme-border text-theme-text text-xl">
-      <thead class="bg-theme-bg-muted sticky top-0 z-10">
+  <div class="rounded-2xl shadow-2xl border-2 border-slate-700 bg-slate-900/80 overflow-hidden animate-fadein backdrop-blur-sm">
+    <table class="w-full min-w-[900px] divide-y divide-slate-700 text-white text-xl">
+      <thead class="bg-slate-800/80 sticky top-0 z-10 backdrop-blur-sm">
         <tr>
           <th class="px-6 py-4 font-bold text-left text-2xl">Monstre</th>
           <th class="px-4 py-4 font-bold">Niv.</th>
-          <th class="px-4 py-4 font-bold">Famille</th>
-          <th class="px-4 py-4 font-bold">Zones</th>
-          <th class="px-4 py-4 font-bold">Rang</th>
-          <th class="px-4 py-4 font-bold">Élément</th>
+          <th class="px-4 py-4 font-bold">Race</th>
+          <th class="px-4 py-4 font-bold">Area</th>
+          <th class="px-4 py-4 font-bold">Subarea</th>
+          <th class="px-4 py-4 font-bold">Résistance</th>
           <th class="px-4 py-4 font-bold">PA</th>
           <th class="px-4 py-4 font-bold">PM</th>
           <th class="px-4 py-4 font-bold">PV</th>
         </tr>
       </thead>
-      <tbody class="bg-white/10">
+      <tbody class="bg-slate-800/20">
         <tr v-for="(row, idx) in attempts" :key="row.id"
-            :class="[rowClass(idx), isCorrectRow(row, idx) ? 'bg-green-100/20 ring-2 ring-green-400' : '', 'transition hover:scale-[1.01] hover:shadow-lg hover:bg-theme-bg-muted focus-within:bg-theme-bg-muted animate-slidein']">
+            :class="[rowClass(idx), isCorrectRow(row, idx) ? 'bg-emerald-500/20 ring-2 ring-emerald-400' : '', 'transition hover:scale-[1.01] hover:shadow-lg hover:bg-slate-700/50 focus-within:bg-slate-700/50 animate-slidein']">
           <td class="flex items-center gap-5 px-6 py-4">
             <div class="w-16 h-16 rounded-full bg-theme-bg-muted flex items-center justify-center overflow-hidden border-2 border-theme-primary shadow-md">
               <img v-if="row.img" :src="row.img" alt="" class="w-16 h-16 object-cover" />
@@ -24,14 +24,14 @@
             </div>
             <span class="font-bold text-2xl">{{ row.name }}</span>
           </td>
-          <CellLevel :value="row.refLevel" :hint="row.hint?.level" :colorize="colorize" fun />
-          <CellFamily :value="row.family" :hint="row.hint?.family" :colorize="colorize" fun />
-          <CellZone :areas="row.areas" :subareas="row.subareas" :hint="row.hint?.zone" :colorize="colorize" fun />
-          <CellRank :value="row.rank" :hint="row.hint?.rank" :colorize="colorize" fun />
-          <CellElement :value="row.element" :hint="row.hint?.element" :colorize="colorize" fun />
-          <CellStat :value="row.ap" :hint="row.hint?.ap" :colorize="colorize" label="PA" :correct="isCorrectRow(row, idx)" fun />
-          <CellStat :value="row.mp" :hint="row.hint?.mp" :colorize="colorize" label="PM" :correct="isCorrectRow(row, idx)" fun />
-          <CellStat :value="row.hp" :hint="row.hint?.hp" :colorize="colorize" label="PV" :correct="isCorrectRow(row, idx)" fun />
+          <CellLevel :value="row.levelMin && row.levelMax ? `${row.levelMin}-${row.levelMax}` : '?'" :hint="row.hint?.level" :colorize="colorize" />
+          <CellRace :value="row.race" :hint="row.hint?.race" :colorize="colorize" />
+          <CellArea :value="row.area" :hint="row.hint?.zone" :colorize="colorize" />
+          <CellSubarea :value="row.subarea" :hint="row.hint?.zone" :colorize="colorize" />
+          <CellResistance :resistances="row.resistancesMax" :hint="row.hint?.resistDominant" :colorize="colorize" />
+          <CellStat :value="row.apMin && row.apMax ? `${row.apMin}-${row.apMax}` : '?'" :hint="row.hint?.ap" :colorize="colorize" label="PA" :correct="isCorrectRow(row, idx)" />
+          <CellStat :value="row.mpMin && row.mpMax ? `${row.mpMin}-${row.mpMax}` : '?'" :hint="row.hint?.mp" :colorize="colorize" label="PM" :correct="isCorrectRow(row, idx)" />
+          <CellStat :value="row.hpMin && row.hpMax ? `${row.hpMin}-${row.hpMax}` : '?'" :hint="row.hint?.hp" :colorize="colorize" label="PV" :correct="isCorrectRow(row, idx)" />
         </tr>
       </tbody>
     </table>
@@ -45,36 +45,57 @@
         <div class="flex-1">
           <div class="font-extrabold text-2xl mb-2">{{ row.name }}</div>
           <div class="flex flex-wrap gap-3 mt-2 text-lg">
-            <CellLevel :value="row.refLevel" :hint="row.hint?.level" :colorize="colorize" fun />
-            <CellFamily :value="row.family" :hint="row.hint?.family" :colorize="colorize" fun />
-            <CellZone :areas="row.areas" :subareas="row.subareas" :hint="row.hint?.zone" :colorize="colorize" fun />
-            <CellRank :value="row.rank" :hint="row.hint?.rank" :colorize="colorize" fun />
-            <CellElement :value="row.element" :hint="row.hint?.element" :colorize="colorize" fun />
-            <CellStat :value="row.ap" :hint="row.hint?.ap" :colorize="colorize" label="PA" :correct="isCorrectRow(row, idx)" fun />
-            <CellStat :value="row.mp" :hint="row.hint?.mp" :colorize="colorize" label="PM" :correct="isCorrectRow(row, idx)" fun />
-            <CellStat :value="row.hp" :hint="row.hint?.hp" :colorize="colorize" label="PV" :correct="isCorrectRow(row, idx)" fun />
+            <CellLevel :value="row.levelMin && row.levelMax ? `${row.levelMin}-${row.levelMax}` : '?'" :hint="row.hint?.level" :colorize="colorize" />
+            <CellRace :value="row.race" :hint="row.hint?.race" :colorize="colorize" />
+            <CellArea :value="row.area" :hint="row.hint?.zone" :colorize="colorize" />
+            <CellSubarea :value="row.subarea" :hint="row.hint?.zone" :colorize="colorize" />
+            <CellResistance :resistances="row.resistancesMax" :hint="row.hint?.resistDominant" :colorize="colorize" />
+            <CellStat :value="row.apMin && row.apMax ? `${row.apMin}-${row.apMax}` : '?'" :hint="row.hint?.ap" :colorize="colorize" label="PA" :correct="isCorrectRow(row, idx)" />
+            <CellStat :value="row.mpMin && row.mpMax ? `${row.mpMin}-${row.mpMax}` : '?'" :hint="row.hint?.mp" :colorize="colorize" label="PM" :correct="isCorrectRow(row, idx)" />
+            <CellStat :value="row.hpMin && row.hpMax ? `${row.hpMin}-${row.hpMax}` : '?'" :hint="row.hint?.hp" :colorize="colorize" label="PV" :correct="isCorrectRow(row, idx)" />
           </div>
         </div>
       </div>
     </div>
-    <!-- Légende -->
-    <div class="mt-8 text-base text-theme-text-muted flex flex-wrap gap-6 items-center">
-      <div><span class="inline-block w-6 h-6 align-middle bg-green-200 rounded mr-1"></span> Vert : ✓, ■, ● = correct</div>
-      <div><span class="inline-block w-6 h-6 align-middle bg-yellow-200 rounded mr-1"></span> Jaune : ◐, ▲, ▼ = proche/partiel</div>
-      <div><span class="inline-block w-6 h-6 align-middle bg-red-200 rounded mr-1"></span> Rouge : ✗, ○ = faux</div>
-      <div><span class="inline-block w-6 h-6 align-middle bg-gray-200 rounded mr-1"></span> Gris : ? = inconnu</div>
-      <div class="ml-4">Niv. : ▲ plus haut, ▼ plus bas, ■ exact</div>
-      <div class="ml-4">Zones : ● exact, ◐ partiel, ○ faux</div>
+    <!-- Légende moderne -->
+    <div class="mt-8 p-6 bg-slate-800/50 rounded-2xl border border-slate-700">
+      <h3 class="text-lg font-bold text-white mb-4 text-center">🎯 Guide des couleurs</h3>
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+        <div class="flex items-center gap-2">
+          <div class="w-6 h-6 bg-emerald-500 rounded-lg shadow-lg"></div>
+          <span class="text-white">Vert : Exact/Correct</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <div class="w-6 h-6 bg-amber-500 rounded-lg shadow-lg"></div>
+          <span class="text-white">Orange : Partiel/Proche</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <div class="w-6 h-6 bg-blue-500 rounded-lg shadow-lg"></div>
+          <span class="text-white">Bleu : Plus haut</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <div class="w-6 h-6 bg-purple-500 rounded-lg shadow-lg"></div>
+          <span class="text-white">Violet : Plus bas</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <div class="w-6 h-6 bg-red-500 rounded-lg shadow-lg"></div>
+          <span class="text-white">Rouge : Incorrect</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <div class="w-6 h-6 bg-slate-500 rounded-lg shadow-lg"></div>
+          <span class="text-white">Gris : Inconnu</span>
+        </div>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup>
 import CellLevel from './DofusdleGuessTable/CellLevel.vue'
-import CellFamily from './DofusdleGuessTable/CellFamily.vue'
-import CellZone from './DofusdleGuessTable/CellZone.vue'
-import CellRank from './DofusdleGuessTable/CellRank.vue'
-import CellElement from './DofusdleGuessTable/CellElement.vue'
+import CellRace from './DofusdleGuessTable/CellRace.vue'
+import CellArea from './DofusdleGuessTable/CellArea.vue'
+import CellSubarea from './DofusdleGuessTable/CellSubarea.vue'
+import CellResistance from './DofusdleGuessTable/CellResistance.vue'
 import CellStat from './DofusdleGuessTable/CellStat.vue'
 import { useDofusdleStore } from '../stores/dofusdleStore'
 const store = useDofusdleStore()

@@ -18,86 +18,102 @@ class DofusdleMonster
     #[ORM\Column(type: 'string', length: 255)]
     private string $name;
 
-    #[ORM\Column(type: 'integer', nullable: true)]
-    private ?int $pdv = null;
-
-    #[ORM\Column(type: 'string', length: 255, nullable: true)]
-    private ?string $family = null;
+    #[ORM\Column(type: 'string', length: 500, nullable: true)]
+    private ?string $imageUrl = null;
 
     #[ORM\Column(type: 'integer', nullable: true)]
-    private ?int $level = null;
-
-    #[ORM\Column(type: 'boolean', options: ['default' => false])]
-    private bool $isBoss = false;
-
-    #[ORM\Column(type: 'string', length: 64, nullable: true)]
-    private ?string $element = null;
-
-    #[ORM\Column(type: 'string', length: 255, nullable: true)]
-    private ?string $image = null;
+    private ?int $levelMin = null;
 
     #[ORM\Column(type: 'integer', nullable: true)]
-    private ?int $pa = null;
-    #[ORM\Column(type: 'integer', nullable: true)]
-    private ?int $pm = null;
+    private ?int $levelMax = null;
 
-    #[ORM\Column(type: 'string', length: 255, nullable: true)]
-    private ?string $superRace = null;
+    #[ORM\Column(type: 'integer', nullable: true)]
+    private ?int $hpMin = null;
+
+    #[ORM\Column(type: 'integer', nullable: true)]
+    private ?int $hpMax = null;
+
+    #[ORM\Column(type: 'integer', nullable: true)]
+    private ?int $apMin = null;
+
+    #[ORM\Column(type: 'integer', nullable: true)]
+    private ?int $apMax = null;
+
+    #[ORM\Column(type: 'integer', nullable: true)]
+    private ?int $mpMin = null;
+
+    #[ORM\Column(type: 'integer', nullable: true)]
+    private ?int $mpMax = null;
+
     #[ORM\Column(type: 'json', nullable: true)]
-    private ?array $subareas = null;
-    #[ORM\Column(type: 'json', nullable: true)]
-    private ?array $areas = null;
-    #[ORM\Column(type: 'integer', nullable: true)]
-    private ?int $favoriteSubareaId = null;
-    #[ORM\Column(type: 'string', length: 32, nullable: true)]
-    private ?string $bossType = null;
-    #[ORM\Column(type: 'json', nullable: true)]
-    private ?array $tags = null;
-    #[ORM\Column(type: 'integer', nullable: true)]
-    private ?int $spellsCount = null;
-    #[ORM\Column(type: 'integer', nullable: true)]
-    private ?int $correspondingMiniBossId = null;
-    #[ORM\Column(type: 'string', length: 255, nullable: true)]
-    private ?string $correspondingMiniBossName = null;
+    private ?array $resistancesMax = null;
 
-    // Getters et setters ...
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    private ?string $race = null;
+
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    private ?string $superArea = null;
+
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    private ?string $area = null;
+
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    private ?string $subarea = null;
+
+    #[ORM\Column(type: 'string', length: 7, nullable: true)]
+    private ?string $dominantColor = null;
+
+    // Getters et setters
     public function getId(): ?int { return $this->id; }
+    
     public function getDofusdbId(): int { return $this->dofusdbId; }
     public function setDofusdbId(int $id): self { $this->dofusdbId = $id; return $this; }
+    
     public function getName(): string { return $this->name; }
     public function setName(string $name): self { $this->name = $name; return $this; }
-    public function getPdv(): ?int { return $this->pdv; }
-    public function setPdv(?int $pdv): self { $this->pdv = $pdv; return $this; }
-    public function getFamily(): ?string { return $this->family; }
-    public function setFamily(?string $family): self { $this->family = $family; return $this; }
-    public function getLevel(): ?int { return $this->level; }
-    public function setLevel(?int $level): self { $this->level = $level; return $this; }
-    public function isBoss(): bool { return $this->isBoss; }
-    public function setIsBoss(bool $isBoss): self { $this->isBoss = $isBoss; return $this; }
-    public function getElement(): ?string { return $this->element; }
-    public function setElement(?string $element): self { $this->element = $element; return $this; }
-    public function getImage(): ?string { return $this->image; }
-    public function setImage(?string $image): self { $this->image = $image; return $this; }
-    public function getPa(): ?int { return $this->pa; }
-    public function setPa(?int $pa): self { $this->pa = $pa; return $this; }
-    public function getPm(): ?int { return $this->pm; }
-    public function setPm(?int $pm): self { $this->pm = $pm; return $this; }
-    public function getSuperRace(): ?string { return $this->superRace; }
-    public function setSuperRace(?string $v): self { $this->superRace = $v; return $this; }
-    public function getSubareas(): ?array { return $this->subareas; }
-    public function setSubareas(?array $v): self { $this->subareas = $v; return $this; }
-    public function getAreas(): ?array { return $this->areas; }
-    public function setAreas(?array $v): self { $this->areas = $v; return $this; }
-    public function getFavoriteSubareaId(): ?int { return $this->favoriteSubareaId; }
-    public function setFavoriteSubareaId(?int $v): self { $this->favoriteSubareaId = $v; return $this; }
-    public function getBossType(): ?string { return $this->bossType; }
-    public function setBossType(?string $v): self { $this->bossType = $v; return $this; }
-    public function getTags(): ?array { return $this->tags; }
-    public function setTags(?array $v): self { $this->tags = $v; return $this; }
-    public function getSpellsCount(): ?int { return $this->spellsCount; }
-    public function setSpellsCount(?int $v): self { $this->spellsCount = $v; return $this; }
-    public function getCorrespondingMiniBossId(): ?int { return $this->correspondingMiniBossId; }
-    public function setCorrespondingMiniBossId(?int $v): self { $this->correspondingMiniBossId = $v; return $this; }
-    public function getCorrespondingMiniBossName(): ?string { return $this->correspondingMiniBossName; }
-    public function setCorrespondingMiniBossName(?string $v): self { $this->correspondingMiniBossName = $v; return $this; }
+    
+    public function getImageUrl(): ?string { return $this->imageUrl; }
+    public function setImageUrl(?string $imageUrl): self { $this->imageUrl = $imageUrl; return $this; }
+    
+    public function getLevelMin(): ?int { return $this->levelMin; }
+    public function setLevelMin(?int $levelMin): self { $this->levelMin = $levelMin; return $this; }
+    
+    public function getLevelMax(): ?int { return $this->levelMax; }
+    public function setLevelMax(?int $levelMax): self { $this->levelMax = $levelMax; return $this; }
+    
+    public function getHpMin(): ?int { return $this->hpMin; }
+    public function setHpMin(?int $hpMin): self { $this->hpMin = $hpMin; return $this; }
+    
+    public function getHpMax(): ?int { return $this->hpMax; }
+    public function setHpMax(?int $hpMax): self { $this->hpMax = $hpMax; return $this; }
+    
+    public function getApMin(): ?int { return $this->apMin; }
+    public function setApMin(?int $apMin): self { $this->apMin = $apMin; return $this; }
+    
+    public function getApMax(): ?int { return $this->apMax; }
+    public function setApMax(?int $apMax): self { $this->apMax = $apMax; return $this; }
+    
+    public function getMpMin(): ?int { return $this->mpMin; }
+    public function setMpMin(?int $mpMin): self { $this->mpMin = $mpMin; return $this; }
+    
+    public function getMpMax(): ?int { return $this->mpMax; }
+    public function setMpMax(?int $mpMax): self { $this->mpMax = $mpMax; return $this; }
+    
+    public function getResistancesMax(): ?array { return $this->resistancesMax; }
+    public function setResistancesMax(?array $resistancesMax): self { $this->resistancesMax = $resistancesMax; return $this; }
+    
+    public function getRace(): ?string { return $this->race; }
+    public function setRace(?string $race): self { $this->race = $race; return $this; }
+    
+    public function getSuperArea(): ?string { return $this->superArea; }
+    public function setSuperArea(?string $superArea): self { $this->superArea = $superArea; return $this; }
+
+    public function getArea(): ?string { return $this->area; }
+    public function setArea(?string $area): self { $this->area = $area; return $this; }
+
+    public function getSubarea(): ?string { return $this->subarea; }
+    public function setSubarea(?string $subarea): self { $this->subarea = $subarea; return $this; }
+    
+    public function getDominantColor(): ?string { return $this->dominantColor; }
+    public function setDominantColor(?string $dominantColor): self { $this->dominantColor = $dominantColor; return $this; }
 }

@@ -25,14 +25,20 @@ class DofusdleApiController extends AbstractController
                 'id' => $m->getId(),
                 'dofusdb_id' => $m->getDofusdbId(),
                 'name' => $m->getName(),
-                'pdv' => $m->getPdv(),
-                'pa' => $m->getPa(),
-                'pm' => $m->getPm(),
-                'family' => $m->getFamily(),
-                'level' => $m->getLevel(),
-                'isBoss' => $m->isBoss(),
-                'element' => $m->getElement(),
-                'image' => $m->getImage(),
+                'imageUrl' => $m->getImageUrl(),
+                'levelMin' => $m->getLevelMin(),
+                'levelMax' => $m->getLevelMax(),
+                'hpMin' => $m->getHpMin(),
+                'hpMax' => $m->getHpMax(),
+                'apMin' => $m->getApMin(),
+                'apMax' => $m->getApMax(),
+                'mpMin' => $m->getMpMin(),
+                'mpMax' => $m->getMpMax(),
+                'resistancesMax' => $m->getResistancesMax(),
+                'race' => $m->getRace(),
+                'superArea' => $m->getSuperArea(),
+                'area' => $m->getArea(),
+                'subarea' => $m->getSubarea(),
             ];
         }, $monsters);
         return $this->json($data);
@@ -65,7 +71,7 @@ class DofusdleApiController extends AbstractController
         $puzzleId = sprintf('classic_%d', $monster->getDofusdbId());
         $monsterData = [];
         foreach ([
-            'id','dofusdb_id','name','pdv','pa','pm','family','level','isBoss','element','image','super_race','subareas','areas','favorite_subarea_id','boss_type','tags','spells_count','corresponding_mini_boss_id','corresponding_mini_boss_name'
+            'id','dofusdb_id','name','imageUrl','levelMin','levelMax','hpMin','hpMax','apMin','apMax','mpMin','mpMax','resistancesMax','race','superArea','area','subarea'
         ] as $f) {
             $getter = 'get' . str_replace(' ', '', ucwords(str_replace('_', ' ', $f)));
             $val = method_exists($monster, $getter) ? $monster->$getter() : null;

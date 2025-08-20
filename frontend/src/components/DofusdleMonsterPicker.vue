@@ -43,7 +43,26 @@
         </div>
         <div class="flex flex-col">
           <span class="font-bold text-base">{{ item.name }}</span>
-          <span class="text-xs text-theme-text-muted">Niv. {{ item.refLevel }}</span>
+          <div class="flex flex-col gap-1">
+            <span class="text-xs text-theme-text-muted">
+              <span v-if="item.levelMin && item.levelMax">
+                🎯 Niv. {{ item.levelMin }}-{{ item.levelMax }}
+              </span>
+              <span v-else>
+                🎯 Niv. ?
+              </span>
+            </span>
+            <span v-if="item.resistancesMax" class="text-xs text-theme-text-muted">
+              <DofusdleResistanceIcon 
+                :element="getDominantResistance(item.resistancesMax).element"
+                v-if="getDominantResistance(item.resistancesMax)"
+              />
+              +{{ getDominantResistance(item.resistancesMax).value }}%
+            </span>
+            <span v-if="item.area && item.subarea" class="text-xs text-theme-text-muted">
+              🗺️ {{ item.area }} > {{ item.subarea }}
+            </span>
+          </div>
         </div>
         <span class="ml-auto text-xl">👾</span>
       </li>
@@ -57,6 +76,7 @@
 <script setup>
 import { ref, watch, computed } from 'vue'
 import { debounce } from 'lodash-es'
+import DofusdleResistanceIcon from './DofusdleResistanceIcon.vue'
 
 const props = defineProps({
   items: { type: Array, default: () => [] },
@@ -66,6 +86,49 @@ const props = defineProps({
   placeholder: { type: String, default: 'Nom du monstre...' },
 })
 const emit = defineEmits(['select', 'input'])
+
+// Expose la fonction de fermeture
+defineExpose({
+  closeDropdown: () => {
+    showDropdown.value = false
+    highlightedIndex.value = -1
+    inputValue.value = ''
+  }
+})
+
+// Fonction pour traduire les éléments en français
+function translateElement(element) {
+  const translations = {
+    'water': 'Eau',
+    'fire': 'Feu',
+    'earth': 'Terre',
+    'air': 'Air',
+    'neutral': 'Neutre'
+  }
+  return translations[element] || element
+}
+
+// Fonction pour calculer la résistance dominante
+function getDominantResistance(resistances) {
+  if (!resistances || typeof resistances !== 'object') return null
+  
+  let maxValue = -999
+  let dominantElement = null
+  
+  for (const [element, value] of Object.entries(resistances)) {
+    if (value > maxValue) {
+      maxValue = value
+      dominantElement = element
+    }
+  }
+  
+  if (dominantElement === null) return null
+  
+  return {
+    element: dominantElement,
+    value: maxValue
+  }
+}
 
 const inputValue = ref('')
 const showDropdown = ref(false)
@@ -114,13 +177,16 @@ function onEsc() {
 
 function selectItem(item) {
   emit('select', item)
-  inputValue.value = item.name
+  // Reset l'input après sélection
+  inputValue.value = ''
   showDropdown.value = false
+  highlightedIndex.value = -1
 }
 
 watch(inputValue, (val) => {
   if (!val) {
     showDropdown.value = false
+    highlightedIndex.value = -1
     emit('input', '')
   }
 })

@@ -8,24 +8,26 @@ export type GuessRow = {
   id: number, // dofusdb_id !
   name: string,
   img?: string,
-  refLevel: number,
-  family: string,
-  areas: string[],
-  subareas: string[],
-  rank: 'normal'|'miniboss'|'boss',
-  element?: 'water'|'fire'|'earth'|'air'|'neutral',
-  ap: number, mp: number, hp: number,
-  resistDominant?: 'water'|'fire'|'earth'|'air'|'neutral'|null,
+  levelMin?: number,
+  levelMax?: number,
+  race?: string,
+  area?: string,
+  subarea?: string,
+  apMin?: number,
+  apMax?: number,
+  mpMin?: number,
+  mpMax?: number,
+  hpMin?: number,
+  hpMax?: number,
+  resistancesMax?: Record<string, number>,
   hint?: {
-    family: 'match'|'miss'|'unknown',
-    zone: 'exact'|'overlap'|'miss'|'unknown',
-    level: 'up'|'down'|'eq'|'unknown',
-    rank: 'match'|'miss'|'unknown',
-    element: 'match'|'miss'|'unknown',
-    ap: 'up'|'down'|'eq'|'unknown',
-    mp: 'up'|'down'|'eq'|'unknown',
-    hp: 'up'|'down'|'eq'|'unknown',
-    resistDominant: 'match'|'miss'|'unknown'
+    race: 'match'|'miss'|'unknown',
+    zone: 'exact'|'partial'|'miss'|'unknown',
+    level: 'exact'|'partial'|'up'|'down'|'unknown',
+    ap: 'exact'|'partial'|'up'|'down'|'unknown',
+    mp: 'exact'|'partial'|'up'|'down'|'unknown',
+    hp: 'exact'|'partial'|'up'|'down'|'unknown',
+    resistDominant: 'exact'|'partial'|'miss'|'unknown'
   }
 }
 
@@ -80,17 +82,19 @@ export const useDofusdleStore = defineStore('dofusdle', () => {
       .map(m => ({
         id: m.dofusdb_id, // id = dofusdb_id
         name: m.name,
-        img: m.image,
-        refLevel: m.level,
-        family: m.family || '',
-        areas: Array.isArray(m.areas) ? m.areas.map(String) : (m.areas ? [String(m.areas)] : []),
-        subareas: Array.isArray(m.subareas) ? m.subareas.map(String) : (m.subareas ? [String(m.subareas)] : []),
-        rank: m.isMiniBoss ? 'miniboss' : (m.isBoss ? 'boss' : 'normal'),
-        element: m.element || undefined,
-        ap: m.pa,
-        mp: m.pm,
-        hp: m.pdv,
-        resistDominant: undefined, // à compléter si tu as la donnée
+        img: m.imageUrl,
+        levelMin: m.levelMin,
+        levelMax: m.levelMax,
+        race: m.race,
+        area: m.area,
+        subarea: m.subarea,
+        apMin: m.apMin,
+        apMax: m.apMax,
+        mpMin: m.mpMin,
+        mpMax: m.mpMax,
+        hpMin: m.hpMin,
+        hpMax: m.hpMax,
+        resistancesMax: m.resistancesMax || {},
       }))
   }
 
@@ -120,19 +124,35 @@ export const useDofusdleStore = defineStore('dofusdle', () => {
   }
 
   async function guessMonster(monster: GuessRow) {
+    console.log('🚀 Store: Début du guess pour monstre:', monster.id)
+    console.log('🔑 Store: PuzzleId:', puzzleId.value)
+    console.log('📅 Store: Date:', date.value)
+    
     loading.value = true
     error.value = null
+    
     try {
       const res = await axios.post(`${API_URL}/erebor/dofusdle/api/classic/guess`, {
         puzzleId: puzzleId.value,
         guessId: monster.id, // id = dofusdb_id
       })
+      
+      console.log('📡 Store: Réponse API:', res.data)
+      
       if (res.data && res.data.hint) {
+        console.log('💡 Store: Ajout de l\'attempt avec hint:', res.data.hint)
         addAttempt(monster, res.data.hint)
-        if (res.data.correct) correct.value = true
+        if (res.data.correct) {
+          console.log('🎉 Store: Guess correct!')
+          correct.value = true
+        }
+      } else {
+        console.log('⚠️ Store: Pas de hint dans la réponse')
       }
+      
       return res.data
     } catch (e: any) {
+      console.error('❌ Store: Erreur lors du guess:', e)
       error.value = e.message
       return null
     } finally {
@@ -148,26 +168,31 @@ export const useDofusdleStore = defineStore('dofusdle', () => {
         normalizedHint[k] = 'unknown'
       }
     }
+    
     // Récupère les zones depuis allMonsters si absentes
-    let areas = Array.isArray(monster.areas) ? monster.areas.map(String) : (monster.areas ? [String(monster.areas)] : [])
-    let subareas = Array.isArray(monster.subareas) ? monster.subareas.map(String) : (monster.subareas ? [String(monster.subareas)] : [])
+    let area = monster.area
+    let subarea = monster.subarea
+    
     // Si guess = daily, copie les zones du daily
     if (dailyMonster.value && monster.id === dailyMonster.value.dofusdb_id) {
-      if (Array.isArray(dailyMonster.value.areas)) areas = dailyMonster.value.areas.map(String)
-      if (Array.isArray(dailyMonster.value.subareas)) subareas = dailyMonster.value.subareas.map(String)
+      area = dailyMonster.value.area || area
+      subarea = dailyMonster.value.subarea || subarea
     }
-    if ((!areas || !areas.length) || (!subareas || !subareas.length)) {
+    
+    // Si zones manquantes, cherche dans allMonsters
+    if (!area || !subarea) {
       const ref = allMonsters.value.find(m => m.dofusdb_id === monster.id || m.id === monster.id)
       if (ref) {
-        if (!areas.length && ref.areas) areas = Array.isArray(ref.areas) ? ref.areas.map(String) : [String(ref.areas)]
-        if (!subareas.length && ref.subareas) subareas = Array.isArray(ref.subareas) ? ref.subareas.map(String) : [String(ref.subareas)]
+        area = area || ref.area
+        subarea = subarea || ref.subarea
       }
     }
+    
     const idx = attempts.value.findIndex(a => a.id === monster.id)
     const guessRow = {
       ...monster,
-      areas,
-      subareas,
+      area,
+      subarea,
       hint: normalizedHint
     }
     if (idx >= 0) {
