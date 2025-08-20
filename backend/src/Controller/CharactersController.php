@@ -6,6 +6,7 @@ use App\Entity\Characters;
 use App\Entity\Mule;
 use App\Repository\CharactersRepository;
 use App\Repository\RanksRepository; // Ensure this is correctly imported
+use App\Repository\MuleRepository; // Added for switchWithMule
 use App\Service\NotificationService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -29,13 +30,13 @@ class CharactersController extends AbstractController
     #[Route('/characters/', name: 'characters_list', methods: ['GET'])]
     public function getAllCharacters(CharactersRepository $repository): JsonResponse
     {
-        // Fetch characters ordered by rank.id
+        // Fetch characters ordered by rank.requiredDays
         $characters = $repository->createQueryBuilder('c')
             ->leftJoin('c.rank', 'r')
             ->leftJoin('c.recruiter', 'recruiter')
             ->leftJoin('c.mules', 'mules')
             ->addSelect('r', 'recruiter', 'mules')
-            ->orderBy('r.id', 'ASC')
+            ->orderBy('r.requiredDays', 'DESC')
             ->addOrderBy('c.id', 'ASC')
             ->getQuery()
             ->getResult();
@@ -69,6 +70,7 @@ class CharactersController extends AbstractController
                     'name' => $character->getRank()->getName(),
                 ] : null,
                 'mules' => $muleList,
+                'notes' => $character->getNotes(),
             ];
         }, $characters);
 
@@ -119,7 +121,8 @@ class CharactersController extends AbstractController
                 ->setClass($data['class'])
                 ->setRecruitedAt($recruitedAt)
                 ->setRank($rank)
-                ->setIsArchived($data['isArchived'] ?? false);
+                ->setIsArchived($data['isArchived'] ?? false)
+                ->setNotes($data['notes'] ?? null);
                 
         // Handle the Recruiter
         if (isset($data['recruiterId'])) {
@@ -175,7 +178,8 @@ class CharactersController extends AbstractController
                 'id' => $character->getRank()->getId(),
                 'name' => $character->getRank()->getName(),
             ] : null,
-            'mules' => []
+            'mules' => [],
+            'notes' => $character->getNotes(),
         ];
         
         // Ajouter les mules à la réponse
@@ -320,9 +324,12 @@ class CharactersController extends AbstractController
         $character->setUserId($data['userId'] ?? $character->getUserId())
                 ->setPseudo($data['pseudo'] ?? $character->getPseudo())
                 ->setAnkamaPseudo($data['ankamaPseudo'] ?? $character->getAnkamaPseudo())
-                ->setRecruitedAt($recruitedAt) ?? $character->setRecruitedAt()
                 ->setClass($data['class'] ?? $character->getClass())
-                ->setIsArchived($data['isArchived'] ?? $character->isArchived());
+                ->setIsArchived($data['isArchived'] ?? $character->isArchived())
+                ->setNotes($data['notes'] ?? $character->getNotes());
+        if (isset($data['recruitedAt'])) {
+            $character->setRecruitedAt(new \DateTime($data['recruitedAt']));
+        }
 
         // Handle recruiter assignment
         if (isset($data['recruiterId'])) {
@@ -391,6 +398,8 @@ class CharactersController extends AbstractController
             ->join('c.rank', 'r')
             ->where('r.lead = :lead')
             ->setParameter('lead', true)
+            ->orderBy('r.requiredDays', 'DESC')
+            ->addOrderBy('c.id', 'ASC')
             ->getQuery()
             ->getResult();
 
@@ -455,5 +464,135 @@ class CharactersController extends AbstractController
         $em->flush();
 
         return $this->json(['message' => 'Mule unarchived successfully']);
+    }
+
+    #[Route('/characters/{characterId}/switch-with-mule/{muleId}', name: 'character_switch_with_mule', methods: ['POST'])]
+    public function switchWithMule(
+        Request $request,
+        int $characterId,
+        int $muleId,
+        CharactersRepository $charactersRepository,
+        MuleRepository $muleRepository,
+        EntityManagerInterface $em
+    ): JsonResponse {
+        $character = $charactersRepository->find($characterId);
+        $mule = $muleRepository->find($muleId);
+        if (!$character || !$mule) {
+            return $this->json(['error' => 'Character or Mule not found'], 404);
+        }
+        if ($mule->getMainCharacter()->getId() !== $character->getId()) {
+            return $this->json(['error' => 'This mule does not belong to the specified main character'], 400);
+        }
+        // Backup all mules except the one being promoted
+        $allMules = $character->getMules()->toArray();
+        $otherMules = array_filter($allMules, fn($m) => $m->getId() !== $mule->getId());
+        // Create new Character from mule
+        $newCharacter = new Characters();
+        $newCharacter->setUserId($character->getUserId())
+            ->setPseudo($mule->getPseudo())
+            ->setAnkamaPseudo($mule->getAnkamaPseudo())
+            ->setClass($mule->getClass())
+            ->setIsArchived($mule->isArchived())
+            ->setRecruitedAt($character->getRecruitedAt())
+            ->setRank($character->getRank())
+            ->setNotes($character->getNotes())
+            ->setRecruiter($character->getRecruiter());
+        $em->persist($newCharacter);
+        $em->flush(); // Pour que $newCharacter ait un ID
+        // Réassigner les warnings de l'ancien main vers le nouveau main
+        $connection = $em->getConnection();
+        // Logguer le nombre de warnings réassignés
+        $updatedWarnings = $connection->executeStatement(
+            'UPDATE warnings SET character_id = :newId WHERE character_id = :oldId',
+            ['newId' => $newCharacter->getId(), 'oldId' => $character->getId()]
+        );
+        error_log("[SWITCH] Nombre de warnings réassignés de l'ancien main (ID={$character->getId()}) vers le nouveau main (ID={$newCharacter->getId()}): $updatedWarnings");
+        // Vérifier combien de warnings pointent encore vers l'ancien main
+        $remainingWarnings = $connection->fetchOne(
+            'SELECT COUNT(*) FROM warnings WHERE character_id = :oldId',
+            ['oldId' => $character->getId()]
+        );
+        error_log("[SWITCH] Nombre de warnings qui pointent ENCORE vers l'ancien main (ID={$character->getId()}): $remainingWarnings");
+        if ($remainingWarnings > 0) {
+            throw new \RuntimeException("Il reste $remainingWarnings warning(s) liés à l'ancien main (ID=" . $character->getId() . "). Switch annulé pour éviter la suppression de l'historique.");
+        }
+        // IMPORTANT : vider le UnitOfWork pour éviter que Doctrine ne tente de réécrire l'ancien état
+        $em->clear();
+        // Recharger les entités nécessaires
+        $newCharacter = $charactersRepository->find($newCharacter->getId());
+        $mule = $muleRepository->find($mule->getId());
+        $character = $charactersRepository->find($character->getId());
+        // Créer la nouvelle mule et réassigner les autres mules
+        $newMule = new \App\Entity\Mule();
+        $newMule->setPseudo($character->getPseudo())
+            ->setAnkamaPseudo($character->getAnkamaPseudo())
+            ->setClass($character->getClass())
+            ->setIsArchived($character->isArchived())
+            ->setMainCharacter($newCharacter);
+        $em->persist($newMule);
+        foreach ($otherMules as $otherMule) {
+            $otherMuleEntity = $em->getRepository(\App\Entity\Mule::class)->find($otherMule->getId());
+            if ($otherMuleEntity) {
+                $otherMuleEntity->setMainCharacter($newCharacter);
+            }
+        }
+        // Supprimer l'ancien main et la mule
+        $em->remove($character);
+        $em->remove($mule);
+        $em->flush();
+
+        // Notification Discord via NotificationService avec switchedBy (robuste)
+        // DEBUG : log le body brut reçu
+        $rawBody = $request->getContent();
+        $requestBody = json_decode($rawBody, true);
+        $switchedBy = $requestBody['switchedBy'] ?? null;
+        if (!$switchedBy) {
+            $user = $this->getUser();
+            if ($user && method_exists($user, 'getUsername')) {
+                $switchedBy = $user->getUsername();
+            } elseif ($character && $character->getUserId()) {
+                $userRepo = $em->getRepository(\App\Entity\User::class);
+                $userEntity = $userRepo->find($character->getUserId());
+                if ($userEntity && method_exists($userEntity, 'getUsername')) {
+                    $switchedBy = $userEntity->getUsername();
+                }
+            }
+        }
+        if (!$switchedBy) {
+            $switchedBy = 'Un utilisateur inconnu';
+        }
+        $this->notificationService->notify('switch_main', [
+            'oldMain' => $character ? $character->getPseudo() : '',
+            'newMain' => $newCharacter ? $newCharacter->getPseudo() : '',
+            'switchedBy' => $switchedBy,
+        ]);
+
+        return $this->json([
+            'message' => 'Switch successful',
+            'newMain' => [
+                'id' => $newCharacter->getId(),
+                'pseudo' => $newCharacter->getPseudo(),
+                'ankamaPseudo' => $newCharacter->getAnkamaPseudo(),
+                'class' => $newCharacter->getClass(),
+            ],
+            'newMule' => [
+                'id' => $newMule->getId(),
+                'pseudo' => $newMule->getPseudo(),
+                'ankamaPseudo' => $newMule->getAnkamaPseudo(),
+                'class' => $newMule->getClass(),
+            ]
+        ]);
+    }
+
+    #[Route('/api/characters', name: 'api_characters', methods: ['GET'])]
+    public function getActiveCharacters(CharactersRepository $repository): JsonResponse
+    {
+        $characters = $repository->findBy(['isArchived' => false]);
+        $data = array_map(fn($c) => [
+            'id' => $c->getId(),
+            'pseudo' => $c->getPseudo(),
+            'class' => $c->getClass(),
+        ], $characters);
+        return $this->json($data);
     }
 }

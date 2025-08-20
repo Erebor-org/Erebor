@@ -1,125 +1,200 @@
 <template>
   <div>
-    <h2 class="text-xl md:text-2xl font-bold text-[#b02e2e] mb-4 md:mb-6">
-      Personnage Principal
-    </h2>
+    <div class="flex items-center space-x-3 mb-6">
+      <div class="w-8 h-8 bg-theme-primary rounded-lg flex items-center justify-center">
+        <svg class="w-5 h-5 text-theme-bg" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+        </svg>
+      </div>
+      <h2 class="text-2xl font-bold text-theme-primary">Personnage Principal</h2>
+    </div>
 
-    <div class="space-y-4 md:space-y-6">
+    <div class="space-y-6">
       <!-- Pseudo & Ankama Pseudo -->
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <!-- Pseudo -->
-        <div>
+        <div class="space-y-2">
           <label
             for="mainPseudo"
-            class="block text-sm md:text-base font-medium text-[#b07d46] mb-1"
+            class="block text-sm font-medium text-theme-text"
           >
-            Pseudo <span class="text-[#b02e2e]">*</span>
+            Pseudo <span class="text-theme-error">*</span>
           </label>
           <input
             type="text"
             id="mainPseudo"
             v-model="character.pseudo"
-            class="w-full border-2 border-[#b07d46] bg-[#fffaf0] rounded-md p-2 md:p-3 text-base focus:outline-none focus:ring-2 focus:ring-[#b02e2e]"
+            class="w-full bg-theme-bg-muted border-2 border-theme-border text-theme-text rounded-lg px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-theme-primary focus:border-theme-primary transition-all duration-200 placeholder-gray-400"
+            :class="{ 'border-theme-error bg-theme-error/20': isPseudoInvalid }"
+            placeholder="Entrez le pseudo du personnage"
             required
-            :class="{ 'border-[#b02e2e] bg-[#fff0f0]': isPseudoInvalid }"
           />
           <div
             v-if="isPseudoInvalid"
-            class="text-[#b02e2e] text-sm font-medium mt-1 flex items-center"
+            class="flex items-center space-x-2 text-theme-error text-sm"
           >
-            <span class="mr-1">⚠️</span> "{{ character.pseudo }}" est blacklist d'Erebor.
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+            </svg>
+            <span>"{{ character.pseudo }}" est blacklist d'Erebor.</span>
           </div>
         </div>
 
         <!-- Pseudo Ankama -->
-        <div>
+        <div class="space-y-2">
           <label
             for="ankamaPseudo"
-            class="block text-sm md:text-base font-medium text-[#b07d46] mb-1"
+            class="block text-sm font-medium text-theme-text"
           >
-            Pseudo Ankama <span class="text-[#b02e2e]">*</span>
+            Pseudo Ankama <span class="text-theme-error">*</span>
           </label>
           <input
             type="text"
             id="ankamaPseudo"
             v-model="character.ankamaPseudo"
-            class="w-full border-2 border-[#b07d46] bg-[#fffaf0] rounded-md p-2 md:p-3 text-base focus:outline-none focus:ring-2 focus:ring-[#b02e2e]"
+            class="w-full bg-theme-bg-muted border-2 border-theme-border text-theme-text rounded-lg px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-theme-primary focus:border-theme-primary transition-all duration-200 placeholder-gray-400"
+            :class="{ 'border-theme-error bg-theme-error/20': isAnkamaPseudoInvalid }"
+            placeholder="Entrez le pseudo Ankama"
             required
-            :class="{ 'border-[#b02e2e] bg-[#fff0f0]': isAnkamaPseudoInvalid }"
           />
           <div
             v-if="isAnkamaPseudoInvalid"
-            class="text-[#b02e2e] text-sm font-medium mt-1 flex items-center"
+            class="flex items-center space-x-2 text-theme-error text-sm"
           >
-            <span class="mr-1">⚠️</span> "{{ character.ankamaPseudo }}" est blacklist
-            d'Erebor.
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+            </svg>
+            <span>"{{ character.ankamaPseudo }}" est blacklist d'Erebor.</span>
           </div>
         </div>
       </div>
 
       <!-- Date & Recruteur -->
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <!-- Date -->
-        <div>
+        <div class="space-y-2">
           <label
             for="recruitedAt"
-            class="block text-sm md:text-base font-medium text-[#b07d46] mb-1"
+            class="block text-sm font-medium text-theme-text cursor-pointer hover:text-theme-primary transition-colors duration-200 group focus:outline-none focus:ring-2 focus:ring-theme-primary focus:ring-offset-2 focus:ring-offset-theme-bg-muted rounded-lg px-2 py-1 -ml-2"
+            @click="openDatePicker"
+            role="button"
+            tabindex="0"
+            @keydown.enter="openDatePicker"
+            @keydown.space="openDatePicker"
           >
-            Date de recrutement <span class="text-[#b02e2e]">*</span>
+            <div class="flex items-center space-x-2">
+              <svg class="w-4 h-4 transition-transform duration-200 group-hover:scale-110" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+              <span>Date de recrutement <span class="text-theme-error">*</span></span>
+            </div>
           </label>
-          <input
-            type="date"
-            id="recruitedAt"
-            name="recruitedAt"
-            v-model="character.recruitedAt"
-            class="w-full border-2 border-[#b07d46] bg-[#fffaf0] rounded-md p-2 md:p-3 text-base focus:outline-none focus:ring-2 focus:ring-[#b02e2e]"
-            required
-          />
+          <div class="relative">
+            <input
+              type="date"
+              id="recruitedAt"
+              name="recruitedAt"
+              v-model="character.recruitedAt"
+              class="w-full bg-theme-bg-muted border-2 border-theme-border text-theme-text rounded-lg px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-theme-primary focus:border-theme-primary transition-all duration-200 pr-12 cursor-pointer"
+              required
+              @change="validateDate"
+              @click="openDatePicker"
+              :max="new Date().toISOString().slice(0, 10)"
+              style="color-scheme: light dark;"
+              ref="dateInput"
+            />
+            <button
+              type="button"
+              @click="openDatePicker"
+              class="absolute right-2 top-1/2 transform -translate-y-1/2 w-8 h-8 bg-theme-primary hover:bg-theme-primary-hover text-theme-bg rounded-lg flex items-center justify-center transition-all duration-200 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-theme-primary focus:ring-offset-2 focus:ring-offset-theme-bg-muted"
+              title="Ouvrir le sélecteur de date"
+              aria-label="Ouvrir le sélecteur de date"
+            >
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+            </button>
+          </div>
+          <div
+            v-if="dateError"
+            class="flex items-center space-x-2 text-theme-error text-sm"
+          >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+            </svg>
+            <span>{{ dateError }}</span>
+          </div>
         </div>
 
         <!-- Recruteur -->
-        <RecruiterSelector 
-          :recruiters="recruiters"
-          :selected-recruiter-id="character.recruiterId"
-          :classes="classes" 
-          @select-recruiter="selectRecruiter"
-          @clear-recruiter="clearRecruiter"
-        />
-      </div>
-      
-      <!-- Classe (responsive grid) -->
-      <div>
-        <label class="block text-sm md:text-base font-medium text-[#b07d46] mb-2">
-          Classe du personnage <span class="text-[#b02e2e]">*</span>
-        </label>
-        <div
-          class="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-7 gap-2 md:gap-3"
-        >
-          <div
-            v-for="(icon, index) in classes"
-            :key="index"
-            :class="[
-              'cursor-pointer border-2 rounded-md flex items-center justify-center aspect-square transition-all',
-              character.class === index
-                ? 'border-[#b02e2e] bg-[#f3d9b1] scale-110 shadow-md'
-                : 'border-[#b07d46] bg-[#fffaf0] hover:bg-[#f3d9b1] hover:border-[#b02e2e]',
-            ]"
-            @click="selectClass(index)"
-          >
-            <img :src="icon" alt="Classe" class="w-full h-full p-1 md:p-2 object-contain" />
-          </div>
+        <div class="space-y-2">
+          <label class="block text-sm font-medium text-theme-text">
+            Recruteur
+          </label>
+          <RecruiterSelector 
+            :recruiters="recruiters"
+            :selected-recruiter-id="character.recruiterId"
+            :classes="classes" 
+            @select-recruiter="selectRecruiter"
+            @clear-recruiter="clearRecruiter"
+          />
         </div>
       </div>
-    </div>
-
-    <!-- Erreur locale -->
-    <div
-      v-if="errorMessage"
-      class="mt-4 p-3 bg-[#ffeeee] border-l-4 border-[#b02e2e] text-[#b02e2e] rounded"
-    >
-      <div class="flex items-center">
-        <span class="mr-2 text-xl">⚠️</span>
-        <span class="font-medium">{{ errorMessage }}</span>
+      
+      <!-- Classe Selection -->
+      <div class="space-y-4">
+        <label class="block text-sm font-medium text-theme-text">
+          Classe du personnage <span class="text-theme-error">*</span>
+        </label>
+        <div class="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-7 gap-3">
+          <button
+            v-for="(icon, className) in classes"
+            :key="className"
+            type="button"
+            @click="selectClass(className)"
+            class="group relative p-3 rounded-xl border-2 transition-all duration-200 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-theme-primary focus:ring-offset-2 focus:ring-offset-theme-bg-muted"
+            :class="[
+              character.class === className
+                ? 'border-theme-primary bg-theme-primary/20 shadow-lg shadow-theme-primary/25'
+                : 'border-theme-border hover:border-theme-primary bg-theme-bg-muted hover:bg-theme-border'
+            ]"
+          >
+            <img
+              :src="icon"
+              :alt="className"
+              class="w-12 h-12 rounded-lg mx-auto mb-2 group-hover:scale-110 transition-transform duration-200"
+            />
+            <span class="block text-xs font-medium text-center capitalize transition-colors duration-200"
+                  :class="[
+                    character.class === className
+                      ? 'text-theme-primary'
+                      : 'text-theme-text-muted group-hover:text-theme-text'
+                  ]">
+              {{ className }}
+            </span>
+            
+            <!-- Selection indicator -->
+            <div v-if="character.class === className"
+                 class="absolute -top-1 -right-1 w-6 h-6 bg-theme-primary rounded-full flex items-center justify-center shadow-lg">
+              <svg class="w-3 h-3 text-theme-bg" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
+          </button>
+        </div>
+      </div>
+      <!-- Notes Field -->
+      <div class="space-y-2">
+        <label for="notes" class="block text-sm font-medium text-theme-text">
+          Notes (facultatif)
+        </label>
+        <textarea
+          id="notes"
+          v-model="character.notes"
+          class="w-full bg-theme-bg-muted border-2 border-theme-border text-theme-text rounded-lg px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-theme-primary focus:border-theme-primary transition-all duration-200 placeholder-gray-400"
+          rows="3"
+          placeholder="Contexte de recrutement ou information(s) pertinente(s) sur le membre..."
+        ></textarea>
       </div>
     </div>
   </div>
@@ -148,14 +223,16 @@ export default {
   data() {
     return {
       errorMessage: '',
+      dateError: '',
       character: {
         pseudo: '',
         ankamaPseudo: '',
         class: '',
-        recruitedAt: new Date().toISOString().substr(0, 10),
+        recruitedAt: new Date().toISOString().slice(0, 10),
         recruiterId: null,
         isArchived: false,
         userId: null,
+        notes: '',
       },
       recruiters: [],
       selectedRecruiterName: '',
@@ -231,6 +308,11 @@ export default {
         return false;
       }
       
+      // Validate date
+      if (!this.validateDate()) {
+        return false;
+      }
+      
       this.errorMessage = '';
       return true;
     },
@@ -240,12 +322,14 @@ export default {
         pseudo: '',
         ankamaPseudo: '',
         class: '',
-        recruitedAt: new Date().toISOString().substr(0, 10),
+        recruitedAt: new Date().toISOString().slice(0, 10),
         recruiterId: null,
         isArchived: false,
         userId: null,
+        notes: '',
       };
       this.errorMessage = '';
+      this.dateError = '';
       this.emitUpdate();
     },
     
@@ -256,11 +340,95 @@ export default {
       } catch (error) {
         console.error('Error fetching recruiters:', error);
       }
+    },
+    
+    validateDate() {
+      this.dateError = '';
+      
+      console.log('Validating date:', this.character.recruitedAt);
+      
+      if (!this.character.recruitedAt) {
+        this.dateError = 'La date de recrutement est requise.';
+        return false;
+      }
+      
+      // Check if the date string is valid
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(this.character.recruitedAt)) {
+        this.dateError = 'Format de date invalide.';
+        console.error('Invalid date format:', this.character.recruitedAt);
+        return false;
+      }
+      
+      const selectedDate = new Date(this.character.recruitedAt + 'T00:00:00');
+      const today = new Date();
+      
+      console.log('Selected date:', selectedDate);
+      console.log('Today:', today);
+      
+      // Check if the date is valid
+      if (isNaN(selectedDate.getTime())) {
+        this.dateError = 'Date invalide.';
+        console.error('Invalid date object:', selectedDate);
+        return false;
+      }
+      
+      if (selectedDate > today) {
+        this.dateError = 'La date de recrutement ne peut pas être dans le futur.';
+        return false;
+      }
+      
+      if (selectedDate < new Date('2000-01-01')) {
+        this.dateError = 'La date de recrutement semble invalide.';
+        return false;
+      }
+      
+      console.log('Date validation passed');
+      return true;
+    },
+    
+    setupDateFallback() {
+      // For browsers that don't support date input, we could implement a custom date picker
+      // For now, just log a warning
+      console.warn('Consider implementing a custom date picker for better browser compatibility');
+    },
+    
+    openDatePicker() {
+      // Focus and click the date input to open the date picker
+      if (this.$refs.dateInput) {
+        // Add a subtle visual feedback
+        this.$refs.dateInput.classList.add('ring-2', 'ring-theme-primary');
+        
+        // Remove the ring after a short delay
+        setTimeout(() => {
+          this.$refs.dateInput.classList.remove('ring-2', 'ring-theme-primary');
+        }, 300);
+        
+        this.$refs.dateInput.focus();
+        
+        // Try to use showPicker() method (modern browsers)
+        if (typeof this.$refs.dateInput.showPicker === 'function') {
+          this.$refs.dateInput.showPicker();
+        } else {
+          // Fallback: trigger a click event to open the date picker
+          this.$refs.dateInput.click();
+        }
+      }
     }
   },
   mounted() {
     this.fetchRecruiters();
     this.emitUpdate();
+    
+    // Check if the browser supports the date input
+    const dateInput = document.getElementById('recruitedAt');
+    if (dateInput && dateInput.type === 'date') {
+      // Browser supports date input
+      console.log('Date input supported');
+    } else {
+      // Fallback for browsers that don't support date input
+      console.warn('Date input not supported, using fallback');
+      this.setupDateFallback();
+    }
   },
   watch: {
     'character.pseudo'() {
@@ -270,6 +438,9 @@ export default {
       this.emitUpdate();
     },
     'character.recruitedAt'() {
+      this.emitUpdate();
+    },
+    'character.notes'() {
       this.emitUpdate();
     }
   }

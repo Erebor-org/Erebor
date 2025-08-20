@@ -3,9 +3,93 @@
 @tailwind components;
 @tailwind utilities;
 
+/* CSS Custom Properties pour le système de thèmes */
+:root {
+  /* Light theme - "Blanc & Bleu" */
+  --bg: #ffffff;
+  --bg-muted: #f7f8fa;
+  --card: #ffffff;
+  --border: #e6e8ec;
+  --text: #0b1220;
+  --text-muted: #5b6472;
+  --primary: #2563eb;
+  --primary-hover: #1d4ed8;
+  --link: #2563eb;
+  --ring: #93c5fd;
+  --success: #16a34a;
+  --warning: #f59e0b;
+  --error: #dc2626;
+  
+  /* Variables RGB pour les opacités */
+  --text-rgb: 11, 18, 32;
+  --bg-rgb: 255, 255, 255;
+  --primary-rgb: 37, 99, 235;
+  --border-rgb: 230, 232, 236;
+}
+
+[data-theme="dark"] {
+  /* Dark theme - "Noir & Magenta" */
+  --bg: #0b0b0f;
+  --bg-muted: #121218;
+  --card: #14141b;
+  --border: #262633;
+  --text: #f4f6fb;
+  --text-muted: #a8adbb;
+  --primary: #d946ef;
+  --primary-hover: #c026d3;
+  --link: #e879f9;
+  --ring: #f0abfc;
+  --success: #22c55e;
+  --warning: #facc15;
+  --error: #ef4444;
+  
+  /* Variables RGB pour les opacités */
+  --text-rgb: 244, 246, 251;
+  --bg-rgb: 11, 11, 15;
+  --primary-rgb: 217, 70, 239;
+  --border-rgb: 38, 38, 51;
+}
+
+/* Styles de base avec les variables CSS */
 html, body, #app {
-    height: 100vh;
-    width: 100%;
-    margin: 0;
-    padding: 0;
-  }
+  height: 100vh;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  background-color: var(--bg);
+  color: var(--text);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Classes utilitaires pour les couleurs */
+.bg-theme-bg { background-color: var(--bg); }
+.bg-theme-bg-muted { background-color: var(--bg-muted); }
+.bg-theme-card { background-color: var(--card); }
+.bg-theme-primary { background-color: var(--primary); }
+.bg-theme-primary-hover { background-color: var(--primary-hover); }
+.bg-theme-success { background-color: var(--success); }
+.bg-theme-warning { background-color: var(--warning); }
+.bg-theme-error { background-color: var(--error); }
+
+.text-theme-text { color: var(--text); }
+.text-theme-text-muted { color: var(--text-muted); }
+.text-theme-primary { color: var(--primary); }
+.text-theme-primary-hover { color: var(--primary-hover); }
+.text-theme-link { color: var(--link); }
+.text-theme-success { color: var(--success); }
+.text-theme-warning { color: var(--warning); }
+.text-theme-error { color: var(--error); }
+
+.border-theme-border { border-color: var(--border); }
+.border-theme-primary { border-color: var(--primary); }
+.border-theme-ring { border-color: var(--ring); }
+
+.ring-theme-ring { --tw-ring-color: var(--ring); }
+.focus\:ring-theme-ring:focus { --tw-ring-color: var(--ring); }
+
+/* Transitions globales */
+* {
+  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 300ms;
+}

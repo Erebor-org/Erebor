@@ -6,6 +6,11 @@ import Register from '../views/RegisterPage.vue';
 import ViewWarnings from '../views/ViewWarnings.vue';
 import ManageWarnings from '../views/ManageWarnings.vue';
 import Statistiques from '../views/Statistiques.vue';
+import ThemeDemo from '../views/ThemeDemo.vue';
+import ThemeCustomizer from '../views/ThemeCustomizer.vue';
+import ThemeCustomizerDemo from '../views/ThemeCustomizerDemo.vue';
+import WheelView from '../views/WheelView.vue';
+import WheelClassesView from '../views/WheelClassesView.vue';
 
 const routes = [
   { path: '/', redirect: () => {
@@ -19,6 +24,11 @@ const routes = [
   { path: '/warnings/:id/:pseudo', name: 'ViewWarnings', component: ViewWarnings, meta: { requiresAuth: true } },
   { path: '/warnings-management', name: 'ManageWarnings', component: ManageWarnings, meta: { requiresAuth: true } },
   { path: '/statistiques', name: 'Statistiques', component: Statistiques, meta: { requiresAuth: true } },
+  { path: '/theme-demo', name: 'ThemeDemo', component: ThemeDemo },
+  { path: '/theme-customizer', name: 'ThemeCustomizer', component: ThemeCustomizer },
+  { path: '/theme-customizer-demo', name: 'ThemeCustomizerDemo', component: ThemeCustomizerDemo },
+  { path: '/wheel', name: 'Wheel', component: WheelView, meta: { requiresAuth: true } },
+  { path: '/wheel-classes', name: 'WheelClasses', component: WheelClassesView, meta: { requiresAuth: true } },
 ];
 
 const router = createRouter({

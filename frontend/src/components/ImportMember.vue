@@ -2,6 +2,7 @@
   <ImportMemberModal
     :showModal="showModalMember"
     :fetchNotArchivedCharacters="fetchNotArchivedCharacters"
+    :selectedCharacterForMule="selectedCharacterForMule"
     @close="closeModal"
     @character-added="handleCharacterAdded"
     @mule-added="handleMuleAdded"
@@ -23,6 +24,10 @@ export default {
     fetchNotArchivedCharacters: {
       type: Array,
       required: true,
+    },
+    selectedCharacterForMule: {
+      type: Object,
+      required: false,
     }
   },
   methods: {

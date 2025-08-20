@@ -59,5 +59,14 @@ class RanksRepository extends ServiceEntityRepository
             ->getQuery()
             ->getOneOrNullResult();
     }
+    
+    public function findAllOrderedByRequiredDays(): array
+    {
+        return $this->createQueryBuilder('r')
+            ->orderBy('r.requiredDays', 'DESC')
+            ->addOrderBy('r.id', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
         
 }
