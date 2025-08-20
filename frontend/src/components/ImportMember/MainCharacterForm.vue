@@ -75,21 +75,46 @@
         <div class="space-y-2">
           <label
             for="recruitedAt"
-            class="block text-sm font-medium text-theme-text"
+            class="block text-sm font-medium text-theme-text cursor-pointer hover:text-theme-primary transition-colors duration-200 group focus:outline-none focus:ring-2 focus:ring-theme-primary focus:ring-offset-2 focus:ring-offset-theme-bg-muted rounded-lg px-2 py-1 -ml-2"
+            @click="openDatePicker"
+            role="button"
+            tabindex="0"
+            @keydown.enter="openDatePicker"
+            @keydown.space="openDatePicker"
           >
-            Date de recrutement <span class="text-theme-error">*</span>
+            <div class="flex items-center space-x-2">
+              <svg class="w-4 h-4 transition-transform duration-200 group-hover:scale-110" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+              <span>Date de recrutement <span class="text-theme-error">*</span></span>
+            </div>
           </label>
-          <input
-            type="date"
-            id="recruitedAt"
-            name="recruitedAt"
-            v-model="character.recruitedAt"
-            class="w-full bg-theme-bg-muted border-2 border-theme-border text-theme-text rounded-lg px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-theme-primary focus:border-theme-primary transition-all duration-200"
-            required
-            @change="validateDate"
-            :max="new Date().toISOString().slice(0, 10)"
-            style="color-scheme: light dark;"
-          />
+          <div class="relative">
+            <input
+              type="date"
+              id="recruitedAt"
+              name="recruitedAt"
+              v-model="character.recruitedAt"
+              class="w-full bg-theme-bg-muted border-2 border-theme-border text-theme-text rounded-lg px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-theme-primary focus:border-theme-primary transition-all duration-200 pr-12 cursor-pointer"
+              required
+              @change="validateDate"
+              @click="openDatePicker"
+              :max="new Date().toISOString().slice(0, 10)"
+              style="color-scheme: light dark;"
+              ref="dateInput"
+            />
+            <button
+              type="button"
+              @click="openDatePicker"
+              class="absolute right-2 top-1/2 transform -translate-y-1/2 w-8 h-8 bg-theme-primary hover:bg-theme-primary-hover text-theme-bg rounded-lg flex items-center justify-center transition-all duration-200 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-theme-primary focus:ring-offset-2 focus:ring-offset-theme-bg-muted"
+              title="Ouvrir le sélecteur de date"
+              aria-label="Ouvrir le sélecteur de date"
+            >
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+            </button>
+          </div>
           <div
             v-if="dateError"
             class="flex items-center space-x-2 text-theme-error text-sm"
@@ -365,6 +390,29 @@ export default {
       // For browsers that don't support date input, we could implement a custom date picker
       // For now, just log a warning
       console.warn('Consider implementing a custom date picker for better browser compatibility');
+    },
+    
+    openDatePicker() {
+      // Focus and click the date input to open the date picker
+      if (this.$refs.dateInput) {
+        // Add a subtle visual feedback
+        this.$refs.dateInput.classList.add('ring-2', 'ring-theme-primary');
+        
+        // Remove the ring after a short delay
+        setTimeout(() => {
+          this.$refs.dateInput.classList.remove('ring-2', 'ring-theme-primary');
+        }, 300);
+        
+        this.$refs.dateInput.focus();
+        
+        // Try to use showPicker() method (modern browsers)
+        if (typeof this.$refs.dateInput.showPicker === 'function') {
+          this.$refs.dateInput.showPicker();
+        } else {
+          // Fallback: trigger a click event to open the date picker
+          this.$refs.dateInput.click();
+        }
+      }
     }
   },
   mounted() {
