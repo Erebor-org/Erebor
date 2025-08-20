@@ -56,38 +56,21 @@ class DofusdleApiController extends AbstractController
     #[Route('/erebor/dofusdle/api/classic/daily', name: 'dofusdle_classic_daily', methods: ['GET'])]
     public function daily(Request $request, EntityManagerInterface $em): JsonResponse
     {
-        $dailyId = $this->getOrSetDailyMonsterId($request, $em);
-        if (!$dailyId) {
+        $monsters = $em->getRepository(DofusdleMonster::class)->findAll();
+        if (!$monsters) {
             return $this->json(['error' => 'No monsters'], 404);
         }
-        $monster = $em->getRepository(DofusdleMonster::class)->findOneBy(['dofusdbId' => $dailyId]);
-        if (!$monster) {
-            return $this->json(['error' => 'Monster not found'], 404);
+        $rand = random_int(0, count($monsters) - 1);
+        $monster = $monsters[$rand];
+        $puzzleId = sprintf('classic_%d', $monster->getDofusdbId());
+        $monsterData = [];
+        foreach ([
+            'id','dofusdb_id','name','pdv','pa','pm','family','level','isBoss','element','image','super_race','subareas','areas','favorite_subarea_id','boss_type','tags','spells_count','corresponding_mini_boss_id','corresponding_mini_boss_name'
+        ] as $f) {
+            $getter = 'get' . str_replace(' ', '', ucwords(str_replace('_', ' ', $f)));
+            $val = method_exists($monster, $getter) ? $monster->$getter() : null;
+            $monsterData[$f] = ($val === null ? 'Inconnue' : $val);
         }
-        $puzzleId = 'classic_' . $dailyId;
-        // Retourne toutes les données du monstre
-        $monsterData = [
-            'id' => $monster->getId(),
-            'dofusdb_id' => $monster->getDofusdbId(),
-            'name' => $monster->getName(),
-            'pdv' => $monster->getPdv(),
-            'pa' => $monster->getPa(),
-            'pm' => $monster->getPm(),
-            'family' => $monster->getFamily(),
-            'level' => $monster->getLevel(),
-            'isBoss' => $monster->isBoss(),
-            'element' => $monster->getElement(),
-            'image' => $monster->getImage(),
-            'super_race' => $monster->getSuperRace(),
-            'subareas' => $monster->getSubareas(),
-            'areas' => $monster->getAreas(),
-            'favorite_subarea_id' => $monster->getFavoriteSubareaId(),
-            'boss_type' => $monster->getBossType(),
-            'tags' => $monster->getTags(),
-            'spells_count' => $monster->getSpellsCount(),
-            'corresponding_mini_boss_id' => $monster->getCorrespondingMiniBossId(),
-            'corresponding_mini_boss_name' => $monster->getCorrespondingMiniBossName(),
-        ];
         return $this->json([
             'mode' => 'classic',
             'date' => (new \DateTimeImmutable('now', new \DateTimeZone('Europe/Paris')))->format('Y-m-d'),
@@ -101,15 +84,14 @@ class DofusdleApiController extends AbstractController
     #[Route('/erebor/dofusdle/api/classic/regen-daily', name: 'dofusdle_classic_regen_daily', methods: ['POST'])]
     public function regenDaily(Request $request, EntityManagerInterface $em): JsonResponse
     {
-        $session = $request->getSession();
         $monsters = $em->getRepository(DofusdleMonster::class)->findAll();
         if (!$monsters) {
             return $this->json(['error' => 'No monsters'], 404);
         }
         $rand = random_int(0, count($monsters) - 1);
         $dailyId = $monsters[$rand]->getDofusdbId();
-        $session->set($this->dailyMonIdKey, $dailyId);
-        return $this->json(['success' => true, 'dofusdb_id' => $dailyId]);
+        $puzzleId = sprintf('classic_%d', $dailyId);
+        return $this->json(['success' => true, 'dofusdb_id' => $dailyId, 'puzzleId' => $puzzleId]);
     }
 
     #[Route('/erebor/dofusdle/api/classic/search', name: 'dofusdle_classic_search', methods: ['GET'])]
@@ -134,20 +116,13 @@ class DofusdleApiController extends AbstractController
     #[Route('/erebor/dofusdle/api/classic/guess', name: 'dofusdle_classic_guess', methods: ['POST'])]
     public function guess(Request $request, EntityManagerInterface $em): JsonResponse
     {
-        $data = json_decode($request->getContent(), true);
-        $guessId = $data['guessId'] ?? null;
-        $session = $request->getSession();
-        $dailyId = $session->get($this->dailyMonIdKey);
-        if (!$dailyId) {
-            // Génère un daily à la volée si absent
-            $monsters = $em->getRepository(DofusdleMonster::class)->findAll();
-            if (!$monsters) {
-                return $this->json(['error' => 'No monsters'], 404);
-            }
-            $rand = random_int(0, count($monsters) - 1);
-            $dailyId = $monsters[$rand]->getDofusdbId();
-            $session->set($this->dailyMonIdKey, $dailyId);
+        $body = json_decode($request->getContent(), true);
+        $puzzleId = $body['puzzleId'] ?? '';
+        $guessId  = (int)($body['guessId'] ?? 0);
+        if (!preg_match('/^classic_(\d+)$/', $puzzleId, $m)) {
+            return $this->json(['error' => 'invalid puzzleId'], 400);
         }
+        $dailyId  = (int)$m[1];
         $solution = $em->getRepository(DofusdleMonster::class)->findOneBy(['dofusdbId' => $dailyId]);
         $guess = $em->getRepository(DofusdleMonster::class)->findOneBy(['dofusdbId' => $guessId]);
         if (!$guess || !$solution) {

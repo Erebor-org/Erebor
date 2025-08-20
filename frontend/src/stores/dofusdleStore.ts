@@ -11,6 +11,7 @@ export type GuessRow = {
   refLevel: number,
   family: string,
   areas: string[],
+  subareas: string[],
   rank: 'normal'|'miniboss'|'boss',
   element?: 'water'|'fire'|'earth'|'air'|'neutral',
   ap: number, mp: number, hp: number,
@@ -37,6 +38,8 @@ export const useDofusdleStore = defineStore('dofusdle', () => {
   const colorize = computed(() => attempts.value.length >= 2)
   const correct = ref(false)
   const allMonsters = ref<any[]>([])
+  // Ajoute une référence au daily courant (stocké lors du fetchDaily)
+  const dailyMonster = ref<any>(null)
 
   async function fetchDaily() {
     loading.value = true
@@ -46,6 +49,7 @@ export const useDofusdleStore = defineStore('dofusdle', () => {
       const data = res.data
       puzzleId.value = data.puzzleId
       date.value = data.date
+      dailyMonster.value = data.monster
       attempts.value = []
       correct.value = false
     } catch (e: any) {
@@ -79,8 +83,9 @@ export const useDofusdleStore = defineStore('dofusdle', () => {
         img: m.image,
         refLevel: m.level,
         family: m.family || '',
-        areas: [], // à compléter si tu as la donnée
-        rank: m.isBoss ? (m.isBoss === 2 ? 'miniboss' : 'boss') : 'normal',
+        areas: Array.isArray(m.areas) ? m.areas.map(String) : (m.areas ? [String(m.areas)] : []),
+        subareas: Array.isArray(m.subareas) ? m.subareas.map(String) : (m.subareas ? [String(m.subareas)] : []),
+        rank: m.isMiniBoss ? 'miniboss' : (m.isBoss ? 'boss' : 'normal'),
         element: m.element || undefined,
         ap: m.pa,
         mp: m.pm,
@@ -143,8 +148,28 @@ export const useDofusdleStore = defineStore('dofusdle', () => {
         normalizedHint[k] = 'unknown'
       }
     }
+    // Récupère les zones depuis allMonsters si absentes
+    let areas = Array.isArray(monster.areas) ? monster.areas.map(String) : (monster.areas ? [String(monster.areas)] : [])
+    let subareas = Array.isArray(monster.subareas) ? monster.subareas.map(String) : (monster.subareas ? [String(monster.subareas)] : [])
+    // Si guess = daily, copie les zones du daily
+    if (dailyMonster.value && monster.id === dailyMonster.value.dofusdb_id) {
+      if (Array.isArray(dailyMonster.value.areas)) areas = dailyMonster.value.areas.map(String)
+      if (Array.isArray(dailyMonster.value.subareas)) subareas = dailyMonster.value.subareas.map(String)
+    }
+    if ((!areas || !areas.length) || (!subareas || !subareas.length)) {
+      const ref = allMonsters.value.find(m => m.dofusdb_id === monster.id || m.id === monster.id)
+      if (ref) {
+        if (!areas.length && ref.areas) areas = Array.isArray(ref.areas) ? ref.areas.map(String) : [String(ref.areas)]
+        if (!subareas.length && ref.subareas) subareas = Array.isArray(ref.subareas) ? ref.subareas.map(String) : [String(ref.subareas)]
+      }
+    }
     const idx = attempts.value.findIndex(a => a.id === monster.id)
-    const guessRow = { ...monster, hint: normalizedHint }
+    const guessRow = {
+      ...monster,
+      areas,
+      subareas,
+      hint: normalizedHint
+    }
     if (idx >= 0) {
       attempts.value.splice(idx, 1)
       attempts.value.unshift(guessRow)

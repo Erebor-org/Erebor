@@ -39,10 +39,11 @@
         <pre class="bg-gray-100 p-2 rounded text-xs">{{ debugResult.guess }}</pre>
       </details>
     </div>
+    <VictoryModal :show="showVictory" :monster-img="dailyMonster?.image" :monster-name="dailyMonster?.name" @close="showVictory = false" />
     <div v-if="loading" class="text-center text-theme-text-muted text-2xl">Chargement…</div>
     <div v-else>
       <div class="mb-6">
-        <div v-if="correct" class="bg-theme-success/20 border border-theme-success rounded-xl p-6 flex flex-col items-center">
+        <div v-if="correct && !showVictory" class="bg-theme-success/20 border border-theme-success rounded-xl p-6 flex flex-col items-center">
           <div class="text-2xl font-bold mb-2 text-theme-success">Bravo !</div>
           <button class="bg-theme-success text-white px-6 py-3 rounded-xl text-lg" @click="shareResult">Partager le résultat</button>
         </div>
@@ -58,7 +59,7 @@
         @input="onSearch"
         @select="onSelectMonster"
       />
-      <div class="mt-8 overflow-x-auto">
+      <div class="mt-8 overflow-x-auto" v-if="!showVictory">
         <DofusdleGuessTable :attempts="store.attempts" :colorize="true" />
       </div>
     </div>
@@ -70,6 +71,7 @@ import { ref, watch, onMounted } from 'vue'
 import { useDofusdleStore } from '../stores/dofusdleStore'
 import DofusdleMonsterPicker from '../components/DofusdleMonsterPicker.vue'
 import DofusdleGuessTable from '../components/DofusdleGuessTable.vue'
+import VictoryModal from '../components/VictoryModal.vue'
 import axios from 'axios'
 import { classFromHint } from '../utils/dofusdleHintUtils'
 
@@ -85,6 +87,7 @@ const searchError = ref('')
 const dailyMonster = ref(null)
 const selectedGuessId = ref('')
 const debugResult = ref(null)
+const showVictory = ref(false)
 
 async function loadDaily() {
   const res = await axios.get('/erebor/dofusdle/api/classic/daily')
@@ -95,6 +98,12 @@ async function loadDaily() {
 onMounted(async () => {
   await loadDaily()
   fetchAllMonsters()
+})
+
+watch(() => correct.value, (val) => {
+  if (val) {
+    showVictory.value = true
+  }
 })
 
 let lastSearch = ''

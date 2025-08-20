@@ -14,6 +14,7 @@ const props = defineProps({
   hint: String,
   colorize: Boolean,
   label: String,
+  correct: Boolean,
 })
 const symbol = computed(() => {
   if (!props.colorize || !props.hint) return ''
@@ -23,6 +24,7 @@ const symbol = computed(() => {
   return ''
 })
 const chipClass = computed(() => {
+  if (props.correct) return 'inline-flex items-center px-3 py-1 rounded-xl text-xl font-bold shadow bg-green-100 text-green-800'
   if (!props.colorize || !props.hint) return 'inline-flex items-center px-3 py-1 rounded-xl bg-gray-100 text-gray-800 text-xl shadow'
   return `inline-flex items-center px-3 py-1 rounded-xl text-xl font-bold shadow ${classFromHint(props.hint, props.label?.toLowerCase() || 'stat')}`
 })

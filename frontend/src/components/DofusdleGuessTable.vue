@@ -16,7 +16,7 @@
       </thead>
       <tbody class="bg-white/10">
         <tr v-for="(row, idx) in attempts" :key="row.id"
-            :class="[rowClass(idx), isCorrectRow(row) ? 'bg-green-100/20 ring-2 ring-green-400' : '', 'transition hover:scale-[1.01] hover:shadow-lg hover:bg-theme-bg-muted focus-within:bg-theme-bg-muted animate-slidein']">
+            :class="[rowClass(idx), isCorrectRow(row, idx) ? 'bg-green-100/20 ring-2 ring-green-400' : '', 'transition hover:scale-[1.01] hover:shadow-lg hover:bg-theme-bg-muted focus-within:bg-theme-bg-muted animate-slidein']">
           <td class="flex items-center gap-5 px-6 py-4">
             <div class="w-16 h-16 rounded-full bg-theme-bg-muted flex items-center justify-center overflow-hidden border-2 border-theme-primary shadow-md">
               <img v-if="row.img" :src="row.img" alt="" class="w-16 h-16 object-cover" />
@@ -26,12 +26,12 @@
           </td>
           <CellLevel :value="row.refLevel" :hint="row.hint?.level" :colorize="colorize" fun />
           <CellFamily :value="row.family" :hint="row.hint?.family" :colorize="colorize" fun />
-          <CellZone :areas="row.areas" :hint="row.hint?.zone" :colorize="colorize" fun />
+          <CellZone :areas="row.areas" :subareas="row.subareas" :hint="row.hint?.zone" :colorize="colorize" fun />
           <CellRank :value="row.rank" :hint="row.hint?.rank" :colorize="colorize" fun />
           <CellElement :value="row.element" :hint="row.hint?.element" :colorize="colorize" fun />
-          <CellStat :value="row.ap" :hint="row.hint?.ap" :colorize="colorize" label="PA" fun />
-          <CellStat :value="row.mp" :hint="row.hint?.mp" :colorize="colorize" label="PM" fun />
-          <CellStat :value="row.hp" :hint="row.hint?.hp" :colorize="colorize" label="PV" fun />
+          <CellStat :value="row.ap" :hint="row.hint?.ap" :colorize="colorize" label="PA" :correct="isCorrectRow(row, idx)" fun />
+          <CellStat :value="row.mp" :hint="row.hint?.mp" :colorize="colorize" label="PM" :correct="isCorrectRow(row, idx)" fun />
+          <CellStat :value="row.hp" :hint="row.hint?.hp" :colorize="colorize" label="PV" :correct="isCorrectRow(row, idx)" fun />
         </tr>
       </tbody>
     </table>
@@ -47,12 +47,12 @@
           <div class="flex flex-wrap gap-3 mt-2 text-lg">
             <CellLevel :value="row.refLevel" :hint="row.hint?.level" :colorize="colorize" fun />
             <CellFamily :value="row.family" :hint="row.hint?.family" :colorize="colorize" fun />
-            <CellZone :areas="row.areas" :hint="row.hint?.zone" :colorize="colorize" fun />
+            <CellZone :areas="row.areas" :subareas="row.subareas" :hint="row.hint?.zone" :colorize="colorize" fun />
             <CellRank :value="row.rank" :hint="row.hint?.rank" :colorize="colorize" fun />
             <CellElement :value="row.element" :hint="row.hint?.element" :colorize="colorize" fun />
-            <CellStat :value="row.ap" :hint="row.hint?.ap" :colorize="colorize" label="PA" fun />
-            <CellStat :value="row.mp" :hint="row.hint?.mp" :colorize="colorize" label="PM" fun />
-            <CellStat :value="row.hp" :hint="row.hint?.hp" :colorize="colorize" label="PV" fun />
+            <CellStat :value="row.ap" :hint="row.hint?.ap" :colorize="colorize" label="PA" :correct="isCorrectRow(row, idx)" fun />
+            <CellStat :value="row.mp" :hint="row.hint?.mp" :colorize="colorize" label="PM" :correct="isCorrectRow(row, idx)" fun />
+            <CellStat :value="row.hp" :hint="row.hint?.hp" :colorize="colorize" label="PV" :correct="isCorrectRow(row, idx)" fun />
           </div>
         </div>
       </div>
@@ -76,6 +76,8 @@ import CellZone from './DofusdleGuessTable/CellZone.vue'
 import CellRank from './DofusdleGuessTable/CellRank.vue'
 import CellElement from './DofusdleGuessTable/CellElement.vue'
 import CellStat from './DofusdleGuessTable/CellStat.vue'
+import { useDofusdleStore } from '../stores/dofusdleStore'
+const store = useDofusdleStore()
 // CellResist supprimé
 
 const props = defineProps({
@@ -88,11 +90,9 @@ function rowClass(idx) {
   return idx === 0 && !props.colorize ? 'bg-theme-bg-muted' : ''
 }
 
-function isCorrectRow(row) {
-  if (!row.hint) return false
-  // On considère la ligne "correcte" si tous les hints sont "match", "eq" ou "exact"
-  const ok = ['match', 'eq', 'exact']
-  return Object.values(row.hint).every(v => ok.includes(v))
+function isCorrectRow(row, idx) {
+  // Ligne correcte = première ligne du tableau ET store.correct true
+  return idx === 0 && store.correct
 }
 </script>
 

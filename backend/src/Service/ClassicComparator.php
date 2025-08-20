@@ -17,7 +17,13 @@ class ClassicComparator
         // Level
         $gLevel = $guess->getLevel();
         $sLevel = $solution->getLevel();
-        $level = $gLevel === $sLevel ? 'eq' : ($gLevel > $sLevel ? 'up' : 'down');
+        $level = $gLevel === $sLevel ? 'eq' : ($gLevel < $sLevel ? 'up' : 'down');
+        // Log spécifique pour le level
+        $gName = $guess->getName();
+        $sName = $solution->getName();
+        $gId = $guess->getDofusdbId();
+        $sId = $solution->getDofusdbId();
+        file_put_contents('/tmp/dofusdle_comparestat.log', "LEVEL guess: $gLevel ($gName #$gId), solution: $sLevel ($sName #$sId), result: $level\n", FILE_APPEND);
 
         // Element (dominant tag parmi water/fire/earth/air/neutral)
         $gElem = $this->getDominantElement($guess);
@@ -70,9 +76,11 @@ class ClassicComparator
 
     private function compareStat($g, $s): string
     {
-        if ($g === $s) return 'eq';
-        if ($g > $s) return 'up';
-        return 'down';
+        $result = 'eq';
+        if ($g < $s) $result = 'up';
+        if ($g > $s) $result = 'down';
+        file_put_contents('/tmp/dofusdle_comparestat.log', "guess: $g, solution: $s, result: $result\n", FILE_APPEND);
+        return $result;
     }
 
     private function compareZone(DofusdleMonster $g, DofusdleMonster $s): string
