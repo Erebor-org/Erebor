@@ -142,7 +142,7 @@
           
           <RouterLink 
             to="/statistiques" 
-            v-if="isLoggedIn && isAdmin"
+            v-if="isLoggedIn"
             class="nav-link"
             active-class="nav-link-active"
           >
@@ -299,7 +299,7 @@
         
         <RouterLink 
           to="/statistiques" 
-          v-if="isLoggedIn && isAdmin"
+          v-if="isLoggedIn"
           class="mobile-nav-link"
           active-class="mobile-nav-link-active"
           @click="isMobileMenuOpen = false"
