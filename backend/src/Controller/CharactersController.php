@@ -320,6 +320,10 @@ class CharactersController extends AbstractController
 
         $data = json_decode($request->getContent(), true);
 
+        // Store the old rank to check for recruiter status change
+        $oldRank = $character->getRank();
+        $wasRecruiter = $oldRank && $oldRank->getRecruiter();
+
         // Update basic fields
         $character->setUserId($data['userId'] ?? $character->getUserId())
                 ->setPseudo($data['pseudo'] ?? $character->getPseudo())
@@ -329,6 +333,16 @@ class CharactersController extends AbstractController
                 ->setNotes($data['notes'] ?? $character->getNotes());
         if (isset($data['recruitedAt'])) {
             $character->setRecruitedAt(new \DateTime($data['recruitedAt']));
+        }
+
+        // Handle rank update
+        if (isset($data['rankId'])) {
+            $ranksRepository = $em->getRepository(\App\Entity\Ranks::class);
+            $newRank = $ranksRepository->find($data['rankId']);
+            if (!$newRank) {
+                return $this->json(['error' => 'Rank not found'], 404);
+            }
+            $character->setRank($newRank);
         }
 
         // Handle recruiter assignment
@@ -346,6 +360,16 @@ class CharactersController extends AbstractController
             $character->setRecruiter($recruiter);
         } else {
             $character->setRecruiter(null); // Remove recruiter if not provided
+        }
+
+        // Check if the character is losing recruiter status
+        $newRank = $character->getRank();
+        $isNowRecruiter = $newRank && $newRank->getRecruiter();
+        
+        if ($wasRecruiter && !$isNowRecruiter) {
+            // Character is losing recruiter status - keep the recruitment stats
+            // The recruited characters will keep their recruiter_id pointing to this character
+            error_log("[UPDATE] Character (ID={$character->getId()}) is losing recruiter status - keeping recruitment history");
         }
 
         // Persist changes

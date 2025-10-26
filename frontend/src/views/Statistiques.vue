@@ -335,17 +335,23 @@ export default {
     recruiterData() {
       if (!this.statistics || !this.statistics.recruiterPerformance) return [];
       
-      const totalRecruits = Object.values(this.statistics.recruiterPerformance).reduce((sum, count) => sum + count, 0);
+      // Handle both old format (just numbers) and new format (objects with count and class)
+      const totalRecruits = Object.values(this.statistics.recruiterPerformance).reduce((sum, item) => {
+        return sum + (typeof item === 'object' ? item.count : item);
+      }, 0);
       
-      return Object.entries(this.statistics.recruiterPerformance).map(([name, count]) => {
-        const recruiter = this.recruiters.find(r => r.pseudo === name);
+      return Object.entries(this.statistics.recruiterPerformance).map(([name, item]) => {
+        // Handle both old and new format
+        const count = typeof item === 'object' ? item.count : item;
+        const recruiterClass = typeof item === 'object' ? item.class : '';
+        
         return {
           name,
-          class: recruiter ? recruiter.class : '',
+          class: recruiterClass || (this.recruiters.find(r => r.pseudo === name)?.class || ''),
           count,
           percentage: totalRecruits > 0 ? Math.round((count / totalRecruits) * 100) : 0
         };
-      }).sort((a, b) => b.count - a.count);
+      });
     }
   },
   watch: {
