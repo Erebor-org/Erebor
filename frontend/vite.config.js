@@ -10,10 +10,6 @@ export default defineConfig({
     vue(),
     vueDevTools(),
   ],
-  define: {
-    'process.env': process.env, // Ensure environment variables are passed
-  },
-  
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),
