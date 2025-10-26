@@ -18,6 +18,10 @@ security:
       pattern: ^/login
       stateless: true
       security: false
+    register:
+      pattern: ^/register
+      stateless: true
+      security: false
     dev:
       pattern: ^/(_(profiler|wdt)|css|images|js)/
       security: false
