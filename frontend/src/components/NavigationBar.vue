@@ -72,11 +72,27 @@
     <!-- Main Navigation Container -->
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="flex items-center justify-between h-16">
-        
         <!-- Left Section - Logo & Brand -->
-        <div class="flex items-center space-x-4">
+        <RouterLink 
+          v-if="isLoggedIn"
+          to="/home" 
+          class="flex items-center space-x-4 hover:opacity-70 transition-opacity"
+        >
           <div class="flex-shrink-0">
-            <img :src="erebor_logo" alt="Erebor" class="w-10 h-10 transition-transform duration-300 hover:scale-110" />
+            <img :src="erebor_logo" alt="Erebor" class="w-10 h-10" />
+          </div>
+          <div class="hidden md:block">
+            <h1 class="text-xl font-bold text-theme-primary">
+              EREBOR
+            </h1>
+          </div>
+        </RouterLink>
+        <div 
+          v-else
+          class="flex items-center space-x-4"
+        >
+          <div class="flex-shrink-0">
+            <img :src="erebor_logo" alt="Erebor" class="w-10 h-10" />
           </div>
           <div class="hidden md:block">
             <h1 class="text-xl font-bold text-theme-primary">
