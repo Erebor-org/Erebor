@@ -29,16 +29,12 @@ const register = async () => {
   }
 
   await authStore.register(form.value.pseudo, form.value.password);
-  if (authStore.token) {
-    router.push('/membres'); // Redirection après l'inscription et connexion réussies
-  }
+  // Redirect is handled by authStore
 };
 
 const login = async () => {
   await authStore.login(loginForm.value.pseudo, loginForm.value.password);
-  if (authStore.token) {
-    router.push('/membres'); // Redirige si le token est défini après le login
-  }
+  // Redirect is handled by authStore
 };
 
 const togglePassword = () => {

@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import { useAuthStore } from '@/stores/authStore';
+import HomeView from '../views/HomeView.vue';
 import PrintMembers from '../views/PrintMembers.vue';
 import Blacklist from '../views/CreateBlacklist.vue';
 import Register from '../views/RegisterPage.vue';
@@ -15,9 +16,10 @@ import WheelClassesView from '../views/WheelClassesView.vue';
 const routes = [
   { path: '/', redirect: () => {
       const authStore = useAuthStore();
-      return authStore.token ? '/membres' : '/inscription'; // ✅ Redirect based on login state
+      return authStore.token ? '/home' : '/inscription'; // ✅ Redirect based on login state
     } 
   },
+  { path: '/home', name: 'Home', component: HomeView, meta: { requiresAuth: true } },
   { path: '/inscription', name: 'Register', component: Register },
   { path: '/membres', name: 'PrintMembers', component: PrintMembers, meta: { requiresAuth: true } },
   { path: '/blacklist', name: 'Blacklist', component: Blacklist, meta: { requiresAuth: true } },

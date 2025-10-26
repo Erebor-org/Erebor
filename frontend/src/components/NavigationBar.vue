@@ -41,13 +41,13 @@
     authStore.logout();
     router.push('/');
   };
+
+  const user = computed(() => authStore.user);
+  const isLoggedIn = computed(() => authStore.token !== null);
   
   const isAdmin = computed(() => {
     return user.value?.roles?.includes('ROLE_ADMIN');
   });
-
-  const isLoggedIn = computed(() => authStore.token !== null);
-  const user = computed(() => authStore.user);
   
   const toggleMobileMenu = () => {
     isMobileMenuOpen.value = !isMobileMenuOpen.value;
@@ -87,6 +87,15 @@
 
         <!-- Center Section - Navigation Links (Desktop) -->
         <div class="hidden lg:flex items-center space-x-6">
+          
+          <RouterLink 
+            to="/home" 
+            v-if="isLoggedIn"
+            class="nav-link"
+            active-class="nav-link-active"
+          >
+            Accueil
+          </RouterLink>
           
           <RouterLink 
             to="/membres" 
@@ -233,7 +242,8 @@
     >
       <div class="px-4 py-6 space-y-4">
         <RouterLink 
-          to="/" 
+          to="/home" 
+          v-if="isLoggedIn"
           class="mobile-nav-link"
           active-class="mobile-nav-link-active"
           @click="isMobileMenuOpen = false"
