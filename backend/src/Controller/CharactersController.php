@@ -483,9 +483,15 @@ class CharactersController extends AbstractController
         if ($mule->getMainCharacter()->getId() !== $character->getId()) {
             return $this->json(['error' => 'This mule does not belong to the specified main character'], 400);
         }
+        
+        // Check if the old main is a recruiter (has recruiter rank)
+        $isOldMainRecruiter = $character->getRank() && $character->getRank()->getRecruiter();
+        error_log("[SWITCH] Old main (ID={$character->getId()}) is recruiter: " . ($isOldMainRecruiter ? 'YES' : 'NO'));
+        
         // Backup all mules except the one being promoted
         $allMules = $character->getMules()->toArray();
         $otherMules = array_filter($allMules, fn($m) => $m->getId() !== $mule->getId());
+        
         // Create new Character from mule
         $newCharacter = new Characters();
         $newCharacter->setUserId($character->getUserId())
@@ -499,6 +505,29 @@ class CharactersController extends AbstractController
             ->setRecruiter($character->getRecruiter());
         $em->persist($newCharacter);
         $em->flush(); // Pour que $newCharacter ait un ID
+        
+        // If the old main is a recruiter, transfer all recruited characters to the new main
+        if ($isOldMainRecruiter) {
+            $connection = $em->getConnection();
+            
+            // Get all characters that have the old main as recruiter
+            $recruitedCharacters = $charactersRepository->createQueryBuilder('c')
+                ->where('c.recruiter = :recruiterId')
+                ->setParameter('recruiterId', $character->getId())
+                ->getQuery()
+                ->getResult();
+            
+            error_log("[SWITCH] Found " . count($recruitedCharacters) . " characters with old main (ID={$character->getId()}) as recruiter");
+            
+            // Transfer all recruited characters to the new main
+            $transferredCount = $connection->executeStatement(
+                'UPDATE characters SET recruiter_id = :newRecruiterId WHERE recruiter_id = :oldRecruiterId',
+                ['newRecruiterId' => $newCharacter->getId(), 'oldRecruiterId' => $character->getId()]
+            );
+            
+            error_log("[SWITCH] Transferred $transferredCount characters from old main (ID={$character->getId()}) to new main (ID={$newCharacter->getId()}) as recruiter");
+        }
+        
         // Réassigner les warnings de l'ancien main vers le nouveau main
         $connection = $em->getConnection();
         // Logguer le nombre de warnings réassignés
