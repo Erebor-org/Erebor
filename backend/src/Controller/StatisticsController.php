@@ -113,21 +113,26 @@ class StatisticsController extends AbstractController
         // Sort class distribution by class name
         ksort($classDistribution);
 
-        // Calculate recruiter performance
+        // Calculate recruiter performance with full recruiter info
         $recruiterPerformance = [];
         foreach ($characters as $character) {
             $recruiter = $character->getRecruiter();
             if ($recruiter) {
                 $recruiterName = $recruiter->getPseudo();
                 if (!isset($recruiterPerformance[$recruiterName])) {
-                    $recruiterPerformance[$recruiterName] = 0;
+                    $recruiterPerformance[$recruiterName] = [
+                        'count' => 0,
+                        'class' => $recruiter->getClass(),
+                    ];
                 }
-                $recruiterPerformance[$recruiterName]++;
+                $recruiterPerformance[$recruiterName]['count']++;
             }
         }
 
         // Sort recruiter performance by count (descending)
-        arsort($recruiterPerformance);
+        uasort($recruiterPerformance, function($a, $b) {
+            return $b['count'] - $a['count'];
+        });
 
         // Calculate member roles distribution
         $memberRolesDistribution = [];
