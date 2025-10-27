@@ -12,30 +12,44 @@
     <div class="max-w-7xl mx-auto">
       <!-- Header -->
       <div class="text-center mb-8">
-        <h1 class="text-4xl font-bold text-theme-primary mb-4">🎨 Personnalisation</h1>
+        <h1 class="text-4xl font-bold text-theme-primary mb-4">👤 Profil</h1>
         <p class="text-theme-text-muted text-lg">Gérez vos préférences et personnalisez votre expérience</p>
       </div>
 
-      <!-- Default Preferences Section -->
+      <!-- Character Selection - Top Priority -->
       <div class="bg-theme-card rounded-lg p-6 shadow-lg mb-12 border border-theme-border">
-        <div class="mb-4">
-          <h3 class="text-xl font-semibold text-theme-primary mb-4">👥 Vue par défaut des membres</h3>
-          <div class="flex items-center gap-6">
-            <label class="flex items-center gap-2 cursor-pointer">
-              <input type="radio" name="defaultMemberView" value="cards" v-model="defaultMemberView" @change="saveDefaultMemberView" />
-              <span>Carte</span>
-            </label>
-            <label class="flex items-center gap-2 cursor-pointer">
-              <input type="radio" name="defaultMemberView" value="list" v-model="defaultMemberView" @change="saveDefaultMemberView" />
-              <span>Liste</span>
-            </label>
-          </div>
-          <p class="text-theme-text-muted mt-2 text-sm">Choisissez la vue par défaut pour la gestion des membres.</p>
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-xl font-semibold text-theme-primary">🎭 Personnage associé</h3>
         </div>
-        
-        <!-- Character Selection -->
-        <div class="mt-8 pt-8 border-t border-theme-border">
-          <h3 class="text-xl font-semibold text-theme-primary mb-4">🎭 Personnage associé</h3>
+
+        <!-- Selected Character Display -->
+        <div v-if="selectedCharacter && !showCharacterList" class="mb-6">
+          <div class="flex items-center space-x-4 p-4 bg-theme-bg-muted rounded-lg border-2 border-theme-primary">
+            <img :src="getClassIcon(selectedCharacter.class)" :alt="`Classe ${selectedCharacter.class}`" class="w-16 h-16 rounded-lg border-2 border-theme-primary" />
+            <div class="flex-1">
+              <p class="text-lg font-semibold text-theme-text">{{ selectedCharacter.pseudo }}</p>
+              <p class="text-sm text-theme-text-muted">{{ selectedCharacter.ankamaPseudo }}</p>
+              <p class="text-xs text-theme-text-muted capitalize mt-1">{{ selectedCharacter.class }}</p>
+            </div>
+            <div class="flex flex-col gap-2">
+              <button
+                @click="showCharacterList = true"
+                class="px-4 py-2 bg-theme-primary hover:bg-theme-primary-hover text-white font-medium rounded-lg transition-all duration-200"
+              >
+                Modifier
+              </button>
+              <button
+                @click="clearCharacter"
+                class="px-4 py-2 bg-theme-error/10 hover:bg-theme-error/20 text-theme-error font-medium rounded-lg transition-all duration-200"
+              >
+                Retirer
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Character Selection Interface -->
+        <div v-if="!selectedCharacter || showCharacterList">
           <p class="text-theme-text-muted mb-4 text-sm">Associez un personnage à votre compte pour personnaliser votre icône de profil.</p>
           
           <!-- Search Input -->
@@ -70,17 +84,34 @@
             </div>
           </div>
           
-          <!-- Clear Selection Button -->
-          <div v-if="selectedCharacter" class="mt-4 flex justify-end">
+          <!-- Cancel Button (when modifying) -->
+          <div v-if="showCharacterList && selectedCharacter" class="mt-4 flex justify-end">
             <button
-              @click="clearCharacter"
-              class="px-4 py-2 bg-theme-error/10 hover:bg-theme-error/20 text-theme-error font-medium rounded-lg transition-all duration-200"
+              @click="showCharacterList = false"
+              class="px-4 py-2 bg-theme-bg-muted hover:bg-theme-border text-theme-text font-medium rounded-lg transition-all duration-200"
             >
-              Retirer l'association
+              Annuler
             </button>
           </div>
         </div>
       </div>
+
+      <!-- Default Preferences Section -->
+      <div class="bg-theme-card rounded-lg p-6 shadow-lg mb-12 border border-theme-border">
+        <h3 class="text-xl font-semibold text-theme-primary mb-4">👥 Vue par défaut des membres</h3>
+        <div class="flex items-center gap-6">
+          <label class="flex items-center gap-2 cursor-pointer">
+            <input type="radio" name="defaultMemberView" value="cards" v-model="defaultMemberView" @change="saveDefaultMemberView" />
+            <span>Carte</span>
+          </label>
+          <label class="flex items-center gap-2 cursor-pointer">
+            <input type="radio" name="defaultMemberView" value="list" v-model="defaultMemberView" @change="saveDefaultMemberView" />
+            <span>Liste</span>
+          </label>
+        </div>
+        <p class="text-theme-text-muted mt-2 text-sm">Choisissez la vue par défaut pour la gestion des membres.</p>
+      </div>
+
       <!-- Theme Information -->
       <div class="bg-theme-card rounded-lg p-6 shadow-lg mb-10">
         <h3 class="text-2xl font-bold text-theme-primary mb-6 flex items-center gap-2">ℹ️ <span>Informations sur le Thème</span></h3>
@@ -302,7 +333,7 @@
 import { ref, computed, onMounted, watch } from 'vue'
 import { useThemeStore } from '@/stores/themeStore'
 import { useAuthStore } from '@/stores/authStore'
-import axios from 'axios'
+import axios from '@/config/axios'
 import ColorPicker from '@/components/ColorPicker.vue'
 import Notification from '@/components/Notification.vue'
 
@@ -317,6 +348,7 @@ const characters = ref([])
 const characterSearchQuery = ref('')
 const selectedCharacter = ref(null)
 const isLoadingCharacters = ref(false)
+const showCharacterList = ref(true) // Show by default, hide after selection
 
 // Notification state
 const showNotification = ref(false)
@@ -646,6 +678,7 @@ const selectCharacter = async (character) => {
   try {
     await authStore.updateCharacter(character.id);
     showNotificationMessage('success', 'Personnage associé', `Le personnage ${character.pseudo} a été associé à votre compte.`);
+    showCharacterList.value = false; // Hide the list after selection
   } catch (error) {
     console.error('Error updating character:', error);
     showNotificationMessage('error', 'Erreur', 'Impossible d\'associer le personnage');
@@ -658,6 +691,7 @@ const clearCharacter = async () => {
   try {
     await authStore.updateCharacter(null);
     showNotificationMessage('success', 'Association retirée', 'L\'association du personnage a été retirée.');
+    showCharacterList.value = true; // Show the list after clearing
   } catch (error) {
     console.error('Error clearing character:', error);
     showNotificationMessage('error', 'Erreur', 'Impossible de retirer l\'association');
@@ -674,6 +708,9 @@ onMounted(() => {
   fetchCharacters().then(() => {
     if (authStore.user?.character) {
       selectedCharacter.value = authStore.user.character;
+      showCharacterList.value = false; // Hide list if character already selected
+    } else {
+      showCharacterList.value = true; // Show list if no character selected
     }
   });
 })

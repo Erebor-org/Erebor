@@ -54,8 +54,11 @@ security:
     - { path: ^/user, roles: ROLE_USER }
     - { path: ^/hello, roles: ROLE_USER }
 
-    # Admin-only routes (requires ROLE_ADMIN)
-    - { path: ^/characters, roles: ROLE_ADMIN }
+    # Character read routes (accessible to all authenticated users)
+    - { path: ^/characters/, roles: ROLE_USER }
+
+    # Admin-only routes (requires ROLE_ADMIN) - Write operations
+    - { path: ^/characters$, roles: ROLE_ADMIN }
     - { path: ^/mules, roles: ROLE_ADMIN }
     - { path: ^/blacklist, roles: ROLE_ADMIN }
     - { path: ^/warnings, roles: ROLE_ADMIN }

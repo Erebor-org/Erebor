@@ -42,7 +42,9 @@ class UserController extends AbstractController
                 'user' => [
                     'id' => $user->getId(),
                     'username' => $user->getUsername(),
-                    'characterId' => null
+                    'roles' => $user->getRoles(),
+                    'characterId' => null,
+                    'character' => null
                 ]
             ]);
         }
@@ -61,7 +63,14 @@ class UserController extends AbstractController
             'user' => [
                 'id' => $user->getId(),
                 'username' => $user->getUsername(),
-                'characterId' => $user->getCharacterId()
+                'roles' => $user->getRoles(),
+                'characterId' => $user->getCharacterId(),
+                'character' => [
+                    'id' => $character->getId(),
+                    'pseudo' => $character->getPseudo(),
+                    'ankamaPseudo' => $character->getAnkamaPseudo(),
+                    'class' => $character->getClass(),
+                ]
             ]
         ]);
     }
