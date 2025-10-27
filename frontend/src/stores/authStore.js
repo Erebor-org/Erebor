@@ -68,17 +68,16 @@ export const useAuthStore = defineStore('auth', {
   },
 
   actions: {
-    async register(username, password) {
+    async register(username, password, characterId) {
       try {
         console.log('API_URL:', API_URL);
-        await axios.post(`${API_URL}/register`, { username, password });
-
-        const response = await axios.post(`${API_URL}/login`, {
-          username,
+        const response = await axios.post(`${API_URL}/register`, { 
+          username, 
           password,
+          characterId 
         });
         
-        console.log('Register/Login response:', response.data); // Debug log
+        console.log('Register response:', response.data); // Debug log
 
         if (response.data.token && response.data.user) {
           this.token = response.data.token;
@@ -97,7 +96,7 @@ export const useAuthStore = defineStore('auth', {
           router.push('/home');
         }
       } catch (error) {
-        console.error("Erreur d'inscription ou de connexion:", error.response?.data || error.message);
+        console.error("Erreur d'inscription:", error.response?.data || error.message);
       }
     },
 

@@ -4,7 +4,7 @@
       <!-- Welcome Header -->
       <div class="text-center mb-12">
         <h1 class="text-4xl md:text-5xl font-bold text-theme-text mb-4">
-          Bienvenue{{ user?.username ? `, ${user.username}` : '' }} !
+          Bienvenue{{ (user?.character?.pseudo || user?.username) ? `, ${user.character?.pseudo || user.username}` : '' }} !
         </h1>
         <p class="text-lg text-theme-text-muted">
           Gestion de la guilde Erebor

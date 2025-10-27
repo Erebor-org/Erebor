@@ -248,7 +248,7 @@
             <!-- User Info -->
             <div class="hidden md:flex items-center space-x-3">
               <div class="text-right">
-                <p class="text-sm font-medium text-theme-text">{{ user?.username }}</p>
+                <p class="text-sm font-medium text-theme-text">{{ user?.character?.pseudo || user?.username }}</p>
                 <p class="text-xs text-theme-text-muted">Connecté</p>
               </div>
             </div>

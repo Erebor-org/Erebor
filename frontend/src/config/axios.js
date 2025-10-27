@@ -73,7 +73,17 @@ axios.interceptors.response.use(
   },
   (error) => {
     if (error.response?.status === 401) {
-      // Clear token and redirect to login
+      // Don't redirect on 401 for characters endpoint if we're on the register page
+      const isRegisterPage = window.location.pathname.includes('/inscription');
+      const isCharactersEndpoint = error.config?.url?.includes('/characters/');
+      
+      // If it's the characters endpoint and we're on the register page, just reject the promise
+      // The component will handle the error gracefully
+      if (isRegisterPage && isCharactersEndpoint) {
+        return Promise.reject(error);
+      }
+      
+      // For other 401 errors, clear token and redirect to login
       localStorage.removeItem('token');
       localStorage.removeItem('user');
       window.location.href = '/inscription';

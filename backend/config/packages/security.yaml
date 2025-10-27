@@ -22,6 +22,11 @@ security:
       pattern: ^/register
       stateless: true
       security: false
+    characters_public:
+      pattern: ^/characters/$
+      methods: [GET]
+      stateless: true
+      security: false
     dev:
       pattern: ^/(_(profiler|wdt)|css|images|js)/
       security: false
@@ -46,6 +51,14 @@ security:
     # Public routes (registration and login)
     - { path: ^/register, roles: IS_AUTHENTICATED_ANONYMOUSLY }
     - { path: ^/login, roles: IS_AUTHENTICATED_ANONYMOUSLY }
+
+    # Character list GET route - public access (needed for registration page)
+    # This MUST come before the more general /characters/ rule
+    - { path: ^/characters/$, roles: IS_AUTHENTICATED_ANONYMOUSLY }
+    - { path: ^/characters/lead, roles: ROLE_USER }
+    - { path: ^/characters/recruiters, roles: ROLE_USER }
+    - { path: ^/characters/with-recruiters, roles: ROLE_USER }
+    - { path: ^/characters/all, roles: ROLE_USER }
 
     # Routes accessible by all authenticated users (ROLE_USER and ROLE_ADMIN)
     - { path: ^/statistics, roles: ROLE_USER }
