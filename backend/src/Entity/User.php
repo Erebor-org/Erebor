@@ -27,6 +27,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(type: 'string', nullable: true, options: ["default" => "user"])]
     private ?string $rank = 'user';
 
+    #[ORM\Column(type: 'integer', nullable: true)]
+    private ?int $characterId = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -81,6 +84,17 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setRank(?string $rank): self
     {
         $this->rank = $rank;
+        return $this;
+    }
+
+    public function getCharacterId(): ?int
+    {
+        return $this->characterId;
+    }
+
+    public function setCharacterId(?int $characterId): self
+    {
+        $this->characterId = $characterId;
         return $this;
     }
 

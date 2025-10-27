@@ -6,6 +6,30 @@
   import erebor_logo from '@/assets/erebor_logo.png';
   import profile_icon from '@/assets/profile_icon.png';
 
+  // Import class icons
+  const images = import.meta.glob('@/assets/icon_classe/*.avif', { eager: true });
+  const classes = {
+    sram: images['/src/assets/icon_classe/sram.avif'].default,
+    forgelance: images['/src/assets/icon_classe/forgelance.avif'].default,
+    cra: images['/src/assets/icon_classe/cra.avif'].default,
+    ecaflip: images['/src/assets/icon_classe/ecaflip.avif'].default,
+    eniripsa: images['/src/assets/icon_classe/eniripsa.avif'].default,
+    enutrof: images['/src/assets/icon_classe/enutrof.avif'].default,
+    feca: images['/src/assets/icon_classe/feca.avif'].default,
+    eliotrope: images['/src/assets/icon_classe/eliotrope.avif'].default,
+    iop: images['/src/assets/icon_classe/iop.avif'].default,
+    osamodas: images['/src/assets/icon_classe/osamodas.avif'].default,
+    pandawa: images['/src/assets/icon_classe/pandawa.avif'].default,
+    roublard: images['/src/assets/icon_classe/roublard.avif'].default,
+    sacrieur: images['/src/assets/icon_classe/sacrieur.avif'].default,
+    sadida: images['/src/assets/icon_classe/sadida.avif'].default,
+    steamer: images['/src/assets/icon_classe/steamer.avif'].default,
+    xelor: images['/src/assets/icon_classe/xelor.avif'].default,
+    zobal: images['/src/assets/icon_classe/zobal.avif'].default,
+    huppermage: images['/src/assets/icon_classe/huppermage.avif'].default,
+    ouginak: images['/src/assets/icon_classe/ouginak.avif'].default,
+  };
+
   const authStore = useAuthStore();
   const router = useRouter();
   const route = useRoute();
@@ -47,6 +71,14 @@
   
   const isAdmin = computed(() => {
     return user.value?.roles?.includes('ROLE_ADMIN');
+  });
+
+  // Get character icon if user has a character
+  const characterIcon = computed(() => {
+    if (user.value?.character?.class) {
+      return classes[user.value.character.class] || profile_icon;
+    }
+    return profile_icon;
   });
   
   const toggleMobileMenu = () => {
@@ -215,7 +247,7 @@
             <!-- Profile Avatar -->
             <div class="relative group">
               <img 
-                :src="profile_icon" 
+                :src="characterIcon" 
                 alt="Profile" 
                 class="w-10 h-10 rounded-full border-2 border-theme-border hover:border-theme-primary transition-all duration-300 cursor-pointer group-hover:scale-110"
                 @click="router.push('/theme-customizer')"

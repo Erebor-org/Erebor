@@ -32,6 +32,54 @@
           </div>
           <p class="text-theme-text-muted mt-2 text-sm">Choisissez la vue par défaut pour la gestion des membres.</p>
         </div>
+        
+        <!-- Character Selection -->
+        <div class="mt-8 pt-8 border-t border-theme-border">
+          <h3 class="text-xl font-semibold text-theme-primary mb-4">🎭 Personnage associé</h3>
+          <p class="text-theme-text-muted mb-4 text-sm">Associez un personnage à votre compte pour personnaliser votre icône de profil.</p>
+          
+          <!-- Search Input -->
+          <div class="mb-4">
+            <input
+              type="text"
+              v-model="characterSearchQuery"
+              placeholder="Rechercher un personnage..."
+              class="w-full bg-theme-bg-muted border-2 border-theme-border text-theme-text rounded-lg px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-theme-primary focus:border-theme-primary transition-all duration-200"
+            />
+          </div>
+          
+          <!-- Character List -->
+          <div class="max-h-64 overflow-y-auto bg-theme-bg-muted border-2 border-theme-border rounded-lg p-3">
+            <div
+              v-for="character in filteredCharacters"
+              :key="character.id"
+              @click="selectCharacter(character)"
+              class="flex items-center space-x-3 p-3 cursor-pointer hover:bg-theme-card rounded-lg transition-colors duration-200 group mb-2"
+              :class="{ 'bg-theme-primary/10 border border-theme-primary': selectedCharacter?.id === character.id }"
+            >
+              <img :src="getClassIcon(character.class)" :alt="`Classe ${character.class}`" class="w-10 h-10 rounded-lg border-2 border-theme-border group-hover:border-theme-primary transition-colors duration-200" />
+              <div class="flex-1">
+                <p class="text-base font-medium text-theme-text group-hover:text-theme-primary transition-colors duration-200">{{ character.pseudo }}</p>
+                <p class="text-sm text-theme-text-muted">{{ character.ankamaPseudo }}</p>
+              </div>
+              <div v-if="selectedCharacter?.id === character.id" class="w-6 h-6 bg-theme-primary rounded-full flex items-center justify-center">
+                <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Clear Selection Button -->
+          <div v-if="selectedCharacter" class="mt-4 flex justify-end">
+            <button
+              @click="clearCharacter"
+              class="px-4 py-2 bg-theme-error/10 hover:bg-theme-error/20 text-theme-error font-medium rounded-lg transition-all duration-200"
+            >
+              Retirer l'association
+            </button>
+          </div>
+        </div>
       </div>
       <!-- Theme Information -->
       <div class="bg-theme-card rounded-lg p-6 shadow-lg mb-10">
@@ -253,12 +301,22 @@
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
 import { useThemeStore } from '@/stores/themeStore'
+import { useAuthStore } from '@/stores/authStore'
+import axios from 'axios'
 import ColorPicker from '@/components/ColorPicker.vue'
 import Notification from '@/components/Notification.vue'
 
+const API_URL = import.meta.env.VITE_API_URL
 const themeStore = useThemeStore()
+const authStore = useAuthStore()
 const currentMode = ref('light')
 const fileInput = ref(null)
+
+// Character selector
+const characters = ref([])
+const characterSearchQuery = ref('')
+const selectedCharacter = ref(null)
+const isLoadingCharacters = ref(false)
 
 // Notification state
 const showNotification = ref(false)
@@ -527,11 +585,97 @@ watch(currentMode, () => {
   // The theme will only be applied when the user clicks "Appliquer le Thème Personnalisé"
 })
 
+// Import class icons
+const images = import.meta.glob('@/assets/icon_classe/*.avif', { eager: true });
+const classes = {
+  sram: images['/src/assets/icon_classe/sram.avif'].default,
+  forgelance: images['/src/assets/icon_classe/forgelance.avif'].default,
+  cra: images['/src/assets/icon_classe/cra.avif'].default,
+  ecaflip: images['/src/assets/icon_classe/ecaflip.avif'].default,
+  eniripsa: images['/src/assets/icon_classe/eniripsa.avif'].default,
+  enutrof: images['/src/assets/icon_classe/enutrof.avif'].default,
+  feca: images['/src/assets/icon_classe/feca.avif'].default,
+  eliotrope: images['/src/assets/icon_classe/eliotrope.avif'].default,
+  iop: images['/src/assets/icon_classe/iop.avif'].default,
+  osamodas: images['/src/assets/icon_classe/osamodas.avif'].default,
+  pandawa: images['/src/assets/icon_classe/pandawa.avif'].default,
+  roublard: images['/src/assets/icon_classe/roublard.avif'].default,
+  sacrieur: images['/src/assets/icon_classe/sacrieur.avif'].default,
+  sadida: images['/src/assets/icon_classe/sadida.avif'].default,
+  steamer: images['/src/assets/icon_classe/steamer.avif'].default,
+  xelor: images['/src/assets/icon_classe/xelor.avif'].default,
+  zobal: images['/src/assets/icon_classe/zobal.avif'].default,
+  huppermage: images['/src/assets/icon_classe/huppermage.avif'].default,
+  ouginak: images['/src/assets/icon_classe/ouginak.avif'].default,
+};
+
+// Get class icon
+const getClassIcon = (className) => {
+  return classes[className] || classes.cra;
+}
+
+// Filter characters based on search query
+const filteredCharacters = computed(() => {
+  if (!characterSearchQuery.value) {
+    return characters.value;
+  }
+  const query = characterSearchQuery.value.toLowerCase();
+  return characters.value.filter(char => 
+    char.pseudo.toLowerCase().includes(query) || 
+    char.ankamaPseudo.toLowerCase().includes(query)
+  );
+});
+
+// Fetch characters
+const fetchCharacters = async () => {
+  isLoadingCharacters.value = true;
+  try {
+    const response = await axios.get(`${API_URL}/characters/`);
+    characters.value = response.data;
+  } catch (error) {
+    console.error('Error fetching characters:', error);
+    showNotificationMessage('error', 'Erreur', 'Impossible de charger les personnages');
+  } finally {
+    isLoadingCharacters.value = false;
+  }
+};
+
+// Select character
+const selectCharacter = async (character) => {
+  selectedCharacter.value = character;
+  try {
+    await authStore.updateCharacter(character.id);
+    showNotificationMessage('success', 'Personnage associé', `Le personnage ${character.pseudo} a été associé à votre compte.`);
+  } catch (error) {
+    console.error('Error updating character:', error);
+    showNotificationMessage('error', 'Erreur', 'Impossible d\'associer le personnage');
+  }
+};
+
+// Clear character
+const clearCharacter = async () => {
+  selectedCharacter.value = null;
+  try {
+    await authStore.updateCharacter(null);
+    showNotificationMessage('success', 'Association retirée', 'L\'association du personnage a été retirée.');
+  } catch (error) {
+    console.error('Error clearing character:', error);
+    showNotificationMessage('error', 'Erreur', 'Impossible de retirer l\'association');
+  }
+};
+
 // Initialize
 onMounted(() => {
   loadCustomColors()
   // Don't apply theme automatically on mount
   // Only load the custom colors for display purposes
+  
+  // Load characters and set selected character
+  fetchCharacters().then(() => {
+    if (authStore.user?.character) {
+      selectedCharacter.value = authStore.user.character;
+    }
+  });
 })
 </script>
 

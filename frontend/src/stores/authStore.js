@@ -141,5 +141,35 @@ export const useAuthStore = defineStore('auth', {
       localStorage.removeItem('user');
       router.push('/'); // ✅ Redirect to home after logout
     },
+
+    async updateCharacter(characterId) {
+      try {
+        const response = await axios.put(`${API_URL}/user/character`, 
+          { characterId },
+          {
+            headers: {
+              'Authorization': `Bearer ${this.token}`
+            }
+          }
+        );
+
+        if (response.data.user) {
+          // Update user in store
+          this.user = response.data.user;
+          localStorage.setItem('user', JSON.stringify(this.user));
+          
+          // If character data is in the response, update it
+          if (response.data.character) {
+            this.user.character = response.data.character;
+            localStorage.setItem('user', JSON.stringify(this.user));
+          }
+          
+          return response.data;
+        }
+      } catch (error) {
+        console.error('Error updating character:', error);
+        throw error;
+      }
+    },
   },
 });
