@@ -23,6 +23,7 @@ export const useAuthStore = defineStore('auth', {
         if (!user || !user.username) {
           console.warn('User object missing username, cleaning up...');
           localStorage.removeItem('user');
+          localStorage.removeItem('token');
           user = null;
         }
       }
@@ -37,8 +38,24 @@ export const useAuthStore = defineStore('auth', {
       }
     }
     
+    // ✅ Get token from localStorage
+    const token = localStorage.getItem('token');
+    
+    // ✅ Consistency check: ensure token and user are both present or both absent
+    // If we have token but no user (or vice versa), clear both to prevent inconsistent state
+    if ((token && !user) || (!token && user)) {
+      console.warn('Inconsistent auth state detected (token without user or user without token), clearing both');
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      return {
+        token: null,
+        user: null,
+        isLoading: false,
+      };
+    }
+    
     return {
-      token: localStorage.getItem('token') || null,
+      token: token || null,
       user,
       isLoading: false,
     };
