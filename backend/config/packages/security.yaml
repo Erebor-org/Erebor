@@ -2,6 +2,10 @@ security:
   password_hashers:
     App\Entity\User: "auto"
     Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface: "auto"
+
+  role_hierarchy:
+    ROLE_ADMIN: ROLE_USER
+
   # https://symfony.com/doc/current/security.html#loading-the-user-the-user-provider
   providers:
     app_user_provider:
@@ -13,10 +17,11 @@ security:
     login:
       pattern: ^/login
       stateless: true
-      json_login:
-        check_path: /login
-        username_path: username
-        password_path: password
+      security: false
+    register:
+      pattern: ^/register
+      stateless: true
+      security: false
     dev:
       pattern: ^/(_(profiler|wdt)|css|images|js)/
       security: false
@@ -24,12 +29,8 @@ security:
       lazy: true
       stateless: true
       provider: app_user_provider
-      json_login:
-        check_path: /api/login
-        username_path: email
-        password_path: password
       logout:
-        path: /api/logout
+        path: /logout
         invalidate_session: true
       jwt: ~
 
@@ -42,9 +43,24 @@ security:
   # Easy way to control access for large sections of your site
   # Note: Only the *first* access control that matches will be used
   access_control:
-    - { path: ^/admin, roles: ROLE_ADMIN }
-    - { path: ^/profile, roles: ROLE_USER }
-    - { path: ^/api/register, roles: IS_AUTHENTICATED_ANONYMOUSLY }
+    # Public routes (registration and login)
+    - { path: ^/register, roles: IS_AUTHENTICATED_ANONYMOUSLY }
+    - { path: ^/login, roles: IS_AUTHENTICATED_ANONYMOUSLY }
+
+    # Routes accessible by all authenticated users (ROLE_USER and ROLE_ADMIN)
+    - { path: ^/statistics, roles: ROLE_USER }
+    - { path: ^/api/characters, roles: ROLE_USER }
+    - { path: ^/ranks, roles: ROLE_USER }
+    - { path: ^/user, roles: ROLE_USER }
+    - { path: ^/hello, roles: ROLE_USER }
+
+    # Admin-only routes (requires ROLE_ADMIN)
+    - { path: ^/characters, roles: ROLE_ADMIN }
+    - { path: ^/mules, roles: ROLE_ADMIN }
+    - { path: ^/blacklist, roles: ROLE_ADMIN }
+    - { path: ^/warnings, roles: ROLE_ADMIN }
+
+    # Default: require authentication for all other routes
     - { path: ^/api, roles: IS_AUTHENTICATED_FULLY }
 
 when@test:
