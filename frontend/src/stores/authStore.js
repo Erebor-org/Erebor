@@ -160,5 +160,29 @@ export const useAuthStore = defineStore('auth', {
         throw error;
       }
     },
+
+    async fetchUserProfile() {
+      try {
+        const response = await axios.get(`${API_URL}/user/profile`);
+        
+        // Check for forced disconnect
+        const disconnectCheck = await axios.get(`${API_URL}/user/check-disconnect`);
+        if (disconnectCheck.data?.shouldDisconnect) {
+          // User has been force disconnected
+          this.logout();
+          throw new Error('Vous avez été déconnecté de force');
+        }
+        
+        if (response.data) {
+          this.user = response.data;
+          localStorage.setItem('user', JSON.stringify(this.user));
+        }
+        
+        return response.data;
+      } catch (error) {
+        console.error('Error fetching user profile:', error);
+        throw error;
+      }
+    },
   },
 });

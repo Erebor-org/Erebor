@@ -30,6 +30,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(type: 'integer', nullable: true)]
     private ?int $characterId = null;
 
+    #[ORM\Column(type: 'datetime', nullable: true)]
+    private ?\DateTime $forceDisconnectAt = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -95,6 +98,17 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setCharacterId(?int $characterId): self
     {
         $this->characterId = $characterId;
+        return $this;
+    }
+
+    public function getForceDisconnectAt(): ?\DateTime
+    {
+        return $this->forceDisconnectAt;
+    }
+
+    public function setForceDisconnectAt(?\DateTime $forceDisconnectAt): self
+    {
+        $this->forceDisconnectAt = $forceDisconnectAt;
         return $this;
     }
 

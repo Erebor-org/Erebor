@@ -1,6 +1,32 @@
 <script setup>
 import { RouterView } from 'vue-router'
 import NavigationBar from './components/NavigationBar.vue'
+import { useAuthStore } from './stores/authStore'
+import { onMounted, onBeforeUnmount } from 'vue'
+import { startDisconnectPolling, stopDisconnectPolling } from './config/axios'
+
+const authStore = useAuthStore()
+
+onMounted(async () => {
+  // Refresh user profile if user is logged in to ensure roles are up to date
+  if (authStore.token) {
+    try {
+      await authStore.fetchUserProfile()
+    } catch (error) {
+      console.error('Failed to fetch user profile:', error)
+      // If profile fetch fails (e.g., token expired), logout the user
+      authStore.logout()
+    }
+  }
+  
+  // Start polling for forced disconnects
+  startDisconnectPolling()
+})
+
+onBeforeUnmount(() => {
+  // Stop polling when component is destroyed
+  stopDisconnectPolling()
+})
 </script>
 
 <template>

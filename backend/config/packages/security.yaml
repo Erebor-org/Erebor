@@ -62,6 +62,7 @@ security:
     - { path: ^/mules, roles: ROLE_ADMIN }
     - { path: ^/blacklist, roles: ROLE_ADMIN }
     - { path: ^/warnings, roles: ROLE_ADMIN }
+    - { path: ^/admin/users, roles: ROLE_ADMIN }
 
     # Default: require authentication for all other routes
     - { path: ^/api, roles: IS_AUTHENTICATED_FULLY }

@@ -2,6 +2,49 @@ import axios from 'axios';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
+// Polling interval for checking forced disconnects (in milliseconds)
+const DISCONNECT_CHECK_INTERVAL = 5000; // Check every 5 seconds
+
+// Set up polling to check for forced disconnects
+let disconnectCheckInterval = null;
+
+export function startDisconnectPolling() {
+  // Clear any existing interval
+  if (disconnectCheckInterval) {
+    clearInterval(disconnectCheckInterval);
+  }
+  
+  // Only start polling if user is logged in
+  const token = localStorage.getItem('token');
+  if (token) {
+    disconnectCheckInterval = setInterval(async () => {
+      try {
+        const response = await axios.get(`${API_URL}/user/check-disconnect`);
+        if (response.data?.shouldDisconnect) {
+          // User has been force disconnected
+          localStorage.removeItem('token');
+          localStorage.removeItem('user');
+          if (disconnectCheckInterval) {
+            clearInterval(disconnectCheckInterval);
+            disconnectCheckInterval = null;
+          }
+          window.location.href = '/inscription';
+        }
+      } catch (error) {
+        // Ignore errors (user might not be logged in or token expired)
+        console.log('Disconnect check failed:', error);
+      }
+    }, DISCONNECT_CHECK_INTERVAL);
+  }
+}
+
+export function stopDisconnectPolling() {
+  if (disconnectCheckInterval) {
+    clearInterval(disconnectCheckInterval);
+    disconnectCheckInterval = null;
+  }
+}
+
 // Configure axios to add JWT token to all requests
 axios.interceptors.request.use(
   (config) => {
@@ -16,9 +59,18 @@ axios.interceptors.request.use(
   }
 );
 
-// Handle 401 unauthorized responses
+// Handle 401 unauthorized responses and forced disconnects
 axios.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    // Check if this is a user profile response and check for forced disconnect
+    if (response.data?.shouldDisconnect) {
+      // Force disconnect detected
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      window.location.href = '/inscription';
+    }
+    return response;
+  },
   (error) => {
     if (error.response?.status === 401) {
       // Clear token and redirect to login

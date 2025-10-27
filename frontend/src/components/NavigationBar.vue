@@ -173,6 +173,15 @@
           </RouterLink>
           
           <RouterLink 
+            to="/admin/users" 
+            v-if="isLoggedIn && isAdmin"
+            class="nav-link"
+            active-class="nav-link-active"
+          >
+            Utilisateurs
+          </RouterLink>
+          
+          <RouterLink 
             to="/statistiques" 
             v-if="isLoggedIn"
             class="nav-link"
@@ -327,6 +336,16 @@
           @click="isMobileMenuOpen = false"
         >
           Avertissements
+        </RouterLink>
+        
+        <RouterLink 
+          to="/admin/users" 
+          v-if="isLoggedIn && isAdmin"
+          class="mobile-nav-link"
+          active-class="mobile-nav-link-active"
+          @click="isMobileMenuOpen = false"
+        >
+          Utilisateurs
         </RouterLink>
         
         <RouterLink 
