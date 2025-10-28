@@ -111,6 +111,10 @@ class AuthController extends AbstractController
             return new JsonResponse(['error' => 'Invalid credentials'], 401);
         }
 
+        // Clear any forced disconnect flag on login
+        $user->setForceDisconnectAt(null);
+        $this->entityManager->flush();
+
         $token = $jwtManager->create($user);
 
         // Get character if linked

@@ -83,6 +83,19 @@ axios.interceptors.response.use(
         return Promise.reject(error);
       }
       
+      // Don't redirect on 401 for profile endpoint on initial page load (refresh)
+      // This allows the app to gracefully handle expired tokens without forcing logout
+      const isProfileEndpoint = error.config?.url?.includes('/user/profile');
+      if (isProfileEndpoint) {
+        return Promise.reject(error);
+      }
+      
+      // Don't redirect on 401 for check-disconnect endpoint
+      const isCheckDisconnectEndpoint = error.config?.url?.includes('/user/check-disconnect');
+      if (isCheckDisconnectEndpoint) {
+        return Promise.reject(error);
+      }
+      
       // For other 401 errors, clear token and redirect to login
       localStorage.removeItem('token');
       localStorage.removeItem('user');

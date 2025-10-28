@@ -70,7 +70,20 @@
   const isLoggedIn = computed(() => authStore.token !== null);
   
   const isAdmin = computed(() => {
-    return user.value?.roles?.includes('ROLE_ADMIN');
+    const roles = user.value?.roles || [];
+    return roles.includes('ROLE_ADMIN') || 
+           roles.includes('ROLE_SUPER_ADMIN') || 
+           roles.includes('ROLE_SUPER_SUPER_ADMIN');
+  });
+  
+  const isSuperSuperAdmin = computed(() => {
+    const roles = user.value?.roles || [];
+    return roles.includes('ROLE_SUPER_SUPER_ADMIN');
+  });
+  
+  const canManageWarnings = computed(() => {
+    const roles = user.value?.roles || [];
+    return roles.includes('ROLE_SUPER_SUPER_ADMIN');
   });
 
   // Get character icon if user has a character
@@ -165,7 +178,7 @@
           
           <RouterLink 
             to="/warnings-management" 
-            v-if="isLoggedIn && isAdmin"
+            v-if="isLoggedIn && canManageWarnings"
             class="nav-link"
             active-class="nav-link-active"
           >
@@ -174,7 +187,7 @@
           
           <RouterLink 
             to="/admin/users" 
-            v-if="isLoggedIn && isAdmin"
+            v-if="isLoggedIn && isSuperSuperAdmin"
             class="nav-link"
             active-class="nav-link-active"
           >
@@ -330,7 +343,7 @@
         
         <RouterLink 
           to="/warnings-management" 
-          v-if="isLoggedIn && isAdmin"
+          v-if="isLoggedIn && canManageWarnings"
           class="mobile-nav-link"
           active-class="mobile-nav-link-active"
           @click="isMobileMenuOpen = false"
@@ -340,7 +353,7 @@
         
         <RouterLink 
           to="/admin/users" 
-          v-if="isLoggedIn && isAdmin"
+          v-if="isLoggedIn && isSuperSuperAdmin"
           class="mobile-nav-link"
           active-class="mobile-nav-link-active"
           @click="isMobileMenuOpen = false"

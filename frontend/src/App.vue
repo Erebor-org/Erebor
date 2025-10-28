@@ -8,18 +8,10 @@ import { startDisconnectPolling, stopDisconnectPolling } from './config/axios'
 const authStore = useAuthStore()
 
 onMounted(async () => {
-  // Refresh user profile if user is logged in to ensure roles are up to date
-  if (authStore.token) {
-    try {
-      await authStore.fetchUserProfile()
-    } catch (error) {
-      console.error('Failed to fetch user profile:', error)
-      // If profile fetch fails (e.g., token expired), logout the user
-      authStore.logout()
-    }
-  }
+  // Disable profile fetch on mount - it's causing logout issues
+  // The user is already authenticated with the token from localStorage
   
-  // Start polling for forced disconnects
+  // Start polling to check for forced disconnects
   startDisconnectPolling()
 })
 

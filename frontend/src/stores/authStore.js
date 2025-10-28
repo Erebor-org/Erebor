@@ -70,26 +70,19 @@ export const useAuthStore = defineStore('auth', {
   actions: {
     async register(username, password, characterId) {
       try {
-        console.log('API_URL:', API_URL);
         const response = await axios.post(`${API_URL}/register`, { 
           username, 
           password,
           characterId 
         });
-        
-        console.log('Register response:', response.data); // Debug log
 
         if (response.data.token && response.data.user) {
           this.token = response.data.token;
           this.user = response.data.user;
           
-          console.log('User data:', this.user); // Debug log
-          
           localStorage.setItem('token', this.token);
           if (this.user && this.user.username) {
             localStorage.setItem('user', JSON.stringify(this.user));
-          } else {
-            console.warn('User data is missing username:', this.user);
           }
 
           // ✅ Redirect to /home using the global router
@@ -104,21 +97,15 @@ export const useAuthStore = defineStore('auth', {
       this.isLoading = true;
       try {
         const response = await axios.post(`${API_URL}/login`, { username, password });
-        
-        console.log('Login response:', response.data); // Debug log
 
         if (response.data.token && response.data.user) {
           this.token = response.data.token;
           this.user = response.data.user;
           
-          console.log('User data:', this.user); // Debug log
-          
           // Only store if we have valid data
           localStorage.setItem("token", this.token);
           if (this.user && this.user.username) {
             localStorage.setItem("user", JSON.stringify(this.user));
-          } else {
-            console.warn('User data is missing username:', this.user);
           }
 
           // ✅ Redirect only if not already on /home
@@ -165,11 +152,15 @@ export const useAuthStore = defineStore('auth', {
         const response = await axios.get(`${API_URL}/user/profile`);
         
         // Check for forced disconnect
-        const disconnectCheck = await axios.get(`${API_URL}/user/check-disconnect`);
-        if (disconnectCheck.data?.shouldDisconnect) {
-          // User has been force disconnected
-          this.logout();
-          throw new Error('Vous avez été déconnecté de force');
+        try {
+          const disconnectCheck = await axios.get(`${API_URL}/user/check-disconnect`);
+          if (disconnectCheck.data?.shouldDisconnect) {
+            // User has been force disconnected
+            this.logout();
+            throw new Error('Vous avez été déconnecté de force');
+          }
+        } catch {
+          // Ignore disconnect check failures - user might have expired token but should stay logged in
         }
         
         if (response.data) {
@@ -178,9 +169,10 @@ export const useAuthStore = defineStore('auth', {
         }
         
         return response.data;
-      } catch (error) {
-        console.error('Error fetching user profile:', error);
-        throw error;
+      } catch {
+        // Don't throw the error - let the caller handle it
+        // This prevents the App.vue from catching and logging out on every refresh
+        return null;
       }
     },
   },

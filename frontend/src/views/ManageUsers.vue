@@ -1,7 +1,7 @@
 <template>
   <div class="min-h-screen bg-theme-bg text-theme-text">
     <!-- Notification -->
-    <Notification ref="notificationRef" />
+    <NotificationCenter ref="notificationRef" />
 
     <!-- Main Container -->
     <div class="container mx-auto px-4 py-8">
@@ -75,6 +75,8 @@
                     >
                       <option :value="['ROLE_USER']">Utilisateur</option>
                       <option :value="['ROLE_ADMIN']">Administrateur</option>
+                      <option :value="['ROLE_SUPER_ADMIN']">Super Administrateur</option>
+                      <option :value="['ROLE_SUPER_SUPER_ADMIN']">Super Super Administrateur</option>
                     </select>
                   </td>
                   <td class="px-6 py-4">
@@ -188,7 +190,7 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import axios from '@/config/axios';
-import Notification from '@/components/Notification.vue';
+import NotificationCenter from '@/components/NotificationCenter.vue';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -241,10 +243,21 @@ const displayUsers = computed(() => {
 const fetchUsers = async () => {
   try {
     const response = await axios.get(`${API_URL}/admin/users`);
-    users.value = response.data.map(user => ({
-      ...user,
-      roles: user.roles.includes('ROLE_ADMIN') ? ['ROLE_ADMIN'] : ['ROLE_USER']
-    }));
+    users.value = response.data.map(user => {
+      // Determine the main role
+      let mainRole = 'ROLE_USER';
+      if (user.roles.includes('ROLE_SUPER_SUPER_ADMIN')) {
+        mainRole = 'ROLE_SUPER_SUPER_ADMIN';
+      } else if (user.roles.includes('ROLE_SUPER_ADMIN')) {
+        mainRole = 'ROLE_SUPER_ADMIN';
+      } else if (user.roles.includes('ROLE_ADMIN')) {
+        mainRole = 'ROLE_ADMIN';
+      }
+      return {
+        ...user,
+        roles: [mainRole]
+      };
+    });
   } catch (error) {
     console.error('Error fetching users:', error);
     if (notificationRef.value) {

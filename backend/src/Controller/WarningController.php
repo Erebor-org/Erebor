@@ -13,6 +13,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Security\Http\Attribute\CurrentUser;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use App\Service\NotificationService;
 
@@ -144,8 +145,13 @@ class WarningController extends AbstractController
         EntityManagerInterface $em,
         CharactersRepository $charactersRepository,
         UserRepository $userRepository,
-        ValidatorInterface $validator
+        ValidatorInterface $validator,
+        #[CurrentUser] ?\App\Entity\User $user
     ): JsonResponse {
+        // Only SUPER_SUPER_ADMIN can create warnings
+        if (!$user || !in_array('ROLE_SUPER_SUPER_ADMIN', $user->getRoles())) {
+            return $this->json(['error' => 'Access denied. Only Super Super Administrators can create warnings.'], 403);
+        }
         $data = json_decode($request->getContent(), true);
         
         // Validate required fields
@@ -218,8 +224,13 @@ class WarningController extends AbstractController
         Request $request,
         EntityManagerInterface $em,
         WarningRepository $warningRepository,
-        ValidatorInterface $validator
+        ValidatorInterface $validator,
+        #[CurrentUser] ?\App\Entity\User $user
     ): JsonResponse {
+        // Only SUPER_SUPER_ADMIN can update warnings
+        if (!$user || !in_array('ROLE_SUPER_SUPER_ADMIN', $user->getRoles())) {
+            return $this->json(['error' => 'Access denied. Only Super Super Administrators can update warnings.'], 403);
+        }
         $warning = $warningRepository->find($id);
         
         if (!$warning) {
@@ -267,8 +278,13 @@ class WarningController extends AbstractController
     public function delete(
         int $id,
         WarningRepository $warningRepository,
-        EntityManagerInterface $em
+        EntityManagerInterface $em,
+        #[CurrentUser] ?\App\Entity\User $user
     ): JsonResponse {
+        // Only SUPER_SUPER_ADMIN can delete warnings
+        if (!$user || !in_array('ROLE_SUPER_SUPER_ADMIN', $user->getRoles())) {
+            return $this->json(['error' => 'Access denied. Only Super Super Administrators can delete warnings.'], 403);
+        }
         $warning = $warningRepository->find($id);
         
         if (!$warning) {

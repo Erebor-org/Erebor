@@ -254,12 +254,20 @@ class UserController extends AbstractController
 
     #[Route('/user/check-disconnect', name: 'check_user_disconnect', methods: ['GET'])]
     public function checkUserDisconnect(
-        #[CurrentUser] \App\Entity\User $user
+        #[CurrentUser] \App\Entity\User $user,
+        EntityManagerInterface $em
     ): JsonResponse {
         $forceDisconnectAt = $user->getForceDisconnectAt();
+        $shouldDisconnect = $forceDisconnectAt !== null;
+        
+        // If user should disconnect, clear the flag after detecting it
+        if ($shouldDisconnect) {
+            $user->setForceDisconnectAt(null);
+            $em->flush();
+        }
         
         return new JsonResponse([
-            'shouldDisconnect' => $forceDisconnectAt !== null,
+            'shouldDisconnect' => $shouldDisconnect,
             'disconnectedAt' => $forceDisconnectAt?->format('Y-m-d H:i:s')
         ]);
     }
