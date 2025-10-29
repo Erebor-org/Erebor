@@ -4,8 +4,7 @@ import { ref, computed, onMounted } from 'vue';
 import erebor_logo from '@/assets/erebor_logo.png';
 import { useRouter } from 'vue-router';
 import axios from '@/config/axios';
-
-const API_URL = import.meta.env.VITE_API_URL;
+import { API_URL } from '@/config/apiUrl';
 
 const authStore = useAuthStore();
 const router = useRouter();

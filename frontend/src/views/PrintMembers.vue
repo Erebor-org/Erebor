@@ -252,7 +252,7 @@ import { useThemeStore } from '@/stores/themeStore';
 
 const images = import.meta.glob('@/assets/icon_classe/*.avif', { eager: true });
 
-const API_URL = import.meta.env.VITE_API_URL;
+import { API_URL } from '@/config/apiUrl';
 
 export default {
   components: {

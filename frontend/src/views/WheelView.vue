@@ -117,8 +117,7 @@ import { ref, computed, onMounted, watch, nextTick } from 'vue';
 import axios from 'axios';
 import confetti from 'canvas-confetti';
 import { RouterLink } from 'vue-router';
-
-const API_URL = import.meta.env.VITE_API_URL;
+import { API_URL } from '@/config/apiUrl';
 
 interface Character {
   id: number;
