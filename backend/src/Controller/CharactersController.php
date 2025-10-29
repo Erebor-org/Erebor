@@ -37,6 +37,7 @@ class CharactersController extends AbstractController
             ->leftJoin('c.mules', 'mules')
             ->addSelect('r', 'recruiter', 'mules')
             ->orderBy('r.requiredDays', 'DESC')
+            ->addOrderBy('c.recruitedAt', 'ASC')
             ->addOrderBy('c.id', 'ASC')
             ->getQuery()
             ->getResult();
