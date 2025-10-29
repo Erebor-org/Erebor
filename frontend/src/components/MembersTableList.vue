@@ -314,9 +314,14 @@ export default {
       try {
         const authStore = useAuthStore();
         const userPseudo = authStore.user?.username || '';
+        const token = authStore.token || localStorage.getItem('token');
+        const headers = { 'Content-Type': 'application/json' };
+        if (token) {
+          headers['Authorization'] = `Bearer ${token}`;
+        }
         const response = await fetch(`${API_URL}/characters/${this.switchMain.id}/switch-with-mule/${this.switchMule.id}`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers,
           body: JSON.stringify({ switchedBy: userPseudo })
         });
         if (!response.ok) throw new Error('Erreur lors du switch');

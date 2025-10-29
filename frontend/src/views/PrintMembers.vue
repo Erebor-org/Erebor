@@ -815,7 +815,7 @@ export default {
         }
         this.showNotesModal = false;
         this.$refs.notificationRef.showNotification('Note mise à jour avec succès !');
-      } catch (error) {
+      } catch {
         this.$refs.notificationRef.showNotification('Erreur lors de la mise à jour de la note.', 'error');
       }
     },
