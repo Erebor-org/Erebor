@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import axios from 'axios';
+import axios from '@/config/axios';
 import router from '@/router'; // ✅ Import router globally
 const API_URL = import.meta.env.VITE_API_URL;
 export const useAuthStore = defineStore('auth', {
@@ -68,36 +68,28 @@ export const useAuthStore = defineStore('auth', {
   },
 
   actions: {
-    async register(username, password) {
+    async register(username, password, characterId) {
       try {
-        console.log('API_URL:', API_URL);
-        await axios.post(`${API_URL}/register`, { username, password });
-
-        const response = await axios.post(`${API_URL}/login`, {
-          username,
+        const response = await axios.post(`${API_URL}/register`, { 
+          username, 
           password,
+          characterId 
         });
-        
-        console.log('Register/Login response:', response.data); // Debug log
 
         if (response.data.token && response.data.user) {
           this.token = response.data.token;
           this.user = response.data.user;
           
-          console.log('User data:', this.user); // Debug log
-          
           localStorage.setItem('token', this.token);
           if (this.user && this.user.username) {
             localStorage.setItem('user', JSON.stringify(this.user));
-          } else {
-            console.warn('User data is missing username:', this.user);
           }
 
           // ✅ Redirect to /home using the global router
           router.push('/home');
         }
       } catch (error) {
-        console.error("Erreur d'inscription ou de connexion:", error.response?.data || error.message);
+        console.error("Erreur d'inscription:", error.response?.data || error.message);
       }
     },
 
@@ -105,21 +97,15 @@ export const useAuthStore = defineStore('auth', {
       this.isLoading = true;
       try {
         const response = await axios.post(`${API_URL}/login`, { username, password });
-        
-        console.log('Login response:', response.data); // Debug log
 
         if (response.data.token && response.data.user) {
           this.token = response.data.token;
           this.user = response.data.user;
           
-          console.log('User data:', this.user); // Debug log
-          
           // Only store if we have valid data
           localStorage.setItem("token", this.token);
           if (this.user && this.user.username) {
             localStorage.setItem("user", JSON.stringify(this.user));
-          } else {
-            console.warn('User data is missing username:', this.user);
           }
 
           // ✅ Redirect only if not already on /home
@@ -140,6 +126,54 @@ export const useAuthStore = defineStore('auth', {
       localStorage.removeItem('token');
       localStorage.removeItem('user');
       router.push('/'); // ✅ Redirect to home after logout
+    },
+
+    async updateCharacter(characterId) {
+      try {
+        const response = await axios.put(`${API_URL}/user/character`, 
+          { characterId }
+        );
+
+        if (response.data.user) {
+          // Update user in store with complete user data including character
+          this.user = response.data.user;
+          localStorage.setItem('user', JSON.stringify(this.user));
+          
+          return response.data;
+        }
+      } catch (error) {
+        console.error('Error updating character:', error);
+        throw error;
+      }
+    },
+
+    async fetchUserProfile() {
+      try {
+        const response = await axios.get(`${API_URL}/user/profile`);
+        
+        // Check for forced disconnect
+        try {
+          const disconnectCheck = await axios.get(`${API_URL}/user/check-disconnect`);
+          if (disconnectCheck.data?.shouldDisconnect) {
+            // User has been force disconnected
+            this.logout();
+            throw new Error('Vous avez été déconnecté de force');
+          }
+        } catch {
+          // Ignore disconnect check failures - user might have expired token but should stay logged in
+        }
+        
+        if (response.data) {
+          this.user = response.data;
+          localStorage.setItem('user', JSON.stringify(this.user));
+        }
+        
+        return response.data;
+      } catch {
+        // Don't throw the error - let the caller handle it
+        // This prevents the App.vue from catching and logging out on every refresh
+        return null;
+      }
     },
   },
 });

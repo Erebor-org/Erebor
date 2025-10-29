@@ -12,6 +12,7 @@ import ThemeCustomizer from '../views/ThemeCustomizer.vue';
 import ThemeCustomizerDemo from '../views/ThemeCustomizerDemo.vue';
 import WheelView from '../views/WheelView.vue';
 import WheelClassesView from '../views/WheelClassesView.vue';
+import ManageUsers from '../views/ManageUsers.vue';
 
 const routes = [
   { path: '/', redirect: () => {
@@ -31,6 +32,7 @@ const routes = [
   { path: '/theme-customizer-demo', name: 'ThemeCustomizerDemo', component: ThemeCustomizerDemo },
   { path: '/wheel', name: 'Wheel', component: WheelView, meta: { requiresAuth: true } },
   { path: '/wheel-classes', name: 'WheelClasses', component: WheelClassesView, meta: { requiresAuth: true } },
+  { path: '/admin/users', name: 'ManageUsers', component: ManageUsers, meta: { requiresAuth: true } },
 ];
 
 const router = createRouter({
@@ -41,9 +43,17 @@ const router = createRouter({
 // ✅ Redirect users who are not logged in
 router.beforeEach((to, from, next) => {
   const authStore = useAuthStore();
+  
+  // If the route requires auth and there's no token, redirect to register
   if (to.meta.requiresAuth && !authStore.token) {
     next('/inscription');
-  } else {
+  } 
+  // If user is trying to access register page and is already logged in, redirect to home
+  else if (to.path === '/inscription' && authStore.token) {
+    next('/home');
+  }
+  // Otherwise, allow navigation
+  else {
     next();
   }
 });

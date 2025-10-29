@@ -4,7 +4,10 @@ security:
     Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface: "auto"
 
   role_hierarchy:
+    ROLE_OWNERS: [ROLE_SUPER_ADMIN, ROLE_ADMIN, ROLE_USER]
+    ROLE_SUPER_ADMIN: [ROLE_ADMIN, ROLE_USER]
     ROLE_ADMIN: ROLE_USER
+    ROLE_USER: []
 
   # https://symfony.com/doc/current/security.html#loading-the-user-the-user-provider
   providers:
@@ -20,6 +23,11 @@ security:
       security: false
     register:
       pattern: ^/register
+      stateless: true
+      security: false
+    characters_public:
+      pattern: ^/characters/$
+      methods: [GET]
       stateless: true
       security: false
     dev:
@@ -47,6 +55,14 @@ security:
     - { path: ^/register, roles: IS_AUTHENTICATED_ANONYMOUSLY }
     - { path: ^/login, roles: IS_AUTHENTICATED_ANONYMOUSLY }
 
+    # Character list GET route - public access (needed for registration page)
+    # This MUST come before the more general /characters/ rule
+    - { path: ^/characters/$, roles: IS_AUTHENTICATED_ANONYMOUSLY }
+    - { path: ^/characters/lead, roles: ROLE_USER }
+    - { path: ^/characters/recruiters, roles: ROLE_USER }
+    - { path: ^/characters/with-recruiters, roles: ROLE_USER }
+    - { path: ^/characters/all, roles: ROLE_USER }
+
     # Routes accessible by all authenticated users (ROLE_USER and ROLE_ADMIN)
     - { path: ^/statistics, roles: ROLE_USER }
     - { path: ^/api/characters, roles: ROLE_USER }
@@ -54,11 +70,25 @@ security:
     - { path: ^/user, roles: ROLE_USER }
     - { path: ^/hello, roles: ROLE_USER }
 
-    # Admin-only routes (requires ROLE_ADMIN)
-    - { path: ^/characters, roles: ROLE_ADMIN }
+    # Character read routes (accessible to all authenticated users)
+    - { path: ^/characters/, roles: ROLE_USER }
+
+    # Write operations - Require at least ADMIN (OWNERS have full access via role hierarchy)
+    - { path: ^/characters$, roles: ROLE_ADMIN }
     - { path: ^/mules, roles: ROLE_ADMIN }
+
+    # Blacklist - Accessible to ADMIN and above (OWNERS have full access)
     - { path: ^/blacklist, roles: ROLE_ADMIN }
-    - { path: ^/warnings, roles: ROLE_ADMIN }
+
+    # Warnings - Read: SUPER_ADMIN+, Write: OWNERS only (OWNERS have full access)
+    - { path: ^/warnings, roles: ROLE_SUPER_ADMIN }
+    # Note: Warning write operations need to be checked in the controller
+
+    # User Management - OWNERS only (unlimited access)
+    - { path: ^/admin/users, roles: ROLE_OWNERS }
+
+    # ROLE_OWNERS has unlimited access to all routes via role hierarchy
+    # They inherit ROLE_SUPER_ADMIN, ROLE_ADMIN, and ROLE_USER permissions
 
     # Default: require authentication for all other routes
     - { path: ^/api, roles: IS_AUTHENTICATED_FULLY }

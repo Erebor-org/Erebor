@@ -1,8 +1,11 @@
 <script setup>
 import { useAuthStore } from '@/stores/authStore';
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import erebor_logo from '@/assets/erebor_logo.png';
 import { useRouter } from 'vue-router';
+import axios from '@/config/axios';
+
+const API_URL = import.meta.env.VITE_API_URL;
 
 const authStore = useAuthStore();
 const router = useRouter();
@@ -13,7 +16,70 @@ const form = ref({
   pseudo: '',
   password: '',
   confirmPassword: '',
+  characterId: null,
 });
+
+const characters = ref([]);
+const showCharacterList = ref(false);
+const characterSearchQuery = ref('');
+
+// Import class icons
+const images = import.meta.glob('@/assets/icon_classe/*.avif', { eager: true });
+const classes = {
+  sram: images['/src/assets/icon_classe/sram.avif'].default,
+  forgelance: images['/src/assets/icon_classe/forgelance.avif'].default,
+  cra: images['/src/assets/icon_classe/cra.avif'].default,
+  ecaflip: images['/src/assets/icon_classe/ecaflip.avif'].default,
+  eniripsa: images['/src/assets/icon_classe/eniripsa.avif'].default,
+  enutrof: images['/src/assets/icon_classe/enutrof.avif'].default,
+  feca: images['/src/assets/icon_classe/feca.avif'].default,
+  eliotrope: images['/src/assets/icon_classe/eliotrope.avif'].default,
+  iop: images['/src/assets/icon_classe/iop.avif'].default,
+  osamodas: images['/src/assets/icon_classe/osamodas.avif'].default,
+  pandawa: images['/src/assets/icon_classe/pandawa.avif'].default,
+  roublard: images['/src/assets/icon_classe/roublard.avif'].default,
+  sacrieur: images['/src/assets/icon_classe/sacrieur.avif'].default,
+  sadida: images['/src/assets/icon_classe/sadida.avif'].default,
+  steamer: images['/src/assets/icon_classe/steamer.avif'].default,
+  xelor: images['/src/assets/icon_classe/xelor.avif'].default,
+  zobal: images['/src/assets/icon_classe/zobal.avif'].default,
+  huppermage: images['/src/assets/icon_classe/huppermage.avif'].default,
+  ouginak: images['/src/assets/icon_classe/ouginak.avif'].default,
+};
+
+const selectedCharacter = computed(() => {
+  return characters.value.find(c => c.id === form.value.characterId);
+});
+
+const getClassIcon = (className) => {
+  return classes[className] || classes.cra;
+};
+
+const filteredCharacters = computed(() => {
+  if (!characterSearchQuery.value) {
+    return characters.value;
+  }
+  const query = characterSearchQuery.value.toLowerCase();
+  return characters.value.filter(char => 
+    char.pseudo.toLowerCase().includes(query) || 
+    char.ankamaPseudo.toLowerCase().includes(query)
+  );
+});
+
+const fetchCharacters = async () => {
+  try {
+    const response = await axios.get(`${API_URL}/characters/`);
+    characters.value = response.data.filter(c => !c.isArchived);
+  } catch (error) {
+    console.error('Error fetching characters:', error);
+  }
+};
+
+const selectCharacter = (character) => {
+  form.value.characterId = character.id;
+  showCharacterList.value = false;
+  characterSearchQuery.value = '';
+};
 
 const loginForm = ref({
   pseudo: '',
@@ -28,9 +94,18 @@ const register = async () => {
     return;
   }
 
-  await authStore.register(form.value.pseudo, form.value.password);
+  if (!form.value.characterId) {
+    console.log('Veuillez sélectionner un personnage !');
+    return;
+  }
+
+  await authStore.register(form.value.pseudo, form.value.password, form.value.characterId);
   // Redirect is handled by authStore
 };
+
+onMounted(() => {
+  fetchCharacters();
+});
 
 const login = async () => {
   await authStore.login(loginForm.value.pseudo, loginForm.value.password);
@@ -101,14 +176,80 @@ const togglePassword = () => {
           <div v-if="activeTab === 'register'">
             <!-- Registration Form -->
             <form @submit.prevent="register" class="space-y-6">
+              <!-- Character Selection -->
+              <div>
+                <label for="character" class="block text-theme-text font-semibold mb-2">
+                  Personnage <span class="text-theme-error">*</span>
+                </label>
+                
+                <!-- If character is selected, show it -->
+                <div v-if="selectedCharacter && !showCharacterList" class="mb-3">
+                  <div class="flex items-center space-x-4 p-4 bg-theme-bg-muted rounded-lg border-2 border-theme-primary">
+                    <img 
+                      :src="getClassIcon(selectedCharacter.class)" 
+                      :alt="`Classe ${selectedCharacter.class}`" 
+                      class="w-12 h-12 rounded-lg border-2 border-theme-primary" 
+                    />
+                    <div class="flex-1">
+                      <p class="text-lg font-semibold text-theme-text">{{ selectedCharacter.pseudo }}</p>
+                      <p class="text-sm text-theme-text-muted">{{ selectedCharacter.ankamaPseudo }}</p>
+                    </div>
+                    <button
+                      type="button"
+                      @click="showCharacterList = true"
+                      class="px-4 py-2 bg-theme-primary hover:bg-theme-primary/80 text-white font-medium rounded-lg transition-all duration-200"
+                    >
+                      Modifier
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Character selection interface -->
+                <div v-else>
+                  <!-- Search bar -->
+                  <input
+                    v-model="characterSearchQuery"
+                    type="text"
+                    placeholder="Rechercher un personnage..."
+                    class="w-full px-4 py-3 bg-theme-bg border border-theme-border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-theme-ring focus:border-theme-primary transition-all duration-300 mb-3"
+                  />
+
+                  <!-- Character list -->
+                  <div class="max-h-64 overflow-y-auto border border-theme-border rounded-lg p-2 bg-theme-bg">
+                    <div
+                      v-for="character in filteredCharacters"
+                      :key="character.id"
+                      @click="selectCharacter(character)"
+                      class="flex items-center space-x-3 p-3 rounded-lg hover:bg-theme-bg-muted cursor-pointer transition-all duration-200 mb-2"
+                      :class="{ 'bg-theme-primary/10 border border-theme-primary': form.characterId === character.id }"
+                    >
+                      <img 
+                        :src="getClassIcon(character.class)" 
+                        :alt="`Classe ${character.class}`" 
+                        class="w-10 h-10 rounded-lg border-2 border-theme-border"
+                      />
+                      <div class="flex-1">
+                        <p class="text-base font-medium text-theme-text">{{ character.pseudo }}</p>
+                        <p class="text-sm text-theme-text-muted">{{ character.ankamaPseudo }}</p>
+                      </div>
+                      <div v-if="form.characterId === character.id" class="w-6 h-6 bg-theme-primary rounded-full flex items-center justify-center">
+                        <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                        </svg>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
               <!-- Pseudo -->
               <div>
-                <label for="pseudo" class="block text-theme-text font-semibold mb-2">Pseudo</label>
+                <label for="pseudo" class="block text-theme-text font-semibold mb-2">Pseudo de connexion</label>
                 <input
                   v-model="form.pseudo"
                   type="text"
                   id="pseudo"
-                  placeholder="Entrez votre pseudo en jeu"
+                  placeholder="Entrez votre pseudo de connexion"
                   class="w-full px-4 py-3 bg-theme-bg border border-theme-border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-theme-ring focus:border-theme-primary transition-all duration-300"
                 />
               </div>

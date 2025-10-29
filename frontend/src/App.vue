@@ -1,6 +1,24 @@
 <script setup>
 import { RouterView } from 'vue-router'
 import NavigationBar from './components/NavigationBar.vue'
+import { useAuthStore } from './stores/authStore'
+import { onMounted, onBeforeUnmount } from 'vue'
+import { startDisconnectPolling, stopDisconnectPolling } from './config/axios'
+
+const authStore = useAuthStore()
+
+onMounted(async () => {
+  // Disable profile fetch on mount - it's causing logout issues
+  // The user is already authenticated with the token from localStorage
+  
+  // Start polling to check for forced disconnects
+  startDisconnectPolling()
+})
+
+onBeforeUnmount(() => {
+  // Stop polling when component is destroyed
+  stopDisconnectPolling()
+})
 </script>
 
 <template>
