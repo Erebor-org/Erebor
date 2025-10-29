@@ -30,6 +30,7 @@
             </div>
             
             <button
+              v-if="canManageWarnings"
               @click="openAddWarningModal"
               class="px-6 py-3 bg-theme-primary hover:bg-theme-warning text-white font-bold rounded-xl transition-all duration-200 transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-theme-primary/30 flex items-center space-x-2"
             >
@@ -101,7 +102,7 @@
                     <span v-else class="text-theme-text-muted italic">Inconnu</span>
                   </td>
                   <td class="px-6 py-4">
-                    <div class="flex justify-center space-x-2">
+                    <div v-if="canManageWarnings" class="flex justify-center space-x-2">
                       <button
                         @click="openEditWarningModal(warning)"
                         class="px-3 py-1 bg-theme-primary hover:bg-theme-primary-hover text-white text-xs font-medium rounded-lg transition-all duration-200 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-theme-primary/30 shadow-sm hover:shadow-md"
@@ -116,6 +117,9 @@
                       >
                         Supprimer
                       </button>
+                    </div>
+                    <div v-else class="text-center text-theme-text-muted text-sm">
+                      Lecture seule
                     </div>
                   </td>
                 </tr>
@@ -422,12 +426,17 @@
 <script>
 import axios from 'axios';
 import Notification from '@/components/NotificationCenter.vue';
+import { useAuthStore } from '@/stores/authStore';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
 export default {
   components: {
     Notification,
+  },
+  setup() {
+    const authStore = useAuthStore();
+    return { authStore };
   },
   data() {
     return {
@@ -514,6 +523,10 @@ export default {
         character.pseudo.toLowerCase().includes(query)
       );
     },
+    canManageWarnings() {
+      const roles = this.authStore.user?.roles || [];
+      return roles.includes('ROLE_OWNERS');
+    }
   },
   methods: {
     // Filter warnings based on search query

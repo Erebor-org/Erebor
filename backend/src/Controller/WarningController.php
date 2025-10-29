@@ -148,9 +148,9 @@ class WarningController extends AbstractController
         ValidatorInterface $validator,
         #[CurrentUser] ?\App\Entity\User $user
     ): JsonResponse {
-        // Only SUPER_SUPER_ADMIN can create warnings
-        if (!$user || !in_array('ROLE_SUPER_SUPER_ADMIN', $user->getRoles())) {
-            return $this->json(['error' => 'Access denied. Only Super Super Administrators can create warnings.'], 403);
+        // Only OWNERS can create warnings
+        if (!$user || !in_array('ROLE_OWNERS', $user->getRoles())) {
+            return $this->json(['error' => 'Access denied. Only Owners can create warnings.'], 403);
         }
         $data = json_decode($request->getContent(), true);
         
@@ -227,9 +227,9 @@ class WarningController extends AbstractController
         ValidatorInterface $validator,
         #[CurrentUser] ?\App\Entity\User $user
     ): JsonResponse {
-        // Only SUPER_SUPER_ADMIN can update warnings
-        if (!$user || !in_array('ROLE_SUPER_SUPER_ADMIN', $user->getRoles())) {
-            return $this->json(['error' => 'Access denied. Only Super Super Administrators can update warnings.'], 403);
+        // Only OWNERS can update warnings
+        if (!$user || !in_array('ROLE_OWNERS', $user->getRoles())) {
+            return $this->json(['error' => 'Access denied. Only Owners can update warnings.'], 403);
         }
         $warning = $warningRepository->find($id);
         
@@ -281,9 +281,9 @@ class WarningController extends AbstractController
         EntityManagerInterface $em,
         #[CurrentUser] ?\App\Entity\User $user
     ): JsonResponse {
-        // Only SUPER_SUPER_ADMIN can delete warnings
-        if (!$user || !in_array('ROLE_SUPER_SUPER_ADMIN', $user->getRoles())) {
-            return $this->json(['error' => 'Access denied. Only Super Super Administrators can delete warnings.'], 403);
+        // Only OWNERS can delete warnings
+        if (!$user || !in_array('ROLE_OWNERS', $user->getRoles())) {
+            return $this->json(['error' => 'Access denied. Only Owners can delete warnings.'], 403);
         }
         $warning = $warningRepository->find($id);
         

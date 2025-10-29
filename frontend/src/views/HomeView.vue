@@ -12,7 +12,7 @@
       </div>
 
       <!-- Admin Dashboard -->
-      <div v-if="user?.roles?.includes('ROLE_ADMIN')">
+      <div v-if="user?.roles?.includes('ROLE_ADMIN') || user?.roles?.includes('ROLE_SUPER_ADMIN') || user?.roles?.includes('ROLE_OWNERS')">
         <!-- Featured Section - Wheels -->
         <div class="mb-8">
           <h2 class="text-2xl font-bold text-theme-text mb-4 flex items-center">
@@ -119,7 +119,11 @@
               </div>
             </RouterLink>
             <!-- Avertissements Card -->
-            <RouterLink to="/warnings-management" class="group">
+            <RouterLink 
+              v-if="user?.roles?.includes('ROLE_SUPER_ADMIN') || user?.roles?.includes('ROLE_OWNERS')" 
+              to="/warnings-management" 
+              class="group"
+            >
               <div class="bg-theme-card border border-theme-border rounded-xl p-6 hover:shadow-lg transition-all duration-300 hover:border-theme-warning">
                 <div class="flex flex-col items-center text-center">
                   <div class="w-14 h-14 bg-theme-warning/10 rounded-xl flex items-center justify-center mb-4">

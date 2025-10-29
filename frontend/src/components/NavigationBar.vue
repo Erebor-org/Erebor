@@ -73,17 +73,22 @@
     const roles = user.value?.roles || [];
     return roles.includes('ROLE_ADMIN') || 
            roles.includes('ROLE_SUPER_ADMIN') || 
-           roles.includes('ROLE_SUPER_SUPER_ADMIN');
+           roles.includes('ROLE_OWNERS');
   });
   
   const isSuperSuperAdmin = computed(() => {
     const roles = user.value?.roles || [];
-    return roles.includes('ROLE_SUPER_SUPER_ADMIN');
+    return roles.includes('ROLE_OWNERS');
   });
   
   const canManageWarnings = computed(() => {
     const roles = user.value?.roles || [];
-    return roles.includes('ROLE_SUPER_SUPER_ADMIN');
+    return roles.includes('ROLE_OWNERS');
+  });
+  
+  const canViewWarnings = computed(() => {
+    const roles = user.value?.roles || [];
+    return roles.includes('ROLE_SUPER_ADMIN') || roles.includes('ROLE_OWNERS');
   });
 
   // Get character icon if user has a character
@@ -178,7 +183,7 @@
           
           <RouterLink 
             to="/warnings-management" 
-            v-if="isLoggedIn && canManageWarnings"
+            v-if="isLoggedIn && canViewWarnings"
             class="nav-link"
             active-class="nav-link-active"
           >
@@ -343,7 +348,7 @@
         
         <RouterLink 
           to="/warnings-management" 
-          v-if="isLoggedIn && canManageWarnings"
+          v-if="isLoggedIn && canViewWarnings"
           class="mobile-nav-link"
           active-class="mobile-nav-link-active"
           @click="isMobileMenuOpen = false"

@@ -4,7 +4,7 @@ security:
     Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface: "auto"
 
   role_hierarchy:
-    ROLE_SUPER_SUPER_ADMIN: [ROLE_SUPER_ADMIN, ROLE_ADMIN, ROLE_USER]
+    ROLE_OWNERS: [ROLE_SUPER_ADMIN, ROLE_ADMIN, ROLE_USER]
     ROLE_SUPER_ADMIN: [ROLE_ADMIN, ROLE_USER]
     ROLE_ADMIN: ROLE_USER
     ROLE_USER: []
@@ -73,19 +73,22 @@ security:
     # Character read routes (accessible to all authenticated users)
     - { path: ^/characters/, roles: ROLE_USER }
 
-    # Write operations - Require at least ADMIN
+    # Write operations - Require at least ADMIN (OWNERS have full access via role hierarchy)
     - { path: ^/characters$, roles: ROLE_ADMIN }
     - { path: ^/mules, roles: ROLE_ADMIN }
 
-    # Blacklist - Accessible to ADMIN and above (but not USER)
+    # Blacklist - Accessible to ADMIN and above (OWNERS have full access)
     - { path: ^/blacklist, roles: ROLE_ADMIN }
 
-    # Warnings - Read: SUPER_ADMIN+, Write: SUPER_SUPER_ADMIN only
+    # Warnings - Read: SUPER_ADMIN+, Write: OWNERS only (OWNERS have full access)
     - { path: ^/warnings, roles: ROLE_SUPER_ADMIN }
     # Note: Warning write operations need to be checked in the controller
 
-    # User Management - SUPER_SUPER_ADMIN only
-    - { path: ^/admin/users, roles: ROLE_SUPER_SUPER_ADMIN }
+    # User Management - OWNERS only (unlimited access)
+    - { path: ^/admin/users, roles: ROLE_OWNERS }
+
+    # ROLE_OWNERS has unlimited access to all routes via role hierarchy
+    # They inherit ROLE_SUPER_ADMIN, ROLE_ADMIN, and ROLE_USER permissions
 
     # Default: require authentication for all other routes
     - { path: ^/api, roles: IS_AUTHENTICATED_FULLY }
