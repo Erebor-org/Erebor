@@ -1,6 +1,5 @@
 import axios from 'axios';
-
-const API_URL = import.meta.env.VITE_API_URL;
+import { API_URL } from './apiUrl';
 
 // Polling interval for checking forced disconnects (in milliseconds)
 const DISCONNECT_CHECK_INTERVAL = 5000; // Check every 5 seconds

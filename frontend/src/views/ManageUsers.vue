@@ -292,8 +292,7 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import axios from '@/config/axios';
 import NotificationCenter from '@/components/NotificationCenter.vue';
-
-const API_URL = import.meta.env.VITE_API_URL;
+import { API_URL } from '@/config/apiUrl';
 
 const users = ref([]);
 const characters = ref([]);
