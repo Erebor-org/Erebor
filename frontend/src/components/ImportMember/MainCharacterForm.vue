@@ -203,7 +203,8 @@
 <script>
 import axios from 'axios';
 import RecruiterSelector from './RecruiterSelector.vue';
-import { API_URL } from '@/config/apiUrl';
+
+const API_URL = import.meta.env.VITE_API_URL;
 
 export default {
   components: {

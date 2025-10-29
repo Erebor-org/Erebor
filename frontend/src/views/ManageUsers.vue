@@ -292,7 +292,8 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import axios from '@/config/axios';
 import NotificationCenter from '@/components/NotificationCenter.vue';
-import { API_URL } from '@/config/apiUrl';
+
+const API_URL = import.meta.env.VITE_API_URL;
 
 const users = ref([]);
 const characters = ref([]);
@@ -455,10 +456,10 @@ const fetchUsers = async () => {
 
 const fetchCharacters = async () => {
   try {
-    const response = await axios.get(`${API_URL}/characters`);
+    const response = await axios.get(`${API_URL}/characters/`);
     characters.value = response.data.filter(c => !c.isArchived);
   } catch (error) {
-    console.error('Error fetching characters:', error);
+    console.error('Error fetching characters:', error.response?.data || error.message);
   }
 };
 

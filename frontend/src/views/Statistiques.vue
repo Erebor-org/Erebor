@@ -266,7 +266,8 @@
 import axios from 'axios';
 import Notification from '@/components/NotificationCenter.vue';
 import Chart from 'chart.js/auto';
-import { API_URL } from '@/config/apiUrl';
+
+const API_URL = import.meta.env.VITE_API_URL;
 
 export default {
   name: 'GuildStatistics',

@@ -159,9 +159,9 @@ import axios from 'axios';
 import MainCharacterForm from './MainCharacterForm.vue';
 import MulesManager from './MulesManager.vue';
 import ExistingCharacterMuleForm from './ExistingCharacterMuleForm.vue';
-import { API_URL } from '@/config/apiUrl';
 
 const images = import.meta.glob('@/assets/icon_classe/*.avif', { eager: true });
+const API_URL = import.meta.env.VITE_API_URL;
 
 export default {
   components: {

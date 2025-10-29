@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia';
 import axios from '@/config/axios';
 import router from '@/router'; // ✅ Import router globally
-import { API_URL } from '@/config/apiUrl';
+const API_URL = import.meta.env.VITE_API_URL;
 export const useAuthStore = defineStore('auth', {
   state: () => {
     // Clean up invalid data first
