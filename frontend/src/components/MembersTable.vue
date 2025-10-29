@@ -263,7 +263,7 @@ import ClassDropdown from './ClassDropdown.vue';
 import EditablePseudo from './EditablePseudo.vue';
 import ConfirmModal from './ConfirmModal.vue';
 import { useAuthStore } from '@/stores/authStore';
-import { API_URL } from '@/config/apiUrl';
+const API_URL = import.meta.env.VITE_API_URL;
 
 export default {
   name: 'MembersTable',
