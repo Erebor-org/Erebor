@@ -1,4 +1,0 @@
-nelmio_cors:
-  defaults:
-    allow_origin: ["*"] # Allow all origins in dev
-    allow_credentials: true
