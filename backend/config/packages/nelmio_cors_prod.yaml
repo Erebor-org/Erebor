@@ -1,0 +1,4 @@
+nelmio_cors:
+  defaults:
+    allow_origin: [] # CORS is handled by Nginx in prod
+    allow_credentials: true
