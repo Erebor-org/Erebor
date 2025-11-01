@@ -13,6 +13,7 @@ import ThemeCustomizerDemo from '../views/ThemeCustomizerDemo.vue';
 import WheelView from '../views/WheelView.vue';
 import WheelClassesView from '../views/WheelClassesView.vue';
 import ManageUsers from '../views/ManageUsers.vue';
+import ProfileView from '../views/ProfileView.vue';
 
 const routes = [
   { path: '/', redirect: () => {
@@ -33,6 +34,7 @@ const routes = [
   { path: '/wheel', name: 'Wheel', component: WheelView, meta: { requiresAuth: true } },
   { path: '/wheel-classes', name: 'WheelClasses', component: WheelClassesView, meta: { requiresAuth: true } },
   { path: '/admin/users', name: 'ManageUsers', component: ManageUsers, meta: { requiresAuth: true } },
+  { path: '/profil', name: 'Profile', component: ProfileView, meta: { requiresAuth: true } },
 ];
 
 const router = createRouter({

@@ -85,6 +85,16 @@ class AuthController extends AbstractController
                 'pseudo' => $character->getPseudo(),
                 'ankamaPseudo' => $character->getAnkamaPseudo(),
                 'class' => $character->getClass(),
+                'recruitedAt' => $character->getRecruitedAt()->format('Y-m-d'),
+                'rank' => [
+                    'id' => $character->getRank()->getId(),
+                    'name' => $character->getRank()->getName(),
+                    'description' => $character->getRank()->getDescription(),
+                    'requiredDays' => $character->getRank()->getRequiredDays(),
+                    'lead' => $character->getRank()->getLead(),
+                    'recruiter' => $character->getRank()->getRecruiter(),
+                    'needUpdate' => $character->getRank()->getNeedUpdate(),
+                ]
             ] : null
         ];
 
@@ -134,6 +144,16 @@ class AuthController extends AbstractController
                 'pseudo' => $character->getPseudo(),
                 'ankamaPseudo' => $character->getAnkamaPseudo(),
                 'class' => $character->getClass(),
+                'recruitedAt' => $character->getRecruitedAt()->format('Y-m-d'),
+                'rank' => [
+                    'id' => $character->getRank()->getId(),
+                    'name' => $character->getRank()->getName(),
+                    'description' => $character->getRank()->getDescription(),
+                    'requiredDays' => $character->getRank()->getRequiredDays(),
+                    'lead' => $character->getRank()->getLead(),
+                    'recruiter' => $character->getRank()->getRecruiter(),
+                    'needUpdate' => $character->getRank()->getNeedUpdate(),
+                ]
             ] : null
         ];
         

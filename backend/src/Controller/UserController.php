@@ -71,6 +71,16 @@ class UserController extends AbstractController
                     'pseudo' => $character->getPseudo(),
                     'ankamaPseudo' => $character->getAnkamaPseudo(),
                     'class' => $character->getClass(),
+                    'recruitedAt' => $character->getRecruitedAt()->format('Y-m-d'),
+                    'rank' => [
+                        'id' => $character->getRank()->getId(),
+                        'name' => $character->getRank()->getName(),
+                        'description' => $character->getRank()->getDescription(),
+                        'requiredDays' => $character->getRank()->getRequiredDays(),
+                        'lead' => $character->getRank()->getLead(),
+                        'recruiter' => $character->getRank()->getRecruiter(),
+                        'needUpdate' => $character->getRank()->getNeedUpdate(),
+                    ]
                 ]
             ]
         ]);
@@ -84,7 +94,30 @@ class UserController extends AbstractController
         $character = null;
         
         if ($user->getCharacterId()) {
-            $character = $charactersRepository->find($user->getCharacterId());
+            // Fetch character with mules
+            $character = $charactersRepository->createQueryBuilder('c')
+                ->leftJoin('c.mules', 'mules')
+                ->addSelect('mules')
+                ->where('c.id = :id')
+                ->setParameter('id', $user->getCharacterId())
+                ->getQuery()
+                ->getOneOrNullResult();
+        }
+
+        // Format mules
+        $muleList = [];
+        if ($character) {
+            foreach ($character->getMules() as $mule) {
+                if (!$mule->isArchived()) {
+                    $muleList[] = [
+                        'id' => $mule->getId(),
+                        'pseudo' => $mule->getPseudo(),
+                        'ankamaPseudo' => $mule->getAnkamaPseudo(),
+                        'class' => $mule->getClass(),
+                        'isArchived' => $mule->isArchived()
+                    ];
+                }
+            }
         }
 
         $userData = [
@@ -97,6 +130,17 @@ class UserController extends AbstractController
                 'pseudo' => $character->getPseudo(),
                 'ankamaPseudo' => $character->getAnkamaPseudo(),
                 'class' => $character->getClass(),
+                'recruitedAt' => $character->getRecruitedAt()->format('Y-m-d'),
+                'mules' => $muleList,
+                'rank' => [
+                    'id' => $character->getRank()->getId(),
+                    'name' => $character->getRank()->getName(),
+                    'description' => $character->getRank()->getDescription(),
+                    'requiredDays' => $character->getRank()->getRequiredDays(),
+                    'lead' => $character->getRank()->getLead(),
+                    'recruiter' => $character->getRank()->getRecruiter(),
+                    'needUpdate' => $character->getRank()->getNeedUpdate(),
+                ]
             ] : null
         ];
 
@@ -199,6 +243,15 @@ class UserController extends AbstractController
                     'pseudo' => $character->getPseudo(),
                     'ankamaPseudo' => $character->getAnkamaPseudo(),
                     'class' => $character->getClass(),
+                    'rank' => [
+                        'id' => $character->getRank()->getId(),
+                        'name' => $character->getRank()->getName(),
+                        'description' => $character->getRank()->getDescription(),
+                        'requiredDays' => $character->getRank()->getRequiredDays(),
+                        'lead' => $character->getRank()->getLead(),
+                        'recruiter' => $character->getRank()->getRecruiter(),
+                        'needUpdate' => $character->getRank()->getNeedUpdate(),
+                    ]
                 ] : null
             ]
         ]);
