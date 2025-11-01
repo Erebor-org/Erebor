@@ -22,7 +22,7 @@
     <!-- Dropdown Menu -->
     <div
       v-if="isVisible"
-      class="absolute top-24 left-0 z-50 bg-theme-card border border-theme-bg-muted rounded-2xl shadow-2xl p-6 w-80 max-h-96 overflow-y-auto backdrop-blur-sm"
+      class="absolute top-24 left-0 z-50 bg-theme-card border border-theme-bg-muted rounded-2xl shadow-2xl p-6 w-[500px] max-h-96 overflow-y-auto backdrop-blur-sm"
     >
       <!-- Header -->
       <div class="flex items-center justify-between mb-6 pb-4 border-b border-theme-bg-muted">
@@ -38,7 +38,7 @@
       </div>
 
       <!-- Class Grid -->
-      <div class="grid grid-cols-4 gap-3">
+      <div class="grid grid-cols-5 gap-3">
         <button
           v-for="(icon, classKey) in classes"
           :key="classKey"
@@ -49,7 +49,7 @@
           <img 
             :src="icon" 
             :alt="classKey" 
-            class="w-12 h-12 rounded-xl mb-2 group-hover:scale-110 transition-transform duration-300" 
+            class="w-16 h-16 rounded-xl mb-2 group-hover:scale-110 transition-transform duration-300 object-contain" 
           />
           <span class="text-xs font-medium text-theme-text text-center capitalize group-hover:text-theme-primary transition-colors duration-200">{{ classKey }}</span>
         </button>

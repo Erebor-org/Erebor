@@ -36,6 +36,7 @@
   const isMobileMenuOpen = ref(false);
   const showScrollToTop = ref(false);
   const showWheelDropdown = ref(false);
+  const showProfileDropdown = ref(false);
   let wheelDropdownTimeout = null;
 
   function toggleWheelDropdown() {
@@ -46,12 +47,26 @@
     showWheelDropdown.value = false;
   }
 
+  function toggleProfileDropdown() {
+    showProfileDropdown.value = !showProfileDropdown.value;
+  }
+
+  function closeProfileDropdown() {
+    showProfileDropdown.value = false;
+  }
+
   // Fermer le menu si on clique ailleurs
   function handleClickOutside(event) {
-    const dropdown = document.getElementById('wheel-dropdown-menu');
-    const button = document.getElementById('wheel-dropdown-btn');
-    if (dropdown && !dropdown.contains(event.target) && button && !button.contains(event.target)) {
+    const wheelDropdown = document.getElementById('wheel-dropdown-menu');
+    const wheelButton = document.getElementById('wheel-dropdown-btn');
+    if (wheelDropdown && !wheelDropdown.contains(event.target) && wheelButton && !wheelButton.contains(event.target)) {
       closeWheelDropdown();
+    }
+    
+    const profileDropdown = document.getElementById('profile-dropdown-menu');
+    const profileButton = document.getElementById('profile-dropdown-btn');
+    if (profileDropdown && !profileDropdown.contains(event.target) && profileButton && !profileButton.contains(event.target)) {
+      closeProfileDropdown();
     }
   }
   onMounted(() => {
@@ -271,17 +286,46 @@
               </div>
             </div>
             
-            <!-- Profile Avatar -->
-            <div class="relative group">
-              <img 
-                :src="characterIcon" 
-                alt="Profile" 
-                class="w-10 h-10 rounded-full border-2 border-theme-border hover:border-theme-primary transition-all duration-300 cursor-pointer group-hover:scale-110"
-                @click="router.push('/theme-customizer')"
-                title="Personnalisation du profil"
-                style="cursor:pointer;"
-              />
-              <div class="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-2 h-2 bg-theme-success rounded-full border border-theme-bg"></div>
+            <!-- Profile Avatar Dropdown -->
+            <div class="relative">
+              <button
+                id="profile-dropdown-btn"
+                class="relative focus:outline-none"
+                @click="toggleProfileDropdown"
+                :aria-expanded="showProfileDropdown"
+                aria-haspopup="true"
+                type="button"
+              >
+                <img 
+                  :src="characterIcon" 
+                  alt="Profile" 
+                  class="w-10 h-10 rounded-full border-2 border-theme-border hover:border-theme-primary transition-all duration-300 cursor-pointer hover:scale-110"
+                  title="Menu profil"
+                />
+                <div class="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-2 h-2 bg-theme-success rounded-full border border-theme-bg"></div>
+              </button>
+              <div
+                v-if="showProfileDropdown"
+                id="profile-dropdown-menu"
+                class="absolute right-0 mt-2 w-48 bg-theme-card border border-theme-border rounded-lg shadow-lg z-50"
+              >
+                <RouterLink
+                  to="/profil"
+                  class="block px-4 py-3 nav-link"
+                  :class="{ 'nav-link-active': route.path === '/profil' }"
+                  @click="closeProfileDropdown"
+                >
+                  Profil
+                </RouterLink>
+                <RouterLink
+                  to="/theme-customizer"
+                  class="block px-4 py-3 nav-link"
+                  :class="{ 'nav-link-active': route.path === '/theme-customizer' }"
+                  @click="closeProfileDropdown"
+                >
+                  Thème
+                </RouterLink>
+              </div>
             </div>
             
             <!-- Logout Button -->
@@ -393,6 +437,26 @@
             @click="isMobileMenuOpen = false"
           >
             Roue des Classes
+          </RouterLink>
+        </div>
+
+        <div v-if="isLoggedIn" class="">
+          <div class="font-semibold text-theme-primary mb-1">Mon Compte</div>
+          <RouterLink 
+            to="/profil" 
+            class="mobile-nav-link"
+            :class="{ 'mobile-nav-link-active': route.path === '/profil' }"
+            @click="isMobileMenuOpen = false"
+          >
+            Profil
+          </RouterLink>
+          <RouterLink 
+            to="/theme-customizer" 
+            class="mobile-nav-link"
+            :class="{ 'mobile-nav-link-active': route.path === '/theme-customizer' }"
+            @click="isMobileMenuOpen = false"
+          >
+            Thème
           </RouterLink>
         </div>
       </div>

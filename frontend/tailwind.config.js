@@ -3,6 +3,15 @@ export default {
   content: ['./index.html', './src/**/*.{vue,js,ts,jsx,tsx}'],
   theme: {
     extend: {
+      animation: {
+        shimmer: 'shimmer 3s ease-in-out infinite',
+      },
+      keyframes: {
+        shimmer: {
+          '0%': { transform: 'translateX(-100%)' },
+          '100%': { transform: 'translateX(100%)' },
+        },
+      },
       colors: {
         'theme': {
           'bg': 'var(--bg)',
