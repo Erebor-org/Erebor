@@ -52,6 +52,8 @@ axios.interceptors.request.use(
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+    // For FormData, axios will automatically handle Content-Type with boundary
+    // We don't need to set or delete it - axios handles it correctly
     return config;
   },
   (error) => {

@@ -106,42 +106,103 @@ class EventController extends AbstractController
     #[IsGranted('ROLE_USER')]
     public function create(Request $request, EntityManagerInterface $em): JsonResponse
     {
-        $user = $this->getUser();
-        
-        // Check if user has role other than just ROLE_USER
-        $roles = $user->getRoles();
-        // Filter out ROLE_USER to check if user has any other role
-        $otherRoles = array_filter($roles, fn($role) => $role !== 'ROLE_USER');
-        
-        if (empty($otherRoles)) {
-            return $this->json(['error' => 'Only users with roles other than ROLE_USER can create events'], 403);
-        }
-
-        $data = json_decode($request->getContent(), true);
-
-        if (!isset($data['title']) || !isset($data['description']) || !isset($data['date'])) {
-            return $this->json(['error' => 'Missing required fields: title, description, date'], 400);
-        }
-
         try {
-            $eventDate = new \DateTime($data['date']);
+            $user = $this->getUser();
+            
+            if (!$user) {
+                return $this->json(['error' => 'User not authenticated'], 401);
+            }
+            
+            // Check if user has role other than just ROLE_USER
+            $roles = $user->getRoles();
+            // Filter out ROLE_USER to check if user has any other role
+            $otherRoles = array_filter($roles, fn($role) => $role !== 'ROLE_USER');
+            
+            if (empty($otherRoles)) {
+                return $this->json(['error' => 'Only users with roles other than ROLE_USER can create events'], 403);
+            }
+
+            $data = json_decode($request->getContent(), true);
+            
+            if (json_last_error() !== JSON_ERROR_NONE) {
+                return $this->json(['error' => 'Invalid JSON data: ' . json_last_error_msg()], 400);
+            }
+
+            if (!isset($data['title']) || !isset($data['description']) || !isset($data['date'])) {
+                return $this->json(['error' => 'Missing required fields: title, description, date'], 400);
+            }
+
+            // Validate title
+            if (empty(trim($data['title']))) {
+                return $this->json(['error' => 'Title cannot be empty'], 400);
+            }
+
+            // Validate description
+            if (empty(trim($data['description']))) {
+                return $this->json(['error' => 'Description cannot be empty'], 400);
+            }
+
+            // Validate and parse date
+            try {
+                $eventDate = new \DateTime($data['date']);
+            } catch (\Exception $e) {
+                return $this->json(['error' => 'Invalid date format: ' . $e->getMessage()], 400);
+            }
+
+            // Handle cashPrize - convert empty string to null
+            $cashPrize = $data['cashPrize'] ?? null;
+            if ($cashPrize === '' || $cashPrize === null || $cashPrize === false) {
+                $cashPrize = null;
+            } else {
+                // Validate cashPrize is numeric if provided
+                // Remove any non-numeric characters except decimal point
+                $cashPrize = (string) $cashPrize;
+                $cashPrize = preg_replace('/[^0-9.]/', '', $cashPrize);
+                
+                if (empty($cashPrize)) {
+                    $cashPrize = null;
+                } else {
+                    // Validate it's a valid number
+                    if (!is_numeric($cashPrize)) {
+                        return $this->json(['error' => 'Cash prize must be a valid number'], 400);
+                    }
+                    // Ensure it doesn't exceed database precision
+                    if ((float) $cashPrize > 99999999.99) {
+                        return $this->json(['error' => 'Cash prize is too large'], 400);
+                    }
+                }
+            }
+
+            // Handle image - convert empty string to null
+            $image = $data['image'] ?? null;
+            if ($image === '') {
+                $image = null;
+            }
+
+            $event = new Event();
+            $event->setTitle(trim($data['title']))
+                ->setDescription(trim($data['description']))
+                ->setDate($eventDate)
+                ->setCashPrize($cashPrize)
+                ->setImage($image)
+                ->setOwnerId($user->getId())
+                ->setIsFinished(false);
+
+            $em->persist($event);
+            $em->flush();
+
+            return $this->json($this->formatEvent($event, true), 201);
         } catch (\Exception $e) {
-            return $this->json(['error' => 'Invalid date format'], 400);
+            // Log the full exception for debugging
+            error_log('Error creating event: ' . $e->getMessage());
+            error_log('Stack trace: ' . $e->getTraceAsString());
+            
+            return $this->json([
+                'error' => 'Failed to create event: ' . $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine()
+            ], 500);
         }
-
-        $event = new Event();
-        $event->setTitle($data['title'])
-            ->setDescription($data['description'])
-            ->setDate($eventDate)
-            ->setCashPrize($data['cashPrize'] ?? null)
-            ->setImage($data['image'] ?? null)
-            ->setOwnerId($user->getId())
-            ->setIsFinished(false);
-
-        $em->persist($event);
-        $em->flush();
-
-        return $this->json($this->formatEvent($event, true), 201);
     }
 
     #[Route('/events/{id}', name: 'event_update', methods: ['PUT'])]
@@ -377,23 +438,29 @@ class EventController extends AbstractController
 
     private function formatEvent(Event $event, bool $includeDetails = false): array
     {
-        $data = [
-            'id' => $event->getId(),
-            'title' => $event->getTitle(),
-            'description' => $event->getDescription(),
-            'date' => $event->getDate()->format('Y-m-d H:i:s'),
-            'cashPrize' => $event->getCashPrize(),
-            'image' => $event->getImage(),
-            'ownerId' => $event->getOwnerId(),
-            'isFinished' => $event->isFinished(),
-            'createdAt' => $event->getCreatedAt()->format('Y-m-d H:i:s'),
-        ];
+        try {
+            $data = [
+                'id' => $event->getId(),
+                'title' => $event->getTitle(),
+                'description' => $event->getDescription(),
+                'date' => $event->getDate()->format('Y-m-d\TH:i:s'),
+                'cashPrize' => $event->getCashPrize(),
+                'image' => $event->getImage(),
+                'ownerId' => $event->getOwnerId(),
+                'isFinished' => $event->isFinished(),
+                'createdAt' => $event->getCreatedAt()->format('Y-m-d\TH:i:s'),
+            ];
 
-        if ($includeDetails) {
-            $data['note'] = $event->getNote();
+            if ($includeDetails) {
+                $data['note'] = $event->getNote();
+            }
+
+            return $data;
+        } catch (\Exception $e) {
+            error_log('Error formatting event: ' . $e->getMessage());
+            error_log('Stack trace: ' . $e->getTraceAsString());
+            throw new \RuntimeException('Failed to format event: ' . $e->getMessage(), 0, $e);
         }
-
-        return $data;
     }
 }
 

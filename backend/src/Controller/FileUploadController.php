@@ -30,47 +30,99 @@ class FileUploadController extends AbstractController
     #[IsGranted('ROLE_USER')]
     public function uploadEventImage(Request $request, SluggerInterface $slugger): JsonResponse
     {
-        $file = $request->files->get('image');
-
-        if (!$file) {
-            return $this->json(['error' => 'No file uploaded'], 400);
-        }
-
-        // Validate file type
-        $allowedMimeTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
-        $mimeType = $file->getMimeType();
-
-        if (!in_array($mimeType, $allowedMimeTypes)) {
-            return $this->json(['error' => 'Invalid file type. Allowed: JPEG, PNG, GIF, WEBP'], 400);
-        }
-
-        // Validate file size (max 5MB)
-        $maxSize = 5 * 1024 * 1024; // 5MB in bytes
-        if ($file->getSize() > $maxSize) {
-            return $this->json(['error' => 'File size too large. Maximum size: 5MB'], 400);
-        }
-
-        // Generate unique filename
-        $originalFilename = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
-        $safeFilename = $slugger->slug($originalFilename);
-        $extension = $file->guessExtension() ?: 'bin';
-        $newFilename = $safeFilename . '-' . uniqid() . '.' . $extension;
-
-        // Move file to upload directory
         try {
-            $file->move($this->uploadDirectory, $newFilename);
+            // Check if directory exists and is writable
+            if (!is_dir($this->uploadDirectory)) {
+                mkdir($this->uploadDirectory, 0755, true);
+            }
+            
+            if (!is_writable($this->uploadDirectory)) {
+                return $this->json([
+                    'error' => 'Upload directory is not writable',
+                    'directory' => $this->uploadDirectory
+                ], 500);
+            }
+
+            $file = $request->files->get('image');
+
+            if (!$file) {
+                // Check if it's a request size issue
+                if ($request->getContentType() === 'multipart/form-data' && empty($request->files->all())) {
+                    return $this->json([
+                        'error' => 'No file uploaded. The file may be too large or the request was malformed.'
+                    ], 400);
+                }
+                return $this->json(['error' => 'No file uploaded'], 400);
+            }
+
+            // Validate file type
+            $allowedMimeTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+            $mimeType = $file->getMimeType();
+
+            if (!$mimeType || !in_array($mimeType, $allowedMimeTypes)) {
+                return $this->json([
+                    'error' => 'Invalid file type. Allowed: JPEG, PNG, GIF, WEBP',
+                    'received' => $mimeType
+                ], 400);
+            }
+
+            // Validate file size (max 5MB)
+            $maxSize = 5 * 1024 * 1024; // 5MB in bytes
+            $fileSize = $file->getSize();
+            if ($fileSize > $maxSize) {
+                return $this->json([
+                    'error' => 'File size too large. Maximum size: 5MB',
+                    'received' => round($fileSize / 1024 / 1024, 2) . 'MB'
+                ], 400);
+            }
+
+            // Validate file was uploaded successfully
+            if (!$file->isValid()) {
+                return $this->json([
+                    'error' => 'File upload error: ' . $file->getErrorMessage(),
+                    'errorCode' => $file->getError()
+                ], 400);
+            }
+
+            // Generate unique filename
+            $originalFilename = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
+            $safeFilename = $slugger->slug($originalFilename);
+            $extension = $file->guessExtension() ?: $file->getClientOriginalExtension() ?: 'bin';
+            $newFilename = $safeFilename . '-' . uniqid() . '.' . $extension;
+
+            // Move file to upload directory
+            try {
+                $file->move($this->uploadDirectory, $newFilename);
+            } catch (\Exception $e) {
+                return $this->json([
+                    'error' => 'Failed to save file: ' . $e->getMessage(),
+                    'directory' => $this->uploadDirectory,
+                    'filename' => $newFilename
+                ], 500);
+            }
+
+            // Verify file was saved
+            $filePath = $this->uploadDirectory . '/' . $newFilename;
+            if (!file_exists($filePath)) {
+                return $this->json([
+                    'error' => 'File was not saved correctly'
+                ], 500);
+            }
+
+            // Return the URL path (relative to public directory)
+            $fileUrl = '/uploads/events/' . $newFilename;
+
+            return $this->json([
+                'success' => true,
+                'url' => $fileUrl,
+                'filename' => $newFilename
+            ]);
         } catch (\Exception $e) {
-            return $this->json(['error' => 'Failed to upload file: ' . $e->getMessage()], 500);
+            return $this->json([
+                'error' => 'Upload failed: ' . $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ], 500);
         }
-
-        // Return the URL path (relative to public directory)
-        $fileUrl = '/uploads/events/' . $newFilename;
-
-        return $this->json([
-            'success' => true,
-            'url' => $fileUrl,
-            'filename' => $newFilename
-        ]);
     }
 
     #[Route('/uploads/events/{filename}', name: 'serve_event_image', methods: ['GET'])]

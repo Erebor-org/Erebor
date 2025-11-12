@@ -48,6 +48,24 @@ export default {
     }
   },
 
+  async getUserEventParticipations() {
+    try {
+      const response = await axios.get(`${API_URL}/user/event-participations`);
+      return { success: true, data: response.data };
+    } catch (error) {
+      return { success: false, error: error.response?.data?.error || 'Failed to fetch event participations' };
+    }
+  },
+
+  async getUserUpcomingEvents() {
+    try {
+      const response = await axios.get(`${API_URL}/user/upcoming-events`);
+      return { success: true, data: response.data };
+    } catch (error) {
+      return { success: false, error: error.response?.data?.error || 'Failed to fetch upcoming events' };
+    }
+  },
+
   async uploadImage(file) {
     try {
       const formData = new FormData();

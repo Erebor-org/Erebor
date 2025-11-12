@@ -4,10 +4,12 @@ namespace App\Controller;
 
 use App\Entity\Characters;
 use App\Repository\CharactersRepository;
+use App\Repository\EventParticipantRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Attribute\CurrentUser;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use App\Repository\UserRepository;
@@ -322,6 +324,74 @@ class UserController extends AbstractController
         return new JsonResponse([
             'shouldDisconnect' => $shouldDisconnect,
             'disconnectedAt' => $forceDisconnectAt?->format('Y-m-d H:i:s')
+        ]);
+    }
+
+    #[Route('/user/event-participations', name: 'get_user_event_participations', methods: ['GET'])]
+    #[IsGranted('ROLE_USER')]
+    public function getUserEventParticipations(
+        #[CurrentUser] \App\Entity\User $user,
+        EventParticipantRepository $participantRepository
+    ): JsonResponse {
+        $participations = $participantRepository->findByUserWithEvents($user->getId());
+        
+        $formattedParticipations = [];
+        foreach ($participations as $participation) {
+            $event = $participation->getEvent();
+            $formattedParticipations[] = [
+                'id' => $participation->getId(),
+                'event' => [
+                    'id' => $event->getId(),
+                    'title' => $event->getTitle(),
+                    'description' => $event->getDescription(),
+                    'date' => $event->getDate()->format('Y-m-d\TH:i:s'),
+                    'cashPrize' => $event->getCashPrize(),
+                    'image' => $event->getImage(),
+                    'isFinished' => $event->isFinished(),
+                ],
+                'rank' => $participation->getRank(),
+                'pointsEarned' => $participation->getPointsEarned(),
+                'prizeReceived' => $participation->getPrizeReceived(),
+                'subscribedAt' => $participation->getSubscribedAt()->format('Y-m-d\TH:i:s'),
+            ];
+        }
+
+        // Calculate total points
+        $totalPoints = $participantRepository->getTotalPointsForUser($user->getId());
+
+        return new JsonResponse([
+            'participations' => $formattedParticipations,
+            'totalPoints' => $totalPoints,
+            'totalEvents' => count($formattedParticipations),
+        ]);
+    }
+
+    #[Route('/user/upcoming-events', name: 'get_user_upcoming_events', methods: ['GET'])]
+    #[IsGranted('ROLE_USER')]
+    public function getUserUpcomingEvents(
+        #[CurrentUser] \App\Entity\User $user,
+        EventParticipantRepository $participantRepository
+    ): JsonResponse {
+        $participations = $participantRepository->findUpcomingByUser($user->getId());
+        
+        $formattedEvents = [];
+        foreach ($participations as $participation) {
+            $event = $participation->getEvent();
+            $formattedEvents[] = [
+                'id' => $event->getId(),
+                'title' => $event->getTitle(),
+                'description' => $event->getDescription(),
+                'date' => $event->getDate()->format('Y-m-d\TH:i:s'),
+                'cashPrize' => $event->getCashPrize(),
+                'image' => $event->getImage(),
+                'isFinished' => $event->isFinished(),
+                'subscribedAt' => $participation->getSubscribedAt()->format('Y-m-d\TH:i:s'),
+            ];
+        }
+
+        return new JsonResponse([
+            'events' => $formattedEvents,
+            'total' => count($formattedEvents),
         ]);
     }
 }

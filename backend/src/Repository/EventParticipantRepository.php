@@ -77,6 +77,41 @@ class EventParticipantRepository extends ServiceEntityRepository
 
         return $qb->getQuery()->getResult();
     }
+
+    /**
+     * Get user's event participations with event details, ordered by event date (most recent first)
+     */
+    public function findByUserWithEvents(int $userId): array
+    {
+        return $this->createQueryBuilder('ep')
+            ->innerJoin('ep.event', 'e')
+            ->addSelect('e')
+            ->where('ep.userId = :userId')
+            ->setParameter('userId', $userId)
+            ->orderBy('e.date', 'DESC')
+            ->addOrderBy('e.createdAt', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * Get user's upcoming event participations (events that haven't happened yet and are not finished)
+     */
+    public function findUpcomingByUser(int $userId): array
+    {
+        $now = new \DateTime();
+        return $this->createQueryBuilder('ep')
+            ->innerJoin('ep.event', 'e')
+            ->addSelect('e')
+            ->where('ep.userId = :userId')
+            ->andWhere('e.date >= :now')
+            ->andWhere('e.isFinished = false')
+            ->setParameter('userId', $userId)
+            ->setParameter('now', $now)
+            ->orderBy('e.date', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
 }
 
 

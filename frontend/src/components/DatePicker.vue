@@ -20,12 +20,14 @@
       <div
         v-if="isOpen"
         ref="pickerDropdown"
+        @click.stop
         class="absolute left-0 top-full z-50 mt-2 bg-theme-card border border-theme-border rounded-xl shadow-2xl p-4 w-full min-w-[320px]"
       >
       <!-- Month/Year Selector -->
       <div class="flex items-center justify-between mb-4">
         <button
-          @click="previousMonth"
+          type="button"
+          @click.stop="previousMonth"
           class="p-2 hover:bg-theme-bg-muted rounded-lg transition-colors"
         >
           <svg class="w-5 h-5 text-theme-text" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -36,7 +38,8 @@
           {{ monthNames[currentMonth] }} {{ currentYear }}
         </div>
         <button
-          @click="nextMonth"
+          type="button"
+          @click.stop="nextMonth"
           class="p-2 hover:bg-theme-bg-muted rounded-lg transition-colors"
         >
           <svg class="w-5 h-5 text-theme-text" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -61,7 +64,7 @@
         <div
           v-for="day in daysInMonth"
           :key="`${day.value}-${day.isCurrentMonth}`"
-          @click="selectDate(day)"
+          @click.stop="selectDate(day)"
           :class="[
             'text-center py-2 rounded-lg transition-all',
             day.isCurrentMonth && !day.isDisabled
@@ -82,7 +85,7 @@
       </div>
 
       <!-- Time Picker -->
-      <div v-if="includeTime" class="mt-4 pt-4 border-t border-theme-border">
+      <div v-if="includeTime" class="mt-4 pt-4 border-t border-theme-border" @click.stop>
         <div class="flex items-center justify-center space-x-4">
           <div class="flex items-center space-x-2">
             <label class="text-sm text-theme-text-muted">Heure</label>
@@ -91,6 +94,7 @@
               type="number"
               min="0"
               max="23"
+              @click.stop
               class="w-16 px-3 py-2 bg-theme-bg-muted border border-theme-border rounded-lg text-theme-text text-center focus:ring-2 focus:ring-theme-primary"
             />
           </div>
@@ -103,6 +107,7 @@
               min="0"
               max="59"
               step="5"
+              @click.stop
               class="w-16 px-3 py-2 bg-theme-bg-muted border border-theme-border rounded-lg text-theme-text text-center focus:ring-2 focus:ring-theme-primary"
             />
           </div>
@@ -112,13 +117,15 @@
       <!-- Actions -->
       <div class="flex space-x-2 mt-4 pt-4 border-t border-theme-border">
         <button
-          @click="clearDate"
+          type="button"
+          @click.stop="clearDate"
           class="flex-1 px-4 py-2 bg-theme-bg-muted text-theme-text rounded-lg hover:bg-theme-border transition-colors"
         >
           Effacer
         </button>
         <button
-          @click="confirmDate"
+          type="button"
+          @click.stop="confirmDate"
           class="flex-1 px-4 py-2 bg-theme-primary text-white rounded-lg hover:bg-theme-primary-hover transition-colors"
         >
           Valider
@@ -276,14 +283,15 @@ const confirmDate = () => {
   const date = new Date(selectedDate.value);
   date.setHours(selectedHour.value, selectedMinute.value, 0, 0);
   
-  // Format as ISO string for datetime-local input
+  // Format as ISO string with seconds for better compatibility
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, '0');
   const day = String(date.getDate()).padStart(2, '0');
   const hours = String(selectedHour.value).padStart(2, '0');
   const minutes = String(selectedMinute.value).padStart(2, '0');
   
-  const isoString = `${year}-${month}-${day}T${hours}:${minutes}`;
+  // Include seconds and use ISO format for better Date parsing
+  const isoString = `${year}-${month}-${day}T${hours}:${minutes}:00`;
   emit('update:modelValue', isoString);
   closePicker();
 };

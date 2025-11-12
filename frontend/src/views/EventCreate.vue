@@ -55,12 +55,10 @@
           <div>
             <label class="block text-sm font-medium text-theme-text mb-2">Prix (kamas)</label>
             <input
-              v-model.number="formData.cashPrize"
-              type="number"
-              step="0.01"
-              min="0"
+              v-model="formData.cashPrize"
+              type="text"
               class="w-full px-4 py-3 bg-theme-bg-muted border border-theme-border rounded-lg text-theme-text focus:ring-2 focus:ring-theme-primary focus:border-theme-primary"
-              placeholder="0"
+              placeholder="Ex: 10000 kamas"
             />
           </div>
 
@@ -226,10 +224,15 @@ const uploadImage = async () => {
     const formData = new FormData();
     formData.append('image', selectedFile.value);
 
+    console.log('Uploading image:', {
+      fileName: selectedFile.value.name,
+      fileSize: selectedFile.value.size,
+      fileType: selectedFile.value.type
+    });
+
     const response = await axios.post(`${API_URL}/api/upload/event-image`, formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
+      // Axios automatically handles Content-Type for FormData with boundary
+      timeout: 60000, // 60 second timeout for file uploads
       onUploadProgress: (progressEvent) => {
         if (progressEvent.total) {
           uploadProgress.value = Math.round((progressEvent.loaded * 100) / progressEvent.total);
@@ -237,13 +240,59 @@ const uploadImage = async () => {
       },
     });
 
+    console.log('Upload successful:', response.data);
+
     uploading.value = false;
     uploadProgress.value = 0;
-    return response.data.url;
+    
+    if (response.data.url) {
+      return response.data.url;
+    } else {
+      throw new Error('No URL returned from server');
+    }
   } catch (error) {
     uploading.value = false;
     uploadProgress.value = 0;
-    throw new Error(error.response?.data?.error || 'Erreur lors de l\'upload de l\'image');
+    
+    // Detailed error logging
+    console.error('Image upload error details:', {
+      message: error.message,
+      response: error.response?.data,
+      status: error.response?.status,
+      statusText: error.response?.statusText,
+      headers: error.response?.headers,
+      config: error.config
+    });
+
+    // Extract error message
+    let errorMessage = 'Erreur lors de l\'upload de l\'image';
+    
+    if (error.response) {
+      // Server responded with error
+      if (error.response.data?.error) {
+        errorMessage = error.response.data.error;
+      } else if (error.response.status === 413) {
+        errorMessage = 'Le fichier est trop volumineux';
+      } else if (error.response.status === 415) {
+        errorMessage = 'Type de fichier non supporté';
+      } else if (error.response.status === 401) {
+        errorMessage = 'Vous devez être connecté pour uploader une image';
+      } else if (error.response.status === 403) {
+        errorMessage = 'Permission refusée';
+      } else if (error.response.status >= 500) {
+        errorMessage = 'Erreur serveur lors de l\'upload';
+      } else {
+        errorMessage = `Erreur ${error.response.status}: ${error.response.statusText}`;
+      }
+    } else if (error.request) {
+      // Request was made but no response
+      errorMessage = 'Aucune réponse du serveur. Vérifiez votre connexion.';
+    } else {
+      // Error in request setup
+      errorMessage = error.message || 'Erreur lors de la préparation de l\'upload';
+    }
+    
+    throw new Error(errorMessage);
   }
 };
 
@@ -268,10 +317,50 @@ const handleSubmit = async () => {
       }
     }
 
-    // Format date for API
+    // Format date for API - ensure valid date parsing
+    let eventDate;
+    if (typeof formData.value.date === 'string') {
+      // Parse the date string - DatePicker sends format: YYYY-MM-DDTHH:MM:00
+      // Parse manually to ensure local time is used correctly
+      const dateMatch = formData.value.date.match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::(\d{2}))?/);
+      
+      if (!dateMatch) {
+        throw new Error('Format de date invalide. Veuillez sélectionner une date valide.');
+      }
+      
+      // Extract date components (year, month, day, hour, minute, second)
+      const [, year, month, day, hour, minute, second = '00'] = dateMatch;
+      
+      // Create Date object using local time components
+      // Note: month is 0-indexed in Date constructor
+      const dateObj = new Date(
+        parseInt(year, 10),
+        parseInt(month, 10) - 1,
+        parseInt(day, 10),
+        parseInt(hour, 10),
+        parseInt(minute, 10),
+        parseInt(second, 10)
+      );
+      
+      // Validate the date
+      if (isNaN(dateObj.getTime())) {
+        throw new Error('Date invalide. Veuillez sélectionner une date valide.');
+      }
+      
+      // Convert to ISO string for API
+      eventDate = dateObj.toISOString();
+    } else if (formData.value.date instanceof Date) {
+      if (isNaN(formData.value.date.getTime())) {
+        throw new Error('Date invalide. Veuillez sélectionner une date valide.');
+      }
+      eventDate = formData.value.date.toISOString();
+    } else {
+      throw new Error('Format de date invalide');
+    }
+
     const submitData = {
       ...formData.value,
-      date: new Date(formData.value.date).toISOString()
+      date: eventDate
     };
 
     const result = await eventService.createEvent(submitData);
@@ -282,7 +371,9 @@ const handleSubmit = async () => {
       alert(result.error || 'Erreur lors de la création de l\'événement');
     }
   } catch (error) {
-    alert('Erreur lors de la création de l\'événement');
+    console.error('Error creating event:', error);
+    const errorMessage = error.response?.data?.error || error.message || 'Erreur lors de la création de l\'événement';
+    alert(errorMessage);
   } finally {
     creating.value = false;
   }
