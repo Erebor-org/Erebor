@@ -14,6 +14,11 @@ import WheelView from '../views/WheelView.vue';
 import WheelClassesView from '../views/WheelClassesView.vue';
 import ManageUsers from '../views/ManageUsers.vue';
 import ProfileView from '../views/ProfileView.vue';
+import EventsList from '../views/EventsList.vue';
+import EventDetail from '../views/EventDetail.vue';
+import EventManagement from '../views/EventManagement.vue';
+import EventLeaderboard from '../views/EventLeaderboard.vue';
+import EventCreate from '../views/EventCreate.vue';
 
 const routes = [
   { path: '/', redirect: () => {
@@ -35,6 +40,11 @@ const routes = [
   { path: '/wheel-classes', name: 'WheelClasses', component: WheelClassesView, meta: { requiresAuth: true } },
   { path: '/admin/users', name: 'ManageUsers', component: ManageUsers, meta: { requiresAuth: true } },
   { path: '/profil', name: 'Profile', component: ProfileView, meta: { requiresAuth: true } },
+  { path: '/events', name: 'EventsList', component: EventsList, meta: { requiresAuth: true } },
+  { path: '/events/create', name: 'EventCreate', component: EventCreate, meta: { requiresAuth: true } },
+  { path: '/events/leaderboard', name: 'EventLeaderboard', component: EventLeaderboard, meta: { requiresAuth: true } },
+  { path: '/events/:id', name: 'EventDetail', component: EventDetail, meta: { requiresAuth: true } },
+  { path: '/events/:id/manage', name: 'EventManagement', component: EventManagement, meta: { requiresAuth: true } },
 ];
 
 const router = createRouter({

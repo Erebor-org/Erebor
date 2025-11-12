@@ -150,6 +150,21 @@
                 </div>
               </div>
             </RouterLink>
+
+            <!-- Events Card -->
+            <RouterLink to="/events" class="group">
+              <div class="bg-theme-card border border-theme-border rounded-xl p-6 hover:shadow-lg transition-all duration-300 hover:border-theme-primary">
+                <div class="flex flex-col items-center text-center">
+                  <div class="w-14 h-14 bg-theme-primary/10 rounded-xl flex items-center justify-center mb-4">
+                    <svg class="w-7 h-7 text-theme-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                  </div>
+                  <h3 class="text-lg font-semibold text-theme-text mb-1">Événements</h3>
+                  <p class="text-sm text-theme-text-muted">Quiz, cache-cache, etc.</p>
+                </div>
+              </div>
+            </RouterLink>
           </div>
         </div>
 
@@ -267,6 +282,30 @@
             Outils et Statistiques
           </h2>
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Events Card -->
+            <RouterLink to="/events" class="group">
+              <div class="bg-theme-card border border-theme-border rounded-xl p-6 hover:shadow-lg transition-all duration-300 hover:border-theme-primary">
+                <div class="flex items-center">
+                  <div class="w-16 h-16 bg-theme-primary/10 rounded-xl flex items-center justify-center mr-6">
+                    <svg class="w-8 h-8 text-theme-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                  </div>
+                  <div class="flex-1">
+                    <div class="flex items-center justify-between">
+                      <div>
+                        <h3 class="text-xl font-semibold text-theme-text mb-1">Événements</h3>
+                        <p class="text-theme-text-muted">Participez aux événements de la guilde</p>
+                      </div>
+                      <svg class="w-6 h-6 text-theme-primary opacity-0 group-hover:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                      </svg>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </RouterLink>
+
             <!-- Statistics Card -->
             <RouterLink to="/statistiques" class="group">
               <div class="bg-theme-card border border-theme-border rounded-xl p-6 hover:shadow-lg transition-all duration-300 hover:border-theme-success">

@@ -69,6 +69,11 @@ security:
     - { path: ^/ranks, roles: ROLE_USER }
     - { path: ^/user, roles: ROLE_USER }
     - { path: ^/hello, roles: ROLE_USER }
+    - { path: ^/events/leaderboard, roles: ROLE_USER }
+    - { path: ^/events/, roles: ROLE_USER }
+    - { path: ^/events$, roles: ROLE_USER }
+    - { path: ^/api/upload, roles: ROLE_USER }
+    - { path: ^/uploads/, roles: IS_AUTHENTICATED_ANONYMOUSLY }
 
     # Character read routes (accessible to all authenticated users)
     - { path: ^/characters/, roles: ROLE_USER }

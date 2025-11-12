@@ -223,6 +223,15 @@
             Statistiques
           </RouterLink>
 
+          <RouterLink 
+            to="/events" 
+            v-if="isLoggedIn"
+            class="nav-link"
+            active-class="nav-link-active"
+          >
+            Événements
+          </RouterLink>
+
           <div v-if="isLoggedIn" class="relative">
             <button
               id="wheel-dropdown-btn"
@@ -418,6 +427,16 @@
           @click="isMobileMenuOpen = false"
         >
           Statistiques
+        </RouterLink>
+        
+        <RouterLink 
+          to="/events" 
+          v-if="isLoggedIn"
+          class="mobile-nav-link"
+          active-class="mobile-nav-link-active"
+          @click="isMobileMenuOpen = false"
+        >
+          Événements
         </RouterLink>
 
         <div v-if="isLoggedIn" class="">
