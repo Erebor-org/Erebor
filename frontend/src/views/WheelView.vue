@@ -117,6 +117,7 @@ import { ref, computed, onMounted, watch, nextTick } from 'vue';
 import axios from 'axios';
 import confetti from 'canvas-confetti';
 import { RouterLink } from 'vue-router';
+import { getClassIcon as getClassIconFromConfig } from '@/config/classIcons';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -207,7 +208,7 @@ function toggleSelectAll() {
 }
 
 function getClassIcon(className: string) {
-  return `/src/assets/icon_classe/${className}.avif`;
+  return getClassIconFromConfig(className?.toLowerCase() || 'iop');
 }
 
 function spinWheel() {
@@ -272,12 +273,14 @@ function animateWheel(now?: number) {
 const iconCache: Record<string, HTMLImageElement> = {};
 
 function getIcon(className: string): HTMLImageElement {
-  if (!iconCache[className]) {
+  const normalizedClass = className?.toLowerCase() || 'iop';
+  if (!iconCache[normalizedClass]) {
     const img = new Image();
-    img.src = getClassIcon(className);
-    iconCache[className] = img;
+    img.crossOrigin = 'anonymous';
+    img.src = getClassIcon(normalizedClass);
+    iconCache[normalizedClass] = img;
   }
-  return iconCache[className];
+  return iconCache[normalizedClass];
 }
 function drawWheel(angle = 0, nOverride?: number, playersOverride?: Character[] | null) {
   const canvas = wheelCanvas.value;
@@ -315,25 +318,41 @@ function drawWheel(angle = 0, nOverride?: number, playersOverride?: Character[] 
     const iconX = centerX + Math.cos(midAngle) * iconRadius - iconSize / 2;
     const iconY = centerY + Math.sin(midAngle) * iconRadius - iconSize / 2;
     // Icône de classe
-    const icon = getIcon(players[i].class);
-    icon.src = getClassIcon(players[i].class);
-    icon.onload = () => {
+    const className = players[i].class?.toLowerCase() || 'iop';
+    const icon = getIcon(className);
+    
+    // Draw icon if already loaded
+    if (icon.complete && icon.naturalWidth > 0) {
       ctx.save();
-    ctx.beginPath();
-    ctx.arc(iconX + iconSize / 2, iconY + iconSize / 2, iconSize / 2, 0, 2 * Math.PI);
-    ctx.closePath();
-    ctx.clip();
-    ctx.drawImage(icon, iconX, iconY, iconSize, iconSize);
-    ctx.restore();
-    };
-    if (icon.complete) {
-   ctx.save();
-ctx.beginPath();
-ctx.arc(iconX + iconSize / 2, iconY + iconSize / 2, iconSize / 2, 0, 2 * Math.PI);
-ctx.closePath();
-ctx.clip();
-ctx.drawImage(icon, iconX, iconY, iconSize, iconSize);
-ctx.restore();
+      ctx.beginPath();
+      ctx.arc(iconX + iconSize / 2, iconY + iconSize / 2, iconSize / 2, 0, 2 * Math.PI);
+      ctx.closePath();
+      ctx.clip();
+      ctx.drawImage(icon, iconX, iconY, iconSize, iconSize);
+      ctx.restore();
+    } else {
+      // Wait for image to load
+      icon.onload = () => {
+        // Redraw the wheel when image loads
+        if (canvas && ctx) {
+          drawWheel(angle, nOverride, playersOverride);
+        }
+      };
+      icon.onerror = () => {
+        // Fallback: try loading default icon if class icon fails
+        if (className !== 'iop') {
+          const fallbackIcon = getIcon('iop');
+          if (fallbackIcon.complete) {
+            ctx.save();
+            ctx.beginPath();
+            ctx.arc(iconX + iconSize / 2, iconY + iconSize / 2, iconSize / 2, 0, 2 * Math.PI);
+            ctx.closePath();
+            ctx.clip();
+            ctx.drawImage(fallbackIcon, iconX, iconY, iconSize, iconSize);
+            ctx.restore();
+          }
+        }
+      };
     }
     // Texte pseudo SOUS l’icône, à 82% du rayon
     const textRadius = radius * 0.82;

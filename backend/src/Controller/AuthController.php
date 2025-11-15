@@ -30,25 +30,54 @@ class AuthController extends AbstractController
     }
 
     #[Route('/register', name: 'api_register', methods: ['POST'])]
-    public function register(Request $request, JWTTokenManagerInterface $jwtManager): JsonResponse
+    public function register(Request $request, JWTTokenManagerInterface $jwtManager, UserRepository $userRepository): JsonResponse
     {
         $data = json_decode($request->getContent(), true);
 
-        if (!isset($data['username']) || !isset($data['password'])) {
-            return new JsonResponse(['error' => 'Missing fields'], 400);
+        // Support both 'username' and 'pseudo' for backward compatibility
+        $username = $data['username'] ?? $data['pseudo'] ?? null;
+
+        if (!$username || !isset($data['password'])) {
+            return new JsonResponse(['error' => 'Missing required fields (username and password)'], 400);
+        }
+
+        // Validate username length
+        if (strlen($username) < 3) {
+            return new JsonResponse(['error' => 'Username must be at least 3 characters long'], 400);
+        }
+
+        // Check if username already exists
+        $existingUser = $userRepository->findOneBy(['username' => $username]);
+        if ($existingUser) {
+            return new JsonResponse(['error' => 'Username already exists'], 409);
+        }
+
+        // Validate password length
+        if (strlen($data['password']) < 6) {
+            return new JsonResponse(['error' => 'Password must be at least 6 characters long'], 400);
         }
 
         $user = new User();
-        $user->setUsername($data['username']);
+        $user->setUsername($username);
         $user->setPassword($this->passwordHasher->hashPassword($user, $data['password']));
 
         // Set characterId if provided
         if (isset($data['characterId']) && $data['characterId'] !== null) {
-            // Validate that the character exists
+            // Validate that the character exists and is not archived
             $character = $this->charactersRepository->find($data['characterId']);
             if (!$character) {
                 return new JsonResponse(['error' => 'Character not found'], 404);
             }
+            if ($character->isArchived()) {
+                return new JsonResponse(['error' => 'Cannot link account to archived character'], 400);
+            }
+            
+            // Check if character is already linked to another user
+            $existingUserWithCharacter = $userRepository->findOneBy(['characterId' => $data['characterId']]);
+            if ($existingUserWithCharacter) {
+                return new JsonResponse(['error' => 'Character is already linked to another account'], 409);
+            }
+            
             $user->setCharacterId($data['characterId']);
         }
 

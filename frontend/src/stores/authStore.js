@@ -87,9 +87,13 @@ export const useAuthStore = defineStore('auth', {
 
           // ✅ Redirect to /home using the global router
           router.push('/home');
+        } else {
+          throw new Error('Invalid response from server');
         }
       } catch (error) {
         console.error("Erreur d'inscription:", error.response?.data || error.message);
+        // Re-throw error so calling component can handle it
+        throw error;
       }
     },
 

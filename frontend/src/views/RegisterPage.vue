@@ -87,20 +87,67 @@ const loginForm = ref({
 });
 
 const passwordsMatch = computed(() => form.value.password === form.value.confirmPassword);
+const errorMessage = ref('');
+const successMessage = ref('');
 
 const register = async () => {
+  // Reset messages
+  errorMessage.value = '';
+  successMessage.value = '';
+
+  // Validation
+  if (!form.value.pseudo || form.value.pseudo.trim() === '') {
+    errorMessage.value = 'Veuillez entrer un pseudo de connexion';
+    return;
+  }
+
+  if (form.value.pseudo.length < 3) {
+    errorMessage.value = 'Le pseudo doit contenir au moins 3 caractères';
+    return;
+  }
+
+  if (!form.value.password || form.value.password.length < 6) {
+    errorMessage.value = 'Le mot de passe doit contenir au moins 6 caractères';
+    return;
+  }
+
   if (!passwordsMatch.value) {
-    console.log('Les mots de passe ne correspondent pas !');
+    errorMessage.value = 'Les mots de passe ne correspondent pas !';
     return;
   }
 
   if (!form.value.characterId) {
-    console.log('Veuillez sélectionner un personnage !');
+    errorMessage.value = 'Veuillez sélectionner un personnage !';
     return;
   }
 
-  await authStore.register(form.value.pseudo, form.value.password, form.value.characterId);
-  // Redirect is handled by authStore
+  try {
+    await authStore.register(form.value.pseudo, form.value.password, form.value.characterId);
+    successMessage.value = 'Inscription réussie ! Redirection...';
+  } catch (error) {
+    const errorData = error.response?.data || {};
+    if (errorData.error) {
+      const errorText = errorData.error.toLowerCase();
+      if (errorText.includes('already exists') || errorText.includes('username already')) {
+        errorMessage.value = 'Ce pseudo est déjà utilisé. Veuillez en choisir un autre.';
+      } else if (errorText.includes('character not found')) {
+        errorMessage.value = 'Le personnage sélectionné n\'existe pas.';
+      } else if (errorText.includes('archived character')) {
+        errorMessage.value = 'Impossible de lier le compte à un personnage archivé.';
+      } else if (errorText.includes('already linked')) {
+        errorMessage.value = 'Ce personnage est déjà lié à un autre compte.';
+      } else if (errorText.includes('must be at least')) {
+        errorMessage.value = errorData.error;
+      } else if (errorText.includes('missing')) {
+        errorMessage.value = 'Informations manquantes. Veuillez remplir tous les champs requis.';
+      } else {
+        errorMessage.value = errorData.error || 'Erreur lors de l\'inscription. Veuillez réessayer.';
+      }
+    } else {
+      errorMessage.value = 'Erreur lors de l\'inscription. Veuillez réessayer.';
+    }
+    console.error("Erreur d'inscription:", error);
+  }
 };
 
 onMounted(() => {
@@ -176,6 +223,26 @@ const togglePassword = () => {
           <div v-if="activeTab === 'register'">
             <!-- Registration Form -->
             <form @submit.prevent="register" class="space-y-6">
+              <!-- Error Message -->
+              <div v-if="errorMessage" class="p-4 bg-theme-error/10 border-2 border-theme-error text-theme-error rounded-lg">
+                <div class="flex items-center">
+                  <svg class="w-5 h-5 mr-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                  </svg>
+                  <span class="font-medium">{{ errorMessage }}</span>
+                </div>
+              </div>
+
+              <!-- Success Message -->
+              <div v-if="successMessage" class="p-4 bg-theme-success/10 border-2 border-theme-success text-theme-success rounded-lg">
+                <div class="flex items-center">
+                  <svg class="w-5 h-5 mr-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                  </svg>
+                  <span class="font-medium">{{ successMessage }}</span>
+                </div>
+              </div>
+
               <!-- Character Selection -->
               <div>
                 <label for="character" class="block text-theme-text font-semibold mb-2">
