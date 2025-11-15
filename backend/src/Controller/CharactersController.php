@@ -514,8 +514,12 @@ class CharactersController extends AbstractController
         error_log("[SWITCH] Old main (ID={$character->getId()}) is recruiter: " . ($isOldMainRecruiter ? 'YES' : 'NO'));
         
         // Backup all mules except the one being promoted
+        // IMPORTANT: Save the IDs before clear(), not the entity objects
         $allMules = $character->getMules()->toArray();
-        $otherMules = array_filter($allMules, fn($m) => $m->getId() !== $mule->getId());
+        $otherMuleIds = array_map(
+            fn($m) => $m->getId(),
+            array_filter($allMules, fn($m) => $m->getId() !== $mule->getId())
+        );
         
         // Create new Character from mule
         $newCharacter = new Characters();
@@ -584,13 +588,23 @@ class CharactersController extends AbstractController
             ->setIsArchived($character->isArchived())
             ->setMainCharacter($newCharacter);
         $em->persist($newMule);
-        foreach ($otherMules as $otherMule) {
-            $otherMuleEntity = $em->getRepository(\App\Entity\Mule::class)->find($otherMule->getId());
+        
+        // IMPORTANT: Reassign other mules to the new character BEFORE deleting the old one
+        // This prevents the CASCADE DELETE from removing them when the old character is deleted
+        foreach ($otherMuleIds as $otherMuleId) {
+            $otherMuleEntity = $em->getRepository(\App\Entity\Mule::class)->find($otherMuleId);
             if ($otherMuleEntity) {
                 $otherMuleEntity->setMainCharacter($newCharacter);
+                // Explicitly persist to ensure the change is tracked
+                $em->persist($otherMuleEntity);
             }
         }
-        // Supprimer l'ancien main et la mule
+        
+        // Flush the reassignments BEFORE deleting the old character
+        // This ensures the foreign keys are updated before CASCADE DELETE can trigger
+        $em->flush();
+        
+        // Now it's safe to remove the old main and the mule being promoted
         $em->remove($character);
         $em->remove($mule);
         $em->flush();

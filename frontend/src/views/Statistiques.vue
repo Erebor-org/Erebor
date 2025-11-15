@@ -52,23 +52,74 @@
           </div>
         </div>
         
-        <div v-if="filter === 'byRole'" class="mb-4">
-          <select 
-            v-model="selectedRole" 
-            class="w-full md:w-1/3 mx-auto block bg-theme-bg-muted border-2 border-theme-border text-theme-text rounded-lg p-3 text-base focus:outline-none focus:ring-2 focus:ring-theme-primary focus:border-theme-primary transition-all duration-200"
-          >
-            <option value="" class="bg-theme-bg-muted text-theme-text">Sélectionner un rôle</option>
-            <option v-for="role in roles" :key="role.id" :value="role.id" class="bg-theme-bg-muted text-theme-text">{{ role.name }}</option>
-          </select>
+        <div v-if="filter === 'byRole'" class="mb-4 flex justify-center">
+          <div class="w-full md:w-1/3">
+            <ThemeSelect
+              v-model="selectedRole"
+              :options="roleOptions"
+              placeholder="Sélectionner un rôle"
+              option-value="id"
+              option-label="name"
+            />
+          </div>
         </div>
-        <div v-if="filter === 'byRecruiter'" class="mb-4">
-          <select 
-            v-model="selectedRecruiter" 
-            class="w-full md:w-1/3 mx-auto block bg-theme-bg-muted border-2 border-theme-border text-theme-text rounded-lg p-3 text-base focus:outline-none focus:ring-2 focus:ring-theme-primary focus:border-theme-primary transition-all duration-200"
-          >
-            <option value="" class="bg-theme-bg-muted text-theme-text">Sélectionner un recruteur</option>
-            <option v-for="recruiter in recruiters" :key="recruiter.id" :value="recruiter.id" class="bg-theme-bg-muted text-theme-text">{{ recruiter.pseudo }}</option>
-          </select>
+        <div v-if="filter === 'byRecruiter'" class="mb-4 flex justify-center">
+          <div class="w-full md:w-1/3">
+            <ThemeSelect
+              v-model="selectedRecruiter"
+              :options="recruiterOptions"
+              placeholder="Sélectionner un recruteur"
+              option-value="id"
+              option-label="pseudo"
+            />
+          </div>
+        </div>
+
+        <!-- Date Range Selector for Recruitment Stats -->
+        <div class="mt-6 pt-6 border-t border-theme-border">
+          <div class="flex items-center space-x-3 mb-4">
+            <div class="w-8 h-8 bg-theme-primary rounded-lg flex items-center justify-center">
+              <svg class="w-5 h-5 text-theme-bg" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+            </div>
+            <h3 class="text-lg font-semibold text-theme-primary">Période de recrutement</h3>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label for="startDate" class="block text-sm font-medium text-theme-text mb-2">
+                Date de début
+              </label>
+              <input
+                type="date"
+                id="startDate"
+                v-model="startDate"
+                class="w-full bg-theme-bg-muted border-2 border-theme-border text-theme-text rounded-lg px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-theme-primary focus:border-theme-primary transition-all duration-200"
+                :max="endDate || new Date().toISOString().slice(0, 10)"
+              />
+            </div>
+            <div>
+              <label for="endDate" class="block text-sm font-medium text-theme-text mb-2">
+                Date de fin
+              </label>
+              <input
+                type="date"
+                id="endDate"
+                v-model="endDate"
+                class="w-full bg-theme-bg-muted border-2 border-theme-border text-theme-text rounded-lg px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-theme-primary focus:border-theme-primary transition-all duration-200"
+                :min="startDate || ''"
+                :max="new Date().toISOString().slice(0, 10)"
+              />
+            </div>
+          </div>
+          <div class="mt-4 flex justify-center">
+            <button
+              @click="clearDateRange"
+              class="px-4 py-2 text-sm font-medium text-theme-text-muted hover:text-theme-text bg-theme-bg-muted hover:bg-theme-bg rounded-lg transition-all duration-200"
+            >
+              Réinitialiser la période
+            </button>
+          </div>
         </div>
       </div>
 
@@ -266,13 +317,15 @@
 import axios from 'axios';
 import Notification from '@/components/NotificationCenter.vue';
 import Chart from 'chart.js/auto';
+import ThemeSelect from '@/components/ThemeSelect.vue';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
 export default {
   name: 'GuildStatistics',
   components: {
-    Notification
+    Notification,
+    ThemeSelect
   },
   data() {
     return {
@@ -281,6 +334,8 @@ export default {
       filter: 'global',
       selectedRole: '',
       selectedRecruiter: '',
+      startDate: '',
+      endDate: '',
       loading: true,
       roles: [],
       recruiters: [],
@@ -352,6 +407,18 @@ export default {
           percentage: totalRecruits > 0 ? Math.round((count / totalRecruits) * 100) : 0
         };
       });
+    },
+    roleOptions() {
+      return this.roles.map(role => ({
+        id: role.id,
+        name: role.name
+      }));
+    },
+    recruiterOptions() {
+      return this.recruiters.map(recruiter => ({
+        id: recruiter.id,
+        pseudo: recruiter.pseudo
+      }));
     }
   },
   watch: {
@@ -367,6 +434,12 @@ export default {
       if (this.filter === 'byRecruiter') {
         this.fetchStatistics();
       }
+    },
+    startDate() {
+      this.fetchStatistics();
+    },
+    endDate() {
+      this.fetchStatistics();
     },
     statistics() {
       this.$nextTick(() => {
@@ -428,6 +501,14 @@ export default {
           params.recruiterId = this.selectedRecruiter;
         }
         
+        // Add date range parameters if provided
+        if (this.startDate) {
+          params.startDate = this.startDate;
+        }
+        if (this.endDate) {
+          params.endDate = this.endDate;
+        }
+        
         const response = await axios.get(`${API_URL}/statistics`, { params });
         this.statistics = response.data;
       } catch (error) {
@@ -436,6 +517,11 @@ export default {
       } finally {
         this.loading = false;
       }
+    },
+    clearDateRange() {
+      this.startDate = '';
+      this.endDate = '';
+      // fetchStatistics will be called automatically by the watcher
     },
     // Scroll to top logic
     scrollToTop() {

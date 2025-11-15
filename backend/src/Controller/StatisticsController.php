@@ -23,11 +23,36 @@ class StatisticsController extends AbstractController
         $filter = $request->query->get('filter', 'global');
         $roleId = $request->query->get('roleId');
         $recruiterId = $request->query->get('recruiterId');
+        $startDate = $request->query->get('startDate');
+        $endDate = $request->query->get('endDate');
+
+        // Prepare date range DateTime objects if provided
+        $startDateTime = null;
+        $endDateTime = null;
+        if ($startDate) {
+            $startDateTime = new \DateTime($startDate);
+            $startDateTime->setTime(0, 0, 0);
+        }
+        if ($endDate) {
+            $endDateTime = new \DateTime($endDate);
+            $endDateTime->setTime(23, 59, 59);
+        }
 
         // Base query to get active characters
         $charactersQueryBuilder = $charactersRepository->createQueryBuilder('c')
             ->where('c.isArchived = :isArchived')
             ->setParameter('isArchived', false);
+
+        // Apply date range filter for recruitment stats
+        if ($startDateTime) {
+            $charactersQueryBuilder->andWhere('c.recruitedAt >= :startDate')
+                ->setParameter('startDate', $startDateTime);
+        }
+        
+        if ($endDateTime) {
+            $charactersQueryBuilder->andWhere('c.recruitedAt <= :endDate')
+                ->setParameter('endDate', $endDateTime);
+        }
 
         // Apply filters
         if ($filter === 'byRole' && $roleId) {
@@ -54,6 +79,17 @@ class StatisticsController extends AbstractController
             ->andWhere('m.isArchived = :muleIsArchived')
             ->setParameter('isArchived', false)
             ->setParameter('muleIsArchived', false);
+
+        // Apply date range filter to mules query (based on main character's recruitment date)
+        if ($startDateTime) {
+            $mulesQueryBuilder->andWhere('c.recruitedAt >= :muleStartDate')
+                ->setParameter('muleStartDate', $startDateTime);
+        }
+        
+        if ($endDateTime) {
+            $mulesQueryBuilder->andWhere('c.recruitedAt <= :muleEndDate')
+                ->setParameter('muleEndDate', $endDateTime);
+        }
 
         // Count active mules
         $totalMules = count($mulesQueryBuilder->getQuery()->getResult());

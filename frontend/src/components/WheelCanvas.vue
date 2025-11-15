@@ -7,6 +7,7 @@
 <script lang="ts" setup>
 import { ref, watch, onMounted, nextTick } from 'vue';
 import type { Character } from '@/stores/memberWheelStore';
+import { getClassIcon } from '@/config/classIcons';
 
 const props = defineProps<{
   players: Character[];
@@ -50,9 +51,14 @@ function drawWheel(angle = 0) {
     const iconX = centerX + Math.cos(midAngle) * iconRadius - iconSize / 2;
     const iconY = centerY + Math.sin(midAngle) * iconRadius - iconSize / 2;
     // Icône de classe
+    const className = players[i].class?.toLowerCase() || 'iop';
+    const iconUrl = getClassIcon(className);
     const icon = new window.Image();
-    icon.src = `/src/assets/icon_classe/${players[i].class}.avif`;
-    icon.onload = () => {
+    icon.crossOrigin = 'anonymous';
+    icon.src = iconUrl;
+    
+    // Draw icon if already loaded
+    if (icon.complete && icon.naturalWidth > 0) {
       ctx.save();
       ctx.beginPath();
       ctx.arc(iconX + iconSize / 2, iconY + iconSize / 2, iconSize / 2, 0, 2 * Math.PI);
@@ -60,15 +66,34 @@ function drawWheel(angle = 0) {
       ctx.clip();
       ctx.drawImage(icon, iconX, iconY, iconSize, iconSize);
       ctx.restore();
-    };
-    if (icon.complete) {
-      ctx.save();
-      ctx.beginPath();
-      ctx.arc(iconX + iconSize / 2, iconY + iconSize / 2, iconSize / 2, 0, 2 * Math.PI);
-      ctx.closePath();
-      ctx.clip();
-      ctx.drawImage(icon, iconX, iconY, iconSize, iconSize);
-      ctx.restore();
+    } else {
+      // Wait for image to load, then redraw
+      icon.onload = () => {
+        // Redraw the wheel when image loads
+        if (canvas && ctx) {
+          drawWheel(props.angle || 0);
+        }
+      };
+      icon.onerror = () => {
+        // Fallback: try loading default icon if class icon fails
+        if (className !== 'iop') {
+          const fallbackUrl = getClassIcon('iop');
+          const fallbackIcon = new window.Image();
+          fallbackIcon.crossOrigin = 'anonymous';
+          fallbackIcon.src = fallbackUrl;
+          fallbackIcon.onload = () => {
+            if (canvas && ctx) {
+              ctx.save();
+              ctx.beginPath();
+              ctx.arc(iconX + iconSize / 2, iconY + iconSize / 2, iconSize / 2, 0, 2 * Math.PI);
+              ctx.closePath();
+              ctx.clip();
+              ctx.drawImage(fallbackIcon, iconX, iconY, iconSize, iconSize);
+              ctx.restore();
+            }
+          };
+        }
+      };
     }
     // Texte pseudo SOUS l’icône, à 82% du rayon
     const textRadius = radius * 0.82;
