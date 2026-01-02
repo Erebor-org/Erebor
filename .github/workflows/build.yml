@@ -5,7 +5,7 @@ on:
     branches: ["main", "build-prod-workflow"]
 
 permissions:
-  contents: write  # Changed from read to write to allow tag creation
+  contents: write # Changed from read to write to allow tag creation
   packages: write
 
 jobs:
@@ -48,8 +48,6 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0  # Fetch full history to ensure we have the latest code
 
       - name: Build and push Docker image
         env:
@@ -59,20 +57,10 @@ jobs:
           REPO_NAME=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
           echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
 
-          # Show current commit for debugging
-          echo "📝 Current commit: $(git rev-parse HEAD)"
-          echo "📝 Current commit message: $(git log -1 --pretty=%B)"
-          echo "📝 Current branch: $(git branch --show-current || echo 'detached')"
-          echo "📝 Files in frontend/src:"
-          ls -la frontend/src/views/ | head -10 || echo "Directory not found"
-          
           # Build and tag Docker image with the new version
-          # Using --no-cache to ensure we always get the latest code
           docker build -f ./frontend/docker/Dockerfile.prod . \
             --build-arg VITE_API_URL=$VITE_API_URL \
-            --no-cache \
-            --tag ghcr.io/$REPO_NAME/nginx:$VERSION \
-            --progress=plain
+            --tag ghcr.io/$REPO_NAME/nginx:$VERSION
           docker push ghcr.io/$REPO_NAME/nginx:$VERSION
 
           # Optionally, tag it as 'latest' for development environments
