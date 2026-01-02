@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { ref, watch } from 'vue'
+import { ref, watch, computed } from 'vue'
 
 // Palette par défaut (doit être déclarée avant le store !)
 const defaultColors = {
@@ -153,9 +153,13 @@ export const useThemeStore = defineStore('theme', () => {
     applyTheme()
   })
 
+  // Computed property for isDark
+  const isDark = computed(() => currentTheme.value === 'dark')
+
   return {
     currentTheme,
     isSystemTheme,
+    isDark,
     initializeTheme,
     toggleTheme,
     setTheme,

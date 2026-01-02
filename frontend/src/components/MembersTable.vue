@@ -88,18 +88,36 @@
             <p class="text-xs text-theme-text-muted uppercase tracking-wider mb-2">Rang</p>
             <p class="text-sm text-theme-text font-medium">{{ member?.rank?.name || 'Aucun' }}</p>
           </div>
-          <div class="text-center p-4 bg-theme-bg-muted/30 rounded-xl border border-theme-border">
+          <div class="text-center p-4 bg-theme-bg-muted/30 rounded-xl border border-theme-border relative group">
             <p class="text-xs text-theme-text-muted uppercase tracking-wider mb-2">Recruteur</p>
             <p class="text-sm text-theme-text font-medium">{{ member?.recruiter?.pseudo || 'Aucun' }}</p>
+            <button
+              @click="openRecruitmentModal(member)"
+              class="absolute top-2 right-2 p-1.5 text-theme-text-muted hover:text-theme-primary hover:bg-theme-primary/10 rounded-lg transition-all duration-200 opacity-0 group-hover:opacity-100"
+              title="Modifier le recruteur"
+            >
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536M9 13h3l8-8a2.828 2.828 0 10-4-4l-8 8v3z" />
+              </svg>
+            </button>
           </div>
         </div>
 
         <!-- Arrival Date -->
-        <div class="text-center p-4 bg-theme-bg-muted/30 rounded-xl border border-theme-border mb-6">
+        <div class="text-center p-4 bg-theme-bg-muted/30 rounded-xl border border-theme-border mb-6 relative group">
           <p class="text-xs text-theme-text-muted uppercase tracking-wider mb-2">Arrivée</p>
           <p class="text-sm text-theme-text font-medium">
             {{ member.createdAt ? new Date(member.createdAt).toLocaleDateString('fr-FR') : 'Date inconnue' }}
           </p>
+          <button
+            @click="openRecruitmentModal(member)"
+            class="absolute top-2 right-2 p-1.5 text-theme-text-muted hover:text-theme-primary hover:bg-theme-primary/10 rounded-lg transition-all duration-200 opacity-0 group-hover:opacity-100"
+            title="Modifier la date de recrutement"
+          >
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536M9 13h3l8-8a2.828 2.828 0 10-4-4l-8 8v3z" />
+            </svg>
+          </button>
         </div>
 
             <!-- Notes Modal Trigger -->
@@ -255,6 +273,12 @@
       @confirm="doSwitchWithMule"
       @cancel="showConfirmSwitch = false"
     />
+    <UpdateRecruitmentModal
+      :show="showRecruitmentModal"
+      :character="selectedCharacter"
+      @close="closeRecruitmentModal"
+      @saved="handleRecruitmentSaved"
+    />
   </div>
 </template>
 
@@ -262,6 +286,7 @@
 import ClassDropdown from './ClassDropdown.vue';
 import EditablePseudo from './EditablePseudo.vue';
 import ConfirmModal from './ConfirmModal.vue';
+import UpdateRecruitmentModal from './UpdateRecruitmentModal.vue';
 import { useAuthStore } from '@/stores/authStore';
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -271,6 +296,7 @@ export default {
     ClassDropdown,
     EditablePseudo,
     ConfirmModal,
+    UpdateRecruitmentModal,
   },
   data() {
     return {
@@ -285,6 +311,8 @@ export default {
       showConfirmSwitch: false,
       switchMain: null,
       switchMule: null,
+      showRecruitmentModal: false,
+      selectedCharacter: null,
     };
   },
   props: {
@@ -331,6 +359,7 @@ export default {
     'open-notes-modal',
     'save-note',
     'refresh-data',
+    'update-recruitment',
   ],
   computed: {
     confirmSwitchMessage() {
@@ -425,6 +454,19 @@ export default {
         this.switchMain = null;
         this.switchMule = null;
       }
+    },
+    openRecruitmentModal(member) {
+      this.selectedCharacter = member;
+      this.showRecruitmentModal = true;
+    },
+    closeRecruitmentModal() {
+      this.showRecruitmentModal = false;
+      this.selectedCharacter = null;
+    },
+    handleRecruitmentSaved(updatedCharacter) {
+      // Emit event to parent to refresh data
+      this.$emit('update-recruitment', updatedCharacter);
+      this.$emit('refresh-data');
     },
   },
 };
