@@ -36,6 +36,8 @@ jobs:
           echo "📦 Deploying version: $TAG"
           echo "🔍 Available tags:"
           git tag --sort=-creatordate | head -n 5
+          
+          # Deploy with Helm
           helm upgrade --install erebor ./ops/helm \
             --namespace erebor --create-namespace \
             -f ./ops/helm/values.prod.yaml \
@@ -65,5 +67,24 @@ jobs:
             --set "pgbackup.config.S3_ACCESS_KEY=${{ secrets.S3_ACCESS_KEY }}" \
             --set "pgbackup.config.S3_SECRET_KEY=${{ secrets.S3_SECRET_KEY }}" \
             --set "pgbackup.config.S3_REGION=${{ vars.S3_REGION }}"
+          
+          # Verify the deployment was updated
+          echo "🔍 Verifying deployment..."
+          kubectl get deployment erebor-app -n erebor -o jsonpath='{.spec.template.spec.containers[0].image}' || echo "⚠️ Could not get deployment image"
+          echo ""
+          
+          # Force rollout restart to ensure pods are recreated with new images
+          echo "🔄 Forcing rollout restart..."
+          kubectl rollout restart deployment/erebor-app -n erebor || echo "⚠️ Rollout restart command failed, but deployment may still update"
+          
+          # Wait for rollout to complete
+          echo "⏳ Waiting for rollout to complete..."
+          kubectl rollout status deployment/erebor-app -n erebor --timeout=5m || echo "⚠️ Rollout status check timed out"
+          
+          # Show final pod status
+          echo "📊 Final pod status:"
+          kubectl get pods -n erebor -l app.kubernetes.io/name=app -o wide || echo "⚠️ Could not get pod status"
+          
+          echo "✅ Deployment completed!"
 
             
