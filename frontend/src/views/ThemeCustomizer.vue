@@ -34,6 +34,53 @@
             <p class="text-theme-text-muted text-sm ml-8">Indique si vous avez modifié les couleurs par défaut.</p>
           </div>
           <div>
+            <div class="flex items-center gap-3 mb-2">
+              <span class="text-lg">👁️</span>
+              <span class="font-semibold text-theme-text text-lg">Vue par défaut :</span>
+              <span :class="defaultViewMode === 'list' ? 'bg-theme-primary/10 text-theme-primary' : 'bg-theme-success/10 text-theme-success'" class="px-3 py-1 rounded-full font-bold text-base ml-2">{{ defaultViewMode === 'list' ? 'Liste' : 'Fiches' }}</span>
+            </div>
+            <p class="text-theme-text-muted text-sm ml-8">Vue par défaut pour la page des membres.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Default View Mode Section -->
+      <div class="bg-theme-card rounded-lg p-6 shadow-lg mb-10 border border-theme-border">
+        <h3 class="text-2xl font-bold text-theme-primary mb-6 flex items-center gap-2">👁️ <span>Vue par défaut des Membres</span></h3>
+        <p class="text-theme-text-muted mb-4">Choisissez la vue par défaut (liste ou fiches) pour la page de gestion des membres.</p>
+        <div class="flex justify-center">
+          <div class="flex items-center space-x-2 bg-theme-bg-muted rounded-lg p-1 border border-theme-bg-muted">
+            <button
+              @click="setDefaultViewMode('cards')"
+              :class="[
+                'px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 flex items-center space-x-2',
+                defaultViewMode === 'cards'
+                  ? 'bg-theme-primary text-white shadow-lg'
+                  : 'text-theme-text-muted hover:text-theme-text hover:bg-theme-bg-muted'
+              ]"
+              title="Vue en fiches"
+            >
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+              </svg>
+              <span>Fiches</span>
+            </button>
+            
+            <button
+              @click="setDefaultViewMode('list')"
+              :class="[
+                'px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 flex items-center space-x-2',
+                defaultViewMode === 'list'
+                  ? 'bg-theme-primary text-white shadow-lg'
+                  : 'text-theme-text-muted hover:text-theme-text hover:bg-theme-bg-muted'
+              ]"
+              title="Vue en liste"
+            >
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+              </svg>
+              <span>Liste</span>
+            </button>
           </div>
         </div>
       </div>
@@ -242,6 +289,9 @@ import Notification from '@/components/Notification.vue'
 const themeStore = useThemeStore()
 const currentMode = ref('light')
 const fileInput = ref(null)
+
+// Default view mode
+const defaultViewMode = ref(localStorage.getItem('erebor-default-member-view') === 'list' ? 'list' : 'cards')
 
 // Notification state
 const showNotification = ref(false)
@@ -504,9 +554,23 @@ watch(currentMode, () => {
   // The theme will only be applied when the user clicks "Appliquer le Thème Personnalisé"
 })
 
+// Set default view mode
+const setDefaultViewMode = (mode) => {
+  if (['list', 'cards'].includes(mode)) {
+    defaultViewMode.value = mode
+    localStorage.setItem('erebor-default-member-view', mode)
+    showNotificationMessage('success', 'Vue par défaut mise à jour', `La vue par défaut a été définie sur "${mode === 'list' ? 'Liste' : 'Fiches'}".`)
+  }
+}
+
 // Initialize
 onMounted(() => {
   loadCustomColors()
+  // Load default view mode from localStorage
+  const savedViewMode = localStorage.getItem('erebor-default-member-view')
+  if (savedViewMode === 'list' || savedViewMode === 'cards') {
+    defaultViewMode.value = savedViewMode
+  }
   // Don't apply theme automatically on mount
   // Only load the custom colors for display purposes
 })
