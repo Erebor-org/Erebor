@@ -28,8 +28,11 @@ class CharactersController extends AbstractController
     }
 
     #[Route('/characters/', name: 'characters_list', methods: ['GET'])]
-    public function getAllCharacters(CharactersRepository $repository): JsonResponse
+    public function getAllCharacters(CharactersRepository $repository, EntityManagerInterface $em): JsonResponse
     {
+        // Force refresh from database by clearing entity manager cache
+        $em->clear();
+        
         // Fetch characters ordered by rank.requiredDays
         $characters = $repository->createQueryBuilder('c')
             ->leftJoin('c.rank', 'r')
@@ -40,6 +43,7 @@ class CharactersController extends AbstractController
             ->addOrderBy('c.recruitedAt', 'ASC')
             ->addOrderBy('c.id', 'ASC')
             ->getQuery()
+            ->setCacheable(false) // Disable query cache
             ->getResult();
 
         $formattedCharacters = array_map(function ($character) {
@@ -280,6 +284,12 @@ class CharactersController extends AbstractController
     
         // Update the isArchived field
         $character->setIsArchived($data['isArchived']);
+        
+        // Archive/unarchive all associated mules
+        foreach ($character->getMules() as $mule) {
+            $mule->setIsArchived($data['isArchived']);
+        }
+        
         $em->flush();
         $this->notificationService->notify('archivage_added', $character);
     
@@ -294,8 +304,11 @@ class CharactersController extends AbstractController
     }
 
     #[Route('/characters/{id<\d+>}', name: 'characters_show', methods: ['GET'])]
-    public function show(CharactersRepository $repository, int $id): JsonResponse
+    public function show(CharactersRepository $repository, EntityManagerInterface $em, int $id): JsonResponse
     {
+        // Force refresh from database
+        $em->clear();
+        
         $character = $repository->find($id);
     
         if (!$character) {
@@ -325,6 +338,9 @@ class CharactersController extends AbstractController
         $oldRank = $character->getRank();
         $wasRecruiter = $oldRank && $oldRank->getRecruiter();
 
+        // Store the old archived status to check if it changed
+        $oldIsArchived = $character->isArchived();
+        
         // Update basic fields
         $character->setUserId($data['userId'] ?? $character->getUserId())
                 ->setPseudo($data['pseudo'] ?? $character->getPseudo())
@@ -334,6 +350,14 @@ class CharactersController extends AbstractController
                 ->setNotes($data['notes'] ?? $character->getNotes());
         if (isset($data['recruitedAt'])) {
             $character->setRecruitedAt(new \DateTime($data['recruitedAt']));
+        }
+        
+        // If the archived status changed, update all associated mules
+        $newIsArchived = $character->isArchived();
+        if ($oldIsArchived !== $newIsArchived) {
+            foreach ($character->getMules() as $mule) {
+                $mule->setIsArchived($newIsArchived);
+            }
         }
 
         // Handle rank update
@@ -473,22 +497,93 @@ class CharactersController extends AbstractController
 
         return $this->json(['message' => 'Pseudo updated successfully'], 200);
     }
+
+    #[Route('/characters/{id}/update-recruitment', name: 'update_character_recruitment', methods: ['PUT'])]
+    public function updateRecruitment(
+        Request $request,
+        CharactersRepository $repository,
+        EntityManagerInterface $em,
+        int $id
+    ): JsonResponse {
+        $character = $repository->find($id);
+        if (!$character) {
+            return $this->json(['error' => 'Character not found'], 404);
+        }
+
+        $data = json_decode($request->getContent(), true);
+
+        // Update recruitment date if provided
+        if (isset($data['recruitedAt'])) {
+            try {
+                $recruitedAt = new \DateTime($data['recruitedAt']);
+                
+                // Validate that the date is not in the future
+                if ($recruitedAt > new \DateTime()) {
+                    return $this->json(['error' => 'The recruitment date cannot be in the future'], 400);
+                }
+                
+                $character->setRecruitedAt($recruitedAt);
+            } catch (\Exception $e) {
+                return $this->json(['error' => 'Invalid date format. Expected format: Y-m-d'], 400);
+            }
+        }
+
+        // Update recruiter if provided
+        if (isset($data['recruiterId'])) {
+            if ($data['recruiterId'] === null) {
+                // Remove recruiter
+                $character->setRecruiter(null);
+            } else {
+                $recruiter = $repository->find($data['recruiterId']);
+                if (!$recruiter) {
+                    return $this->json(['error' => 'Recruiter not found'], 404);
+                }
+
+                // Prevent self-assignment as recruiter
+                if ($recruiter->getId() === $character->getId()) {
+                    return $this->json(['error' => 'A character cannot be their own recruiter'], 400);
+                }
+
+                $character->setRecruiter($recruiter);
+            }
+        }
+
+        $em->flush();
+
+        // Return updated character data
+        return $this->json([
+            'message' => 'Recruitment information updated successfully',
+            'character' => [
+                'id' => $character->getId(),
+                'pseudo' => $character->getPseudo(),
+                'recruitedAt' => $character->getRecruitedAt()?->format('Y-m-d'),
+                'recruiter' => $character->getRecruiter() ? [
+                    'id' => $character->getRecruiter()->getId(),
+                    'pseudo' => $character->getRecruiter()->getPseudo(),
+                    'class' => $character->getRecruiter()->getClass(),
+                ] : null,
+            ],
+        ], 200);
+    }
     #[Route('/characters/{id}/unarchive', name: 'character_unarchive', methods: ['PUT'])]
     public function unarchive(CharactersRepository $repository, EntityManagerInterface $em, int $id): JsonResponse
     {
-        // Find the mule by ID
+        // Find the character by ID
         $character = $repository->find($id);
 
-        // Handle case where mule is not found
+        // Handle case where character is not found
         if (!$character) {
-            return $this->json(['error' => 'Mule not found'], 404);
+            return $this->json(['error' => 'Character not found'], 404);
         }
 
-        // Set isArchived to false
+        // Set isArchived to false for character and all associated mules
         $character->setIsArchived(false);
+        foreach ($character->getMules() as $mule) {
+            $mule->setIsArchived(false);
+        }
         $em->flush();
 
-        return $this->json(['message' => 'Mule unarchived successfully']);
+        return $this->json(['message' => 'Character unarchived successfully']);
     }
 
     #[Route('/characters/{characterId}/switch-with-mule/{muleId}', name: 'character_switch_with_mule', methods: ['POST'])]
@@ -570,7 +665,7 @@ class CharactersController extends AbstractController
             'SELECT COUNT(*) FROM warnings WHERE character_id = :oldId',
             ['oldId' => $character->getId()]
         );
-        error_log("[SWITCH] Nombre de warnings qui pointent ENCORE vers l'ancien main (ID={$character->getId()}): $remainingWarnings");
+        error_log("[SWITCH] Nombre de warnings qui pointent ENCORE vers l'ancien main (ID={$character->getId()}) : $remainingWarnings");
         if ($remainingWarnings > 0) {
             throw new \RuntimeException("Il reste $remainingWarnings warning(s) liés à l'ancien main (ID=" . $character->getId() . "). Switch annulé pour éviter la suppression de l'historique.");
         }

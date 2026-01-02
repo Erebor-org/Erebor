@@ -70,13 +70,11 @@
           <div class="sticky top-0 z-30 bg-theme-bg px-4 py-3 shadow-md rounded-xl flex flex-wrap gap-4 items-center mb-6 border border-theme-border">
             <div class="flex flex-col min-w-[220px]">
               <label class="text-xs font-semibold text-theme-text mb-1">Plage de dates</label>
-              <VueDatePicker
+              <ThemedDatePicker
                 v-model="filterDateRange"
                 range
-                :dark="isDarkTheme"
                 :format="'dd/MM/yyyy'"
                 :placeholder="'Plage de dates'"
-                class="rounded-lg shadow-sm border border-theme-border focus:ring-2 focus:ring-theme-primary"
               />
             </div>
             <div class="flex-1"></div>
@@ -120,6 +118,7 @@
             @open-notes-modal="openNotesModal"
             @save-note="saveMemberNote"
             @refresh-data="refreshMembersAndMules"
+            @update-recruitment="handleRecruitmentUpdate"
           />
         </div>
 
@@ -129,13 +128,11 @@
             <!-- Plage de dates -->
             <div class="flex flex-col min-w-[220px]">
               <label class="text-xs font-semibold text-theme-text mb-1">Plage de dates</label>
-              <VueDatePicker
+              <ThemedDatePicker
                 v-model="filterDateRange"
                 range
-                :dark="isDarkTheme"
                 :format="'dd/MM/yyyy'"
                 :placeholder="'Plage de dates'"
-                class="rounded-lg shadow-sm border border-theme-border focus:ring-2 focus:ring-theme-primary"
               />
             </div> 
              <div class="flex-1"></div> <div class="text-center mb-8">
@@ -223,7 +220,7 @@
     
     <ArchiveModal
       :show="showUnarchivedCharacterModal"
-      :message="`Voulez-vous restaurer le joueur ${selectedUnarchivedCharacter?.id} ?`"
+      :message="`Voulez-vous restaurer le joueur ${selectedUnarchivedCharacter?.pseudo || ''} ?`"
       confirm-button-text="Restaurer"
       @close="closeUnarchivedCharacterModal"
       @confirm="unarchiveCharacter(selectedUnarchivedCharacter?.id)"
@@ -245,8 +242,7 @@ import ArchiveModal from '@/components/ArchiveModal.vue';
 import ViewToggle from '@/components/ViewToggle.vue';
 import MulesModal from '@/components/MulesModal.vue';
 import NotesModal from '@/components/NotesModal.vue';
-import VueDatePicker from '@vuepic/vue-datepicker';
-import '@vuepic/vue-datepicker/dist/main.css';
+import ThemedDatePicker from '@/components/ThemedDatePicker.vue';
 import { computed } from 'vue';
 import { useThemeStore } from '@/stores/themeStore';
 
@@ -267,7 +263,7 @@ export default {
     ViewToggle,
     MulesModal,
     NotesModal,
-    VueDatePicker,
+    ThemedDatePicker,
   },
   setup() {
     const themeStore = useThemeStore();
@@ -817,6 +813,48 @@ export default {
         this.$refs.notificationRef.showNotification('Note mise à jour avec succès !');
       } catch {
         this.$refs.notificationRef.showNotification('Erreur lors de la mise à jour de la note.', 'error');
+      }
+    },
+    async handleRecruitmentUpdate(updatedCharacter) {
+      try {
+        // Map recruitedAt to createdAt for consistency with the rest of the app
+        const characterData = {
+          ...updatedCharacter,
+          createdAt: updatedCharacter.recruitedAt || updatedCharacter.createdAt,
+        };
+        
+        // Update the character in local state
+        const characterIndex = this.charactersData.findIndex(c => c.id === characterData.id);
+        if (characterIndex !== -1) {
+          // Update recruiter
+          if (characterData.recruiter) {
+            this.charactersData[characterIndex].recruiter = characterData.recruiter;
+          } else {
+            this.charactersData[characterIndex].recruiter = null;
+          }
+          // Update recruitment date
+          if (characterData.createdAt) {
+            this.charactersData[characterIndex].createdAt = characterData.createdAt;
+          }
+        }
+        
+        // Also update in notArchivedCharacters if it exists
+        const notArchivedIndex = this.charactersNotArchived.findIndex(c => c.id === characterData.id);
+        if (notArchivedIndex !== -1) {
+          if (characterData.recruiter) {
+            this.charactersNotArchived[notArchivedIndex].recruiter = characterData.recruiter;
+          } else {
+            this.charactersNotArchived[notArchivedIndex].recruiter = null;
+          }
+          if (characterData.createdAt) {
+            this.charactersNotArchived[notArchivedIndex].createdAt = characterData.createdAt;
+          }
+        }
+        
+        this.$refs.notificationRef.showNotification('Informations de recrutement mises à jour avec succès !');
+      } catch (error) {
+        console.error('Error updating recruitment info:', error);
+        this.$refs.notificationRef.showNotification('Erreur lors de la mise à jour.', 'error');
       }
     },
     async refreshMembersAndMules() {

@@ -22,40 +22,12 @@ services:
     ports:
       - "8000:8000"
     command: sh -c "composer install && symfony server:stop && symfony server:start --no-tls --allow-http --listen-ip=0.0.0.0"
-    depends_on:
-      database:
-        condition: service_healthy
+    # Using hosted database from backend/.env file
     restart: unless-stopped
-    environment:
-      - DATABASE_URL=postgresql://erebordev:${POSTGRES_PASSWORD:-erebordev}@database:5432/erebordev?serverVersion=16&charset=utf8
-
-  database:
-    image: postgres:${POSTGRES_VERSION:-16}-alpine
-    environment:
-      POSTGRES_DB: erebordev
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-erebordev}
-      POSTGRES_USER: erebordev
-    healthcheck:
-      test:
-        [
-          "CMD",
-          "pg_isready",
-          "-d",
-          "erebordev",
-          "-U",
-          "erebordev",
-        ]
-      timeout: 5s
-      retries: 5
-      start_period: 60s
-    volumes:
-      - database_data:/var/lib/postgresql/data:rw
-    ports:
-      - "5432:5432"
-    restart: unless-stopped
+    env_file:
+      - ./backend/.env
 
 volumes:
   frontend_node_modules:
   backend_vendor:
   backend_var:
-  database_data:
