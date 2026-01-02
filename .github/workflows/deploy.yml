@@ -25,8 +25,17 @@ jobs:
       # Step to pull the latest Docker image matching the tag and deploy with Helm
       - name: Deploy to Kubernetes using Helm
         run: |
-          TAG=$(git describe --tags --abbrev=0)
-          echo "Deploying version $TAG"
+          # Fetch all tags to ensure we have the latest
+          git fetch --tags --force
+          # Get the most recent tag (sorted by date)
+          TAG=$(git tag --sort=-creatordate | head -n 1)
+          if [ -z "$TAG" ]; then
+            echo "❌ No tags found! Falling back to git describe"
+            TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "latest")
+          fi
+          echo "📦 Deploying version: $TAG"
+          echo "🔍 Available tags:"
+          git tag --sort=-creatordate | head -n 5
           helm upgrade --install erebor ./ops/helm \
             --namespace erebor --create-namespace \
             -f ./ops/helm/values.prod.yaml \
