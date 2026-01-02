@@ -34,11 +34,15 @@ spec:
         {{- if .Values.deployments.app.annotations }}
         {{- toYaml .Values.deployments.app.annotations | nindent 8 }}
         {{- end }}
+        deployment.kubernetes.io/revision: "{{ .Release.Revision }}"
+        deployment.kubernetes.io/image-tag: "{{ include "erebor.globalImage.tag" . }}"
+        deployment.kubernetes.io/nginx-image: "{{ include "erebor.nginxImage.url" . }}"
+        deployment.kubernetes.io/symfony-image: "{{ include "erebor.symfonyImage.url" . }}"
     spec:
       containers:
         - name: nginx
           image: {{ include "erebor.nginxImage.url" . }}
-          imagePullPolicy: {{ default "IfNotPresent" .Values.deployments.app.containers.nginx.imagePullPolicy }}
+          imagePullPolicy: {{ default "Always" .Values.deployments.app.containers.nginx.imagePullPolicy }}
           envFrom:
             - secretRef:
                 name: {{ include "erebor.fullname" . }}-nginx-config
@@ -54,7 +58,7 @@ spec:
           {{- end }}
         - name: symfony
           image: {{ include "erebor.symfonyImage.url" . }}
-          imagePullPolicy: {{ default "IfNotPresent" .Values.deployments.app.containers.symfony.imagePullPolicy }}
+          imagePullPolicy: {{ default "Always" .Values.deployments.app.containers.symfony.imagePullPolicy }}
           envFrom:
             - secretRef:
                 name: {{ include "erebor.fullname" . }}-symfony-config

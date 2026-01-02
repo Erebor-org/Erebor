@@ -29,7 +29,7 @@ deployments:
           limits:
             cpu: 500m
             memory: 500Mi
-        imagePullPolicy:
+        imagePullPolicy: Always
         config:
           VITE_API_URL:
       symfony:
@@ -37,7 +37,7 @@ deployments:
           limits:
             cpu: 1000m
             memory: 2Gi
-        imagePullPolicy:
+        imagePullPolicy: Always
         config:
           APP_ENV: 
           APP_SECRET: 
