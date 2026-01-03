@@ -256,6 +256,14 @@
               >
                 Roue des Classes
               </RouterLink>
+              <RouterLink
+                to="/wheel-numbers"
+                class="block px-4 py-3 nav-link"
+                :class="{ 'nav-link-active': route.path === '/wheel-numbers' }"
+                @click="closeWheelDropdown"
+              >
+                Roue des Nombres
+              </RouterLink>
             </div>
           </div>
         </div>
@@ -437,6 +445,14 @@
             @click="isMobileMenuOpen = false"
           >
             Roue des Classes
+          </RouterLink>
+          <RouterLink 
+            to="/wheel-numbers" 
+            class="mobile-nav-link"
+            :class="{ 'mobile-nav-link-active': route.path === '/wheel-numbers' }"
+            @click="isMobileMenuOpen = false"
+          >
+            Roue des Nombres
           </RouterLink>
         </div>
 
