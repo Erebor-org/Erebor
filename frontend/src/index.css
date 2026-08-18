@@ -117,6 +117,77 @@ body {
   background-image: linear-gradient(120deg, var(--primary), var(--primary-hover));
 }
 
+/* ==========================================================================
+   Vocabulaire visuel partagé "2026" : verre dépoli + anneau dégradé
+   Utilisé sur la nav/l'accueil et repris ici pour la page Membres et ses
+   formulaires, pour que toute l'app parle le même langage visuel.
+   ========================================================================== */
+
+/* Portrait de classe entouré d'un anneau dégradé rouge/or, à la place
+   d'une simple bordure grise plate. Se combine avec w-*/h-* Tailwind. */
+.portrait-ring {
+  display: inline-flex;
+  padding: 3px;
+  border-radius: 9999px;
+  background-image: conic-gradient(from 200deg, var(--accent), transparent 40%, var(--primary), var(--accent));
+  flex-shrink: 0;
+}
+.portrait-ring img {
+  width: 100%;
+  height: 100%;
+  border-radius: 9999px;
+  object-fit: cover;
+  background-color: var(--card);
+  display: block;
+}
+
+/* Carte "verre" : fond légèrement transparent + liseré en dégradé fin,
+   remplace les bordures grises plates 1px. */
+.glass-card {
+  position: relative;
+  background-color: rgba(var(--bg-rgb), 0.6);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(var(--accent-rgb), 0.16);
+}
+
+/* Panneau de modale : même esprit que .glass-card mais plus opaque pour
+   rester lisible par-dessus le reste de l'app. */
+.glass-modal {
+  background-color: rgba(var(--card-rgb, var(--bg-rgb)), 0.98);
+  border: 1px solid rgba(var(--accent-rgb), 0.18);
+  box-shadow: 0 24px 64px -24px rgba(0, 0, 0, 0.45);
+}
+
+/* Petite étiquette arrondie (rang, statut...) au lieu d'un encadré gris. */
+.meta-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.2rem 0.65rem;
+  border-radius: 9999px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  border: 1px solid rgba(var(--accent-rgb), 0.35);
+  color: var(--accent-hover);
+  background-color: rgba(var(--accent-rgb), 0.08);
+  white-space: nowrap;
+}
+
+/* Pile de portraits qui se chevauchent (ex: mules d'un personnage). */
+.avatar-stack {
+  display: flex;
+  align-items: center;
+}
+.avatar-stack > * {
+  margin-left: -0.6rem;
+  border: 2px solid var(--card);
+  border-radius: 9999px;
+}
+.avatar-stack > *:first-child {
+  margin-left: 0;
+}
+
 /* Transitions globales */
 * {
   transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;

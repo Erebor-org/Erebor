@@ -1,73 +1,64 @@
 <template>
-  <div class="bg-theme-card rounded-2xl border border-theme-border overflow-hidden shadow-xl">
+  <div class="glass-card rounded-2xl overflow-hidden">
     <!-- Table Header -->
-    <div class="bg-gradient-to-r from-theme-bg-muted to-theme-card px-6 py-4 border-b border-theme-bg-muted">
-      <h3 class="text-xl font-bold text-theme-primary">Membres Archivés</h3>
+    <div class="px-6 py-4 border-b border-theme-border">
+      <h3 class="text-lg font-serif font-bold text-theme-text">Membres Archivés</h3>
     </div>
 
     <!-- Table -->
     <div class="overflow-x-auto">
       <table class="w-full">
-        <thead class="bg-theme-bg-muted border-b border-theme-bg-muted">
+        <thead class="border-b border-theme-border">
           <tr>
-            <th class="px-6 py-4 text-left text-xs font-medium text-theme-text uppercase tracking-wider">
+            <th class="px-6 py-3.5 text-left text-xs font-semibold text-theme-text-muted uppercase tracking-wider">
               Membre
             </th>
-            <th class="px-6 py-4 text-left text-xs font-medium text-theme-text uppercase tracking-wider">
+            <th class="px-6 py-3.5 text-left text-xs font-semibold text-theme-text-muted uppercase tracking-wider">
               Rang
             </th>
-            <th class="px-6 py-4 text-left text-xs font-medium text-theme-text uppercase tracking-wider">
+            <th class="px-6 py-3.5 text-left text-xs font-semibold text-theme-text-muted uppercase tracking-wider">
               Recruteur
             </th>
-            <th class="px-6 py-4 text-left text-xs font-medium text-theme-text uppercase tracking-wider">
+            <th class="px-6 py-3.5 text-left text-xs font-semibold text-theme-text-muted uppercase tracking-wider">
               Actions
             </th>
           </tr>
         </thead>
-        <tbody class="bg-theme-card divide-y divide-gray-700">
+        <tbody class="divide-y divide-theme-border">
           <tr
             v-for="member in filteredArchivedMembers"
             :key="`archived-${member.id}`"
-            class="hover:bg-theme-bg-muted transition-colors duration-200"
+            class="hover:bg-theme-primary/5 transition-colors duration-200"
           >
               <!-- Member Info -->
-              <td class="px-6 py-4">
-                <div class="flex items-center space-x-4">
-                  <div class="relative">
-                    <img
-                      :src="classes[member.member.class]"
-                      :alt="`Classe ${member.member.class}`"
-                      class="w-12 h-12 rounded-lg border-2 border-theme-border opacity-75"
-                    />
-                  </div>
+              <td class="px-6 py-3.5">
+                <div class="flex items-center space-x-3">
+                  <span class="portrait-ring w-10 h-10 grayscale">
+                    <img :src="classes[member.member.class]" :alt="`Classe ${member.member.class}`" />
+                  </span>
                   <div class="flex-1 min-w-0">
-                    <p class="text-lg font-bold text-theme-text">{{ member.member.pseudo }}</p>
-                    <p class="text-sm text-theme-text-muted truncate">
-                      {{ member.member.ankama_pseudo }}
-                    </p>
+                    <p class="text-base font-semibold text-theme-text">{{ member.member.pseudo }}</p>
                   </div>
                 </div>
               </td>
 
               <!-- Rank -->
-              <td class="px-6 py-4">
-                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-theme-bg-muted text-theme-text-muted border border-theme-border">
-                  {{ member.member.rank?.name || 'N/A' }}
-                </span>
+              <td class="px-6 py-3.5">
+                <RankBadge :rank="member.member.rank" size="sm" />
               </td>
 
               <!-- Recruiter -->
-              <td class="px-6 py-4">
-                <span class="text-theme-text-muted">
+              <td class="px-6 py-3.5">
+                <span class="text-theme-text-muted text-sm">
                   {{ member.member.recruiter?.pseudo || 'N/A' }}
                 </span>
               </td>
 
               <!-- Actions -->
-              <td class="px-6 py-4">
+              <td class="px-6 py-3.5">
                 <button
                   @click="openUnarchivedCharacterModal(member)"
-                  class="px-4 py-2 text-sm bg-theme-primary hover:bg-theme-primary-hover text-white font-medium rounded-lg transition-all duration-200 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-theme-primary/30 shadow-sm hover:shadow-md"
+                  class="px-4 py-2 text-sm bg-theme-primary/10 hover:bg-theme-primary text-theme-primary hover:text-white font-semibold rounded-lg border border-theme-primary/40 transition-all duration-200"
                 >
                   Restaurer
                 </button>
@@ -80,8 +71,13 @@
 </template>
 
 <script>
+import RankBadge from './RankBadge.vue';
+
 export default {
   name: 'ArchivedMembersTableList',
+  components: {
+    RankBadge,
+  },
   props: {
     filteredArchivedMembers: {
       type: Array,

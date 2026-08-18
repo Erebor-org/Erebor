@@ -1,31 +1,31 @@
 <template>
   <div
     v-if="showModal"
-    class="fixed inset-0 bg-theme-bg/80 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+    class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4"
     @click.self="closeModal"
   >
     <!-- Modal Content -->
     <div
-      class="w-full max-w-7xl bg-theme-card border border-theme-border rounded-2xl shadow-2xl relative max-h-[90vh] overflow-hidden flex flex-col"
+      class="glass-modal w-full max-w-7xl rounded-2xl relative max-h-[90vh] overflow-hidden flex flex-col"
     >
-      <!-- Header with gradient -->
-      <div class="bg-theme-bg-muted border-b border-theme-bg-muted p-6">
+      <!-- Header -->
+      <div class="border-b border-theme-border p-6">
         <div class="flex items-center justify-between">
           <div class="flex items-center space-x-4">
-            <div class="w-12 h-12 bg-theme-primary rounded-xl flex items-center justify-center shadow-lg">
-              <svg class="w-7 h-7 text-theme-bg" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div class="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0" style="background-image: linear-gradient(140deg, var(--accent), var(--primary));">
+              <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
               </svg>
             </div>
             <div>
-              <h2 class="text-3xl font-bold text-theme-primary">Import de Personnage</h2>
-              <p class="text-theme-text-muted mt-1">Gérez vos nouveaux membres et mules</p>
+              <h2 class="text-2xl font-serif font-bold brand-gradient-text">Import de Personnage</h2>
+              <p class="text-theme-text-muted text-sm mt-0.5">Gérez vos nouveaux membres et mules</p>
             </div>
           </div>
-          
+
           <!-- Close Button -->
           <button
-            class="w-10 h-10 bg-theme-bg-muted hover:bg-theme-bg-muted text-theme-text-muted hover:text-theme-text rounded-xl flex items-center justify-center transition-all duration-200 hover:scale-105"
+            class="w-9 h-9 bg-theme-bg-muted hover:bg-theme-border text-theme-text-muted hover:text-theme-text rounded-xl flex items-center justify-center transition-all duration-200"
             @click="closeModal"
             aria-label="Fermer"
           >
@@ -36,16 +36,16 @@
         </div>
       </div>
 
-      <!-- Tabs with modern design -->
-      <div class="bg-theme-bg-muted border-b border-theme-bg-muted px-6">
+      <!-- Tabs -->
+      <div class="border-b border-theme-border px-6">
         <div class="flex space-x-1">
-          <button 
+          <button
             @click="activeTab = 'newCharacter'"
             :class="[
-              'px-6 py-4 text-sm font-medium rounded-t-xl transition-all duration-200 flex items-center space-x-2',
-              activeTab === 'newCharacter' 
-                ? 'bg-theme-card text-theme-primary border-b-2 border-theme-primary' 
-                : 'text-theme-text-muted hover:text-theme-text hover:bg-theme-bg-muted'
+              'px-6 py-3.5 text-sm font-medium transition-all duration-200 flex items-center space-x-2 border-b-2 -mb-px',
+              activeTab === 'newCharacter'
+                ? 'text-theme-primary border-theme-primary'
+                : 'text-theme-text-muted hover:text-theme-text border-transparent'
             ]"
           >
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -53,13 +53,13 @@
             </svg>
             <span>Nouveau Personnage</span>
           </button>
-          <button 
+          <button
             @click="activeTab = 'addMule'"
             :class="[
-              'px-6 py-4 text-sm font-medium rounded-t-xl transition-all duration-200 flex items-center space-x-2',
-              activeTab === 'addMule' 
-                ? 'bg-theme-card text-theme-primary border-b-2 border-theme-primary' 
-                : 'text-theme-text-muted hover:text-theme-text hover:bg-theme-bg-muted'
+              'px-6 py-3.5 text-sm font-medium transition-all duration-200 flex items-center space-x-2 border-b-2 -mb-px',
+              activeTab === 'addMule'
+                ? 'text-theme-primary border-theme-primary'
+                : 'text-theme-text-muted hover:text-theme-text border-transparent'
             ]"
           >
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -71,25 +71,25 @@
       </div>
 
       <!-- Scrollable Content Area -->
-      <div class="flex-1 overflow-y-auto bg-theme-card">
+      <div class="flex-1 overflow-y-auto">
         <!-- New Character Tab -->
         <div v-if="activeTab === 'newCharacter'" class="p-8">
-          <form @submit.prevent="submitForm" class="space-y-8">
+          <form @submit.prevent="submitForm" class="space-y-6">
             <!-- Main Character Form -->
-            <div class="bg-theme-bg-muted rounded-xl p-6 border border-theme-bg-muted">
-              <MainCharacterForm 
+            <div class="bg-theme-bg-muted/50 rounded-xl p-6 border border-theme-border">
+              <MainCharacterForm
                 ref="mainCharacterForm"
-                :classes="classes" 
+                :classes="classes"
                 :blacklist="blacklist"
                 @update:character="updateCharacter"
               />
             </div>
 
             <!-- Mules Section -->
-            <div class="bg-theme-bg-muted rounded-xl p-6 border border-theme-bg-muted">
-              <MulesManager 
+            <div class="bg-theme-bg-muted/50 rounded-xl p-6 border border-theme-border">
+              <MulesManager
                 ref="mulesManager"
-                :classes="classes" 
+                :classes="classes"
                 :blacklist="blacklist"
                 @update:mules="updateMules"
               />
@@ -98,7 +98,7 @@
             <!-- Global error message -->
             <div
               v-if="errorMessage"
-              class="bg-theme-error/50 border border-theme-error rounded-xl p-4 text-theme-error"
+              class="bg-theme-error/10 border border-theme-error/40 rounded-xl p-4 text-theme-error"
             >
               <div class="flex items-center space-x-3">
                 <svg class="w-6 h-6 text-theme-error flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -113,7 +113,7 @@
               <button
                 type="button"
                 @click="submitForm"
-                class="px-8 py-4 bg-theme-primary hover:bg-theme-primary-hover text-theme-bg font-bold rounded-xl transition-all duration-200 transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-theme-primary/30 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                class="px-8 py-3.5 bg-theme-primary hover:bg-theme-primary-hover text-white font-bold rounded-xl transition-all duration-200 transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-theme-primary/30 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none shadow-lg shadow-theme-primary/30"
                 :disabled="isSubmitting || !character.class"
               >
                 <div class="flex items-center space-x-3">
@@ -134,10 +134,10 @@
             </div>
           </form>
         </div>
-        
+
         <!-- Add Mule to Existing Character Tab -->
         <div v-if="activeTab === 'addMule'" class="p-8">
-          <div class="bg-theme-bg-muted rounded-xl p-6 border border-theme-bg-muted">
+          <div class="bg-theme-bg-muted/50 rounded-xl p-6 border border-theme-border">
             <ExistingCharacterMuleForm
               ref="existingCharacterMuleForm"
               :classes="classes"

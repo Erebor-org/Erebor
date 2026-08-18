@@ -1,11 +1,11 @@
 <template>
-  <div v-if="show" class="fixed inset-0 bg-theme-bg/80 backdrop-blur-sm flex items-center justify-center z-50 p-4" @click.self="closeModal">
-    <div class="bg-theme-card border border-theme-border rounded-2xl shadow-2xl max-w-lg w-full p-6 relative">
-      <h3 class="text-xl font-bold text-theme-primary mb-4">Modifier le recrutement</h3>
-      
+  <div v-if="show" class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4" @click.self="closeModal">
+    <div class="glass-modal rounded-2xl max-w-lg w-full p-6 relative">
+      <h3 class="text-xl font-serif font-bold text-theme-primary mb-4">Modifier le recrutement</h3>
+
       <!-- Character Info -->
-      <div class="mb-6 p-4 bg-theme-bg-muted/30 rounded-xl border border-theme-border">
-        <p class="text-sm text-theme-text-muted mb-1">Personnage</p>
+      <div class="mb-6 p-4 bg-theme-bg-muted/40 rounded-xl border border-theme-border">
+        <p class="text-xs text-theme-text-muted uppercase tracking-wide mb-1">Personnage</p>
         <p class="text-lg font-semibold text-theme-text">{{ character?.pseudo || '' }}</p>
       </div>
 
@@ -35,9 +35,9 @@
           </button>
           
           <!-- Dropdown -->
-          <div 
+          <div
             v-if="showRecruiterDropdown"
-            class="absolute z-50 mt-1 w-full bg-theme-card border border-theme-border rounded-lg shadow-lg max-h-64 overflow-auto"
+            class="glass-modal absolute z-50 mt-1 w-full rounded-lg max-h-64 overflow-auto"
           >
             <div
               @click="selectRecruiter(null)"

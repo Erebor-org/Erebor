@@ -73,6 +73,9 @@ class CharactersController extends AbstractController
                 'rank' => $character->getRank() ? [
                     'id' => $character->getRank()->getId(),
                     'name' => $character->getRank()->getName(),
+                    'requiredDays' => $character->getRank()->getRequiredDays(),
+                    'lead' => $character->getRank()->getLead(),
+                    'recruiter' => $character->getRank()->getRecruiter(),
                 ] : null,
                 'mules' => $muleList,
                 'notes' => $character->getNotes(),
@@ -182,6 +185,9 @@ class CharactersController extends AbstractController
             'rank' => $character->getRank() ? [
                 'id' => $character->getRank()->getId(),
                 'name' => $character->getRank()->getName(),
+                'requiredDays' => $character->getRank()->getRequiredDays(),
+                'lead' => $character->getRank()->getLead(),
+                'recruiter' => $character->getRank()->getRecruiter(),
             ] : null,
             'mules' => [],
             'notes' => $character->getNotes(),
@@ -242,6 +248,8 @@ class CharactersController extends AbstractController
                 'rank' => $character->getRank() ? [
                     'id' => $character->getRank()->getId(),
                     'name' => $character->getRank()->getName(),
+                    'requiredDays' => $character->getRank()->getRequiredDays(),
+                    'lead' => $character->getRank()->getLead(),
                     'recruiter' => $character->getRank()->getRecruiter(),
                 ] : null,
             ];

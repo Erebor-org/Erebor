@@ -1,12 +1,12 @@
 <template>
   <div>
     <div class="flex items-center space-x-3 mb-6">
-      <div class="w-6 h-6 bg-gradient-to-br from-theme-primary to-theme-primary-hover rounded-lg flex items-center justify-center">
-        <svg class="w-4 h-4 text-theme-bg" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <div class="w-6 h-6 rounded-lg flex items-center justify-center flex-shrink-0" style="background-image: linear-gradient(140deg, var(--accent), var(--primary));">
+        <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
         </svg>
       </div>
-      <h4 class="text-lg font-bold text-theme-primary">Nouvelle Mule</h4>
+      <h4 class="text-base font-serif font-bold text-theme-primary">Nouvelle Mule</h4>
     </div>
 
     <div class="space-y-6">

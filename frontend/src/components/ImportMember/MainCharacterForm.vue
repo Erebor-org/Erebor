@@ -1,12 +1,12 @@
 <template>
   <div>
     <div class="flex items-center space-x-3 mb-6">
-      <div class="w-8 h-8 bg-theme-primary rounded-lg flex items-center justify-center">
-        <svg class="w-5 h-5 text-theme-bg" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <div class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style="background-image: linear-gradient(140deg, var(--accent), var(--primary));">
+        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
         </svg>
       </div>
-      <h2 class="text-2xl font-bold text-theme-primary">Personnage Principal</h2>
+      <h2 class="text-xl font-serif font-bold text-theme-primary">Personnage Principal</h2>
     </div>
 
     <div class="space-y-6">
