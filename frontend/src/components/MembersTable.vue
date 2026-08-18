@@ -1,11 +1,5 @@
 <template>
   <div class="space-y-6">
-    <!-- Header -->
-    <div class="text-center mb-8">
-      <h2 class="text-3xl font-bold text-theme-primary mb-2">Membres Actifs</h2>
-      <p class="text-theme-text-muted">{{ filteredMembers.length }} membre(s) trouvé(s)</p>
-    </div>
-
     <!-- Members Grid -->
     <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
       <div

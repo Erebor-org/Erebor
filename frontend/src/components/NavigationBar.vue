@@ -37,6 +37,7 @@
   const showScrollToTop = ref(false);
   const showWheelDropdown = ref(false);
   const showProfileDropdown = ref(false);
+  const showManageDropdown = ref(false);
   let wheelDropdownTimeout = null;
 
   function toggleWheelDropdown() {
@@ -55,6 +56,14 @@
     showProfileDropdown.value = false;
   }
 
+  function toggleManageDropdown() {
+    showManageDropdown.value = !showManageDropdown.value;
+  }
+
+  function closeManageDropdown() {
+    showManageDropdown.value = false;
+  }
+
   // Fermer le menu si on clique ailleurs
   function handleClickOutside(event) {
     const wheelDropdown = document.getElementById('wheel-dropdown-menu');
@@ -62,11 +71,17 @@
     if (wheelDropdown && !wheelDropdown.contains(event.target) && wheelButton && !wheelButton.contains(event.target)) {
       closeWheelDropdown();
     }
-    
+
     const profileDropdown = document.getElementById('profile-dropdown-menu');
     const profileButton = document.getElementById('profile-dropdown-btn');
     if (profileDropdown && !profileDropdown.contains(event.target) && profileButton && !profileButton.contains(event.target)) {
       closeProfileDropdown();
+    }
+
+    const manageDropdown = document.getElementById('manage-dropdown-menu');
+    const manageButton = document.getElementById('manage-dropdown-btn');
+    if (manageDropdown && !manageDropdown.contains(event.target) && manageButton && !manageButton.contains(event.target)) {
+      closeManageDropdown();
     }
   }
   onMounted(() => {
@@ -133,34 +148,34 @@
 </script>
 
 <template>
-  <nav class="bg-theme-card border-b border-theme-border shadow-lg">
+  <nav class="nav-glass">
     <!-- Main Navigation Container -->
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="flex items-center justify-between h-16">
         <!-- Left Section - Logo & Brand -->
-        <RouterLink 
+        <RouterLink
           v-if="isLoggedIn"
-          to="/home" 
-          class="flex items-center space-x-4 hover:opacity-70 transition-opacity"
+          to="/home"
+          class="flex items-center space-x-3 hover:opacity-80 transition-opacity"
         >
-          <div class="flex-shrink-0">
-            <img :src="erebor_logo" alt="Erebor" class="w-10 h-10" />
+          <div class="logo-roundel flex-shrink-0">
+            <img :src="erebor_logo" alt="Erebor" />
           </div>
           <div class="hidden md:block">
-            <h1 class="text-xl font-bold text-theme-primary">
+            <h1 class="text-xl font-serif font-bold tracking-wide brand-gradient-text">
               EREBOR
             </h1>
           </div>
         </RouterLink>
-        <div 
+        <div
           v-else
-          class="flex items-center space-x-4"
+          class="flex items-center space-x-3"
         >
-          <div class="flex-shrink-0">
-            <img :src="erebor_logo" alt="Erebor" class="w-10 h-10" />
+          <div class="logo-roundel flex-shrink-0">
+            <img :src="erebor_logo" alt="Erebor" />
           </div>
           <div class="hidden md:block">
-            <h1 class="text-xl font-bold text-theme-primary">
+            <h1 class="text-xl font-serif font-bold tracking-wide brand-gradient-text">
               EREBOR
             </h1>
           </div>
@@ -178,44 +193,17 @@
             Accueil
           </RouterLink>
           
-          <RouterLink 
-            to="/membres" 
+          <RouterLink
+            to="/membres"
             v-if="isLoggedIn && isAdmin"
             class="nav-link"
             active-class="nav-link-active"
           >
             Membres
           </RouterLink>
-          
-          <RouterLink 
-            to="/blacklist" 
-            v-if="isLoggedIn && isAdmin"
-            class="nav-link"
-            active-class="nav-link-active"
-          >
-            Blacklist
-          </RouterLink>
-          
-          <RouterLink 
-            to="/warnings-management" 
-            v-if="isLoggedIn && canViewWarnings"
-            class="nav-link"
-            active-class="nav-link-active"
-          >
-            Avertissements
-          </RouterLink>
-          
-          <RouterLink 
-            to="/admin/users" 
-            v-if="isLoggedIn && isSuperSuperAdmin"
-            class="nav-link"
-            active-class="nav-link-active"
-          >
-            Utilisateurs
-          </RouterLink>
-          
-          <RouterLink 
-            to="/statistiques" 
+
+          <RouterLink
+            to="/statistiques"
             v-if="isLoggedIn"
             class="nav-link"
             active-class="nav-link-active"
@@ -238,7 +226,7 @@
             <div
               v-if="showWheelDropdown"
               id="wheel-dropdown-menu"
-              class="absolute left-0 mt-2 w-48 bg-theme-card border border-theme-border rounded-lg shadow-lg z-50"
+              class="dropdown-glass absolute left-0 mt-2 w-52 z-50"
             >
               <RouterLink
                 to="/wheel"
@@ -266,6 +254,53 @@
               </RouterLink>
             </div>
           </div>
+
+          <!-- Gestion (regroupe les outils réservés aux rôles admin/modération) -->
+          <div v-if="isLoggedIn && isAdmin" class="relative">
+            <button
+              id="manage-dropdown-btn"
+              class="nav-link flex items-center gap-1"
+              @click="toggleManageDropdown"
+              :aria-expanded="showManageDropdown"
+              aria-haspopup="true"
+              type="button"
+            >
+              Gestion
+              <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+            </button>
+            <div
+              v-if="showManageDropdown"
+              id="manage-dropdown-menu"
+              class="dropdown-glass absolute left-0 mt-2 w-52 z-50"
+            >
+              <RouterLink
+                to="/blacklist"
+                class="block px-4 py-3 nav-link"
+                :class="{ 'nav-link-active': route.path === '/blacklist' }"
+                @click="closeManageDropdown"
+              >
+                Blacklist
+              </RouterLink>
+              <RouterLink
+                v-if="canViewWarnings"
+                to="/warnings-management"
+                class="block px-4 py-3 nav-link"
+                :class="{ 'nav-link-active': route.path === '/warnings-management' }"
+                @click="closeManageDropdown"
+              >
+                Avertissements
+              </RouterLink>
+              <RouterLink
+                v-if="isSuperSuperAdmin"
+                to="/admin/users"
+                class="block px-4 py-3 nav-link"
+                :class="{ 'nav-link-active': route.path === '/admin/users' }"
+                @click="closeManageDropdown"
+              >
+                Utilisateurs
+              </RouterLink>
+            </div>
+          </div>
         </div>
 
         <!-- Right Section - User Menu & Auth -->
@@ -285,67 +320,59 @@
           </div>
 
           <!-- Logged In User -->
-          <div v-else class="flex items-center space-x-4">
-            <!-- User Info -->
-            <div class="hidden md:flex items-center space-x-3">
-              <div class="text-right">
-                <p class="text-sm font-medium text-theme-text">{{ user?.character?.pseudo || user?.username }}</p>
-                <p class="text-xs text-theme-text-muted">Connecté</p>
-              </div>
-            </div>
-            
-            <!-- Profile Avatar Dropdown -->
-            <div class="relative">
-              <button
-                id="profile-dropdown-btn"
-                class="relative focus:outline-none"
-                @click="toggleProfileDropdown"
-                :aria-expanded="showProfileDropdown"
-                aria-haspopup="true"
-                type="button"
-              >
-                <img 
-                  :src="characterIcon" 
-                  alt="Profile" 
-                  class="w-10 h-10 rounded-full border-2 border-theme-border hover:border-theme-primary transition-all duration-300 cursor-pointer hover:scale-110"
+          <div v-else class="relative">
+            <button
+              id="profile-dropdown-btn"
+              class="profile-pill"
+              @click="toggleProfileDropdown"
+              :aria-expanded="showProfileDropdown"
+              aria-haspopup="true"
+              type="button"
+            >
+              <span class="relative flex-shrink-0">
+                <img
+                  :src="characterIcon"
+                  alt="Profile"
+                  class="w-8 h-8 rounded-full object-cover"
                   title="Menu profil"
                 />
-                <div class="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-2 h-2 bg-theme-success rounded-full border border-theme-bg"></div>
-              </button>
-              <div
-                v-if="showProfileDropdown"
-                id="profile-dropdown-menu"
-                class="absolute right-0 mt-2 w-48 bg-theme-card border border-theme-border rounded-lg shadow-lg z-50"
-              >
-                <RouterLink
-                  to="/profil"
-                  class="block px-4 py-3 nav-link"
-                  :class="{ 'nav-link-active': route.path === '/profil' }"
-                  @click="closeProfileDropdown"
-                >
-                  Profil
-                </RouterLink>
-                <RouterLink
-                  to="/theme-customizer"
-                  class="block px-4 py-3 nav-link"
-                  :class="{ 'nav-link-active': route.path === '/theme-customizer' }"
-                  @click="closeProfileDropdown"
-                >
-                  Thème
-                </RouterLink>
-              </div>
-            </div>
-            
-            <!-- Logout Button -->
-            <button 
-              @click="logout"
-              class="px-4 py-2 bg-theme-bg-muted hover:bg-theme-border text-theme-text font-medium rounded-lg transition-all duration-300 hover:text-theme-primary focus:outline-none focus:ring-2 focus:ring-theme-ring"
-            >
-              <span class="hidden sm:inline">Déconnexion</span>
-              <svg class="w-5 h-5 sm:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-              </svg>
+                <span class="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-theme-success rounded-full border-2 border-theme-card"></span>
+              </span>
+              <span class="hidden md:block text-sm font-medium text-theme-text pr-1">
+                {{ user?.character?.pseudo || user?.username }}
+              </span>
+              <svg class="hidden md:block w-4 h-4 text-theme-text-muted mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
             </button>
+            <div
+              v-if="showProfileDropdown"
+              id="profile-dropdown-menu"
+              class="dropdown-glass absolute right-0 mt-2 w-48 z-50"
+            >
+              <RouterLink
+                to="/profil"
+                class="block px-4 py-3 nav-link"
+                :class="{ 'nav-link-active': route.path === '/profil' }"
+                @click="closeProfileDropdown"
+              >
+                Profil
+              </RouterLink>
+              <RouterLink
+                to="/theme-customizer"
+                class="block px-4 py-3 nav-link"
+                :class="{ 'nav-link-active': route.path === '/theme-customizer' }"
+                @click="closeProfileDropdown"
+              >
+                Thème
+              </RouterLink>
+              <div class="dropdown-divider"></div>
+              <button
+                @click="closeProfileDropdown(); logout();"
+                class="block w-full text-left px-4 py-3 nav-link nav-link-danger"
+                type="button"
+              >
+                Déconnexion
+              </button>
+            </div>
           </div>
 
           <!-- Mobile Menu Button -->
@@ -378,8 +405,8 @@
           Accueil
         </RouterLink>
         
-        <RouterLink 
-          to="/membres" 
+        <RouterLink
+          to="/membres"
           v-if="isLoggedIn && isAdmin"
           class="mobile-nav-link"
           active-class="mobile-nav-link-active"
@@ -387,39 +414,9 @@
         >
           Membres
         </RouterLink>
-        
-        <RouterLink 
-          to="/blacklist" 
-          v-if="isLoggedIn && isAdmin"
-          class="mobile-nav-link"
-          active-class="mobile-nav-link-active"
-          @click="isMobileMenuOpen = false"
-        >
-          Blacklist
-        </RouterLink>
-        
-        <RouterLink 
-          to="/warnings-management" 
-          v-if="isLoggedIn && canViewWarnings"
-          class="mobile-nav-link"
-          active-class="mobile-nav-link-active"
-          @click="isMobileMenuOpen = false"
-        >
-          Avertissements
-        </RouterLink>
-        
-        <RouterLink 
-          to="/admin/users" 
-          v-if="isLoggedIn && isSuperSuperAdmin"
-          class="mobile-nav-link"
-          active-class="mobile-nav-link-active"
-          @click="isMobileMenuOpen = false"
-        >
-          Utilisateurs
-        </RouterLink>
-        
-        <RouterLink 
-          to="/statistiques" 
+
+        <RouterLink
+          to="/statistiques"
           v-if="isLoggedIn"
           class="mobile-nav-link"
           active-class="mobile-nav-link-active"
@@ -427,6 +424,36 @@
         >
           Statistiques
         </RouterLink>
+
+        <div v-if="isLoggedIn && isAdmin" class="">
+          <div class="font-semibold text-theme-primary mb-1">Gestion</div>
+          <RouterLink
+            to="/blacklist"
+            class="mobile-nav-link"
+            active-class="mobile-nav-link-active"
+            @click="isMobileMenuOpen = false"
+          >
+            Blacklist
+          </RouterLink>
+          <RouterLink
+            to="/warnings-management"
+            v-if="canViewWarnings"
+            class="mobile-nav-link"
+            active-class="mobile-nav-link-active"
+            @click="isMobileMenuOpen = false"
+          >
+            Avertissements
+          </RouterLink>
+          <RouterLink
+            to="/admin/users"
+            v-if="isSuperSuperAdmin"
+            class="mobile-nav-link"
+            active-class="mobile-nav-link-active"
+            @click="isMobileMenuOpen = false"
+          >
+            Utilisateurs
+          </RouterLink>
+        </div>
 
         <div v-if="isLoggedIn" class="">
           <div class="font-semibold text-theme-primary mb-1">Roue</div>
@@ -466,14 +493,21 @@
           >
             Profil
           </RouterLink>
-          <RouterLink 
-            to="/theme-customizer" 
+          <RouterLink
+            to="/theme-customizer"
             class="mobile-nav-link"
             :class="{ 'mobile-nav-link-active': route.path === '/theme-customizer' }"
             @click="isMobileMenuOpen = false"
           >
             Thème
           </RouterLink>
+          <button
+            @click="isMobileMenuOpen = false; logout();"
+            class="mobile-nav-link nav-link-danger w-full text-left"
+            type="button"
+          >
+            Déconnexion
+          </button>
         </div>
       </div>
     </div>
@@ -492,6 +526,81 @@
 </template>
 
 <style scoped>
+/* Barre en verre dépoli avec liseré dégradé rouge -> or en pied de barre */
+.nav-glass {
+  background-color: rgba(var(--bg-rgb), 0.72);
+  backdrop-filter: blur(14px) saturate(140%);
+  -webkit-backdrop-filter: blur(14px) saturate(140%);
+  position: relative;
+  /* z-index garantit que la nav (et ses menus) reste au-dessus de tout
+     contenu de page utilisant position:relative/absolute, quel que soit
+     l'ordre du DOM (cf. bug où une carte pleine largeur passait devant
+     le menu profil pour les comptes non-admin). */
+  z-index: 30;
+}
+
+.nav-glass::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 1px;
+  background-image: linear-gradient(90deg, transparent, rgba(var(--primary-rgb), 0.55), rgba(var(--accent-rgb), 0.55), transparent);
+}
+
+/* Médaillon du logo : anneau dégradé rouge -> or */
+.logo-roundel {
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 0.65rem;
+  padding: 2px;
+  background-image: linear-gradient(140deg, var(--accent), var(--primary));
+}
+
+.logo-roundel img {
+  width: 100%;
+  height: 100%;
+  border-radius: 0.5rem;
+  object-fit: cover;
+  background-color: var(--card);
+}
+
+/* Menus déroulants en verre dépoli */
+.dropdown-glass {
+  background-color: rgba(var(--bg-rgb), 0.92);
+  backdrop-filter: blur(16px) saturate(140%);
+  -webkit-backdrop-filter: blur(16px) saturate(140%);
+  border: 1px solid rgba(var(--accent-rgb), 0.2);
+  border-radius: 0.75rem;
+  box-shadow: 0 12px 32px -12px rgba(0, 0, 0, 0.4);
+  overflow: hidden;
+  padding: 0.35rem;
+}
+
+.dropdown-divider {
+  height: 1px;
+  margin: 0.35rem 0.5rem;
+  background-color: var(--border);
+}
+
+/* Pastille profil : avatar + pseudo, un seul point de clic */
+.profile-pill {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.25rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background-color: rgba(var(--accent-rgb), 0.04);
+  transition: border-color 0.3s, background-color 0.3s;
+}
+
+.profile-pill:hover {
+  border-color: var(--accent);
+  background-color: rgba(var(--accent-rgb), 0.08);
+}
+
 /* Navigation Link Styles */
 .nav-link {
   @apply text-theme-text-muted hover:text-theme-primary px-2 py-1.5 rounded-lg text-sm font-medium transition-all duration-300 relative;
@@ -499,7 +608,14 @@
 
 .nav-link::after {
   content: '';
-  @apply absolute bottom-0 left-1/2 w-0 h-0.5 bg-theme-primary transition-all duration-300 transform -translate-x-1/2;
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  width: 0;
+  height: 2px;
+  background-image: linear-gradient(90deg, var(--primary), var(--accent));
+  transition: all 0.3s;
+  transform: translateX(-50%);
 }
 
 .nav-link:hover::after {
@@ -521,6 +637,18 @@
 
 .mobile-nav-link-active {
   @apply text-theme-primary bg-theme-bg-muted;
+}
+
+/* Priment sur .nav-link / .mobile-nav-link grâce à la double classe */
+.nav-link.nav-link-danger,
+.mobile-nav-link.nav-link-danger {
+  color: var(--error);
+}
+
+.nav-link.nav-link-danger:hover,
+.mobile-nav-link.nav-link-danger:hover {
+  color: var(--error);
+  opacity: 0.85;
 }
 
 /* Smooth transitions */

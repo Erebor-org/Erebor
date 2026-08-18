@@ -5,49 +5,59 @@
 
 /* CSS Custom Properties pour le système de thèmes */
 :root {
-  /* Light theme - "Blanc & Bleu" */
+  /* Light theme - "Rouge & Or" */
   --bg: #ffffff;
-  --bg-muted: #f7f8fa;
+  --bg-muted: #FAF7F2;
   --card: #ffffff;
-  --border: #e6e8ec;
-  --text: #0b1220;
-  --text-muted: #5b6472;
-  --primary: #2563eb;
-  --primary-hover: #1d4ed8;
-  --link: #2563eb;
-  --ring: #93c5fd;
+  --card-hover: #FBF4E9;
+  --border: #ECE6DC;
+  --border-hover: #DCD3C4;
+  --text: #1A1412;
+  --text-muted: #6B625B;
+  --primary: #9E1B32;
+  --primary-hover: #7E1527;
+  --accent: #C9A227;
+  --accent-hover: #A98620;
+  --link: #9E1B32;
+  --ring: #E3AEB8;
   --success: #16a34a;
-  --warning: #f59e0b;
-  --error: #dc2626;
-  
+  --warning: #C9A227;
+  --error: #DC2626;
+
   /* Variables RGB pour les opacités */
-  --text-rgb: 11, 18, 32;
+  --text-rgb: 26, 20, 18;
   --bg-rgb: 255, 255, 255;
-  --primary-rgb: 37, 99, 235;
-  --border-rgb: 230, 232, 236;
+  --primary-rgb: 158, 27, 50;
+  --accent-rgb: 201, 162, 39;
+  --border-rgb: 236, 230, 220;
 }
 
 [data-theme="dark"] {
-  /* Dark theme - "Noir & Magenta" */
-  --bg: #0b0b0f;
-  --bg-muted: #121218;
-  --card: #14141b;
-  --border: #262633;
-  --text: #f4f6fb;
-  --text-muted: #a8adbb;
-  --primary: #d946ef;
-  --primary-hover: #c026d3;
-  --link: #e879f9;
-  --ring: #f0abfc;
+  /* Dark theme - "Noir & Or" */
+  --bg: #0F0B0A;
+  --bg-muted: #17110F;
+  --card: #1C1512;
+  --card-hover: #241A16;
+  --border: #2E211C;
+  --border-hover: #3D2B23;
+  --text: #F5EFE6;
+  --text-muted: #B3A79B;
+  --primary: #E14456;
+  --primary-hover: #C22E3F;
+  --accent: #E3B23C;
+  --accent-hover: #C9992A;
+  --link: #E3B23C;
+  --ring: #6B2530;
   --success: #22c55e;
-  --warning: #facc15;
+  --warning: #E3B23C;
   --error: #ef4444;
-  
+
   /* Variables RGB pour les opacités */
-  --text-rgb: 244, 246, 251;
-  --bg-rgb: 11, 11, 15;
-  --primary-rgb: 217, 70, 239;
-  --border-rgb: 38, 38, 51;
+  --text-rgb: 245, 239, 230;
+  --bg-rgb: 15, 11, 10;
+  --primary-rgb: 225, 68, 86;
+  --accent-rgb: 227, 178, 60;
+  --border-rgb: 46, 33, 28;
 }
 
 /* Styles de base avec les variables CSS */
@@ -59,6 +69,10 @@ html, body, #app {
   background-color: var(--bg);
   color: var(--text);
   transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+body {
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
 
 /* Classes utilitaires pour les couleurs */
@@ -86,6 +100,22 @@ html, body, #app {
 
 .ring-theme-ring { --tw-ring-color: var(--ring); }
 .focus\:ring-theme-ring:focus { --tw-ring-color: var(--ring); }
+
+/* Accent (or) - utilisé pour les touches dorées ponctuelles */
+.bg-theme-accent { background-color: var(--accent); }
+.text-theme-accent { color: var(--accent); }
+.border-theme-accent { border-color: var(--accent); }
+
+/* Dégradé de marque rouge -> or, réutilisé pour les titres/soulignements */
+.brand-gradient-text {
+  background-image: linear-gradient(90deg, var(--primary), var(--accent));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.brand-gradient-bg {
+  background-image: linear-gradient(120deg, var(--primary), var(--primary-hover));
+}
 
 /* Transitions globales */
 * {

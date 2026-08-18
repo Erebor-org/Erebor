@@ -40,9 +40,9 @@
     <!-- Main Container -->
     <div ref="mainContainer" class="container mx-auto px-4 py-8">
       <!-- Page Header -->
-      <div class="text-center mb-12">
-        <h1 class="text-6xl font-bold text-theme-primary mb-6">Gestion des Membres</h1>
-        <div class="w-32 h-1 bg-theme-primary mx-auto rounded-full shadow-lg shadow-theme-primary/50"></div>
+      <div class="text-center mb-10">
+        <h1 class="text-5xl font-extrabold brand-gradient-text mb-4">Gestion des Membres</h1>
+        <div class="w-24 h-1 rounded-full mx-auto" style="background-image: linear-gradient(90deg, var(--primary), var(--accent));"></div>
       </div>
 
       <!-- Search Header -->
@@ -62,45 +62,112 @@
         />
       </div>
 
+      <!-- Filtres & tri (membres actifs uniquement) -->
+      <div v-if="activeTab === 'active'" class="bg-theme-card border border-theme-border rounded-2xl shadow-sm p-4 mb-6">
+        <div class="flex flex-wrap gap-4 items-end">
+          <div class="flex flex-col min-w-[220px]">
+            <label class="text-xs font-semibold text-theme-text-muted uppercase tracking-wide mb-1">Plage de dates</label>
+            <ThemedDatePicker
+              v-model="filterDateRange"
+              range
+              :format="'dd/MM/yyyy'"
+              :placeholder="'Plage de dates'"
+            />
+          </div>
+
+          <div class="flex flex-col min-w-[200px]">
+            <label class="text-xs font-semibold text-theme-text-muted uppercase tracking-wide mb-1">Trier par</label>
+            <div class="flex gap-2">
+              <select v-model="sortColumn" class="flex-1 px-3 py-2 rounded-lg border border-theme-border bg-theme-bg text-theme-text text-sm focus:outline-none focus:ring-2 focus:ring-theme-primary">
+                <option :value="null">Aucun tri</option>
+                <option value="pseudo">Pseudo</option>
+                <option value="rank">Rang</option>
+                <option value="recruiter">Recruteur</option>
+                <option value="recruited_at">Arrivée</option>
+                <option value="mules">Mules</option>
+                <option value="warnings">Avertissements</option>
+              </select>
+              <button
+                @click="toggleSortOrder"
+                :disabled="!sortColumn"
+                class="px-3 py-2 rounded-lg border border-theme-border bg-theme-bg text-theme-text hover:border-theme-primary hover:text-theme-primary transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+                :title="sortOrder === 'asc' ? 'Ordre croissant' : 'Ordre décroissant'"
+              >
+                {{ sortOrder === 'asc' ? '↑' : '↓' }}
+              </button>
+            </div>
+          </div>
+
+          <button
+            @click="showAdvancedFilters = !showAdvancedFilters"
+            class="px-4 py-2 rounded-lg border border-theme-border bg-theme-bg text-theme-text text-sm font-medium hover:border-theme-primary hover:text-theme-primary transition-all flex items-center gap-2"
+          >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" /></svg>
+            Filtres avancés
+            <span v-if="activeFilterChips.length" class="bg-theme-primary text-white text-xs rounded-full px-1.5 leading-5">{{ activeFilterChips.length }}</span>
+          </button>
+
+          <div class="flex-1"></div>
+
+          <button @click="resetCardFilters" class="px-4 py-2 rounded-lg bg-theme-bg-muted hover:bg-theme-error hover:text-white text-theme-text-muted font-medium text-sm transition-all">
+            Réinitialiser
+          </button>
+        </div>
+
+        <!-- Panneau de filtres avancés -->
+        <div v-if="showAdvancedFilters" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-4 pt-4 border-t border-theme-border">
+          <div class="flex flex-col">
+            <label class="text-xs font-semibold text-theme-text-muted uppercase tracking-wide mb-1">Recruteur</label>
+            <select v-model="filterRecruiter" class="px-3 py-2 rounded-lg border border-theme-border bg-theme-bg text-theme-text text-sm focus:outline-none focus:ring-2 focus:ring-theme-primary">
+              <option value="">Tous</option>
+              <option v-for="r in availableRecruiters" :key="r" :value="r">{{ r }}</option>
+            </select>
+          </div>
+          <div class="flex flex-col">
+            <label class="text-xs font-semibold text-theme-text-muted uppercase tracking-wide mb-1">Rang</label>
+            <select v-model="filterRank" class="px-3 py-2 rounded-lg border border-theme-border bg-theme-bg text-theme-text text-sm focus:outline-none focus:ring-2 focus:ring-theme-primary">
+              <option value="">Tous</option>
+              <option v-for="r in availableRanks" :key="r" :value="r">{{ r }}</option>
+            </select>
+          </div>
+          <div class="flex flex-col">
+            <label class="text-xs font-semibold text-theme-text-muted uppercase tracking-wide mb-1">Mules (min / max)</label>
+            <div class="flex gap-2">
+              <input v-model.number="filterMulesMin" type="number" min="0" placeholder="min" class="w-full px-3 py-2 rounded-lg border border-theme-border bg-theme-bg text-theme-text text-sm focus:outline-none focus:ring-2 focus:ring-theme-primary" />
+              <input v-model.number="filterMulesMax" type="number" min="0" placeholder="max" class="w-full px-3 py-2 rounded-lg border border-theme-border bg-theme-bg text-theme-text text-sm focus:outline-none focus:ring-2 focus:ring-theme-primary" />
+            </div>
+          </div>
+          <div class="flex flex-col">
+            <label class="text-xs font-semibold text-theme-text-muted uppercase tracking-wide mb-1">Avertissements (min / max)</label>
+            <div class="flex gap-2">
+              <input v-model.number="filterWarningsMin" type="number" min="0" placeholder="min" class="w-full px-3 py-2 rounded-lg border border-theme-border bg-theme-bg text-theme-text text-sm focus:outline-none focus:ring-2 focus:ring-theme-primary" />
+              <input v-model.number="filterWarningsMax" type="number" min="0" placeholder="max" class="w-full px-3 py-2 rounded-lg border border-theme-border bg-theme-bg text-theme-text text-sm focus:outline-none focus:ring-2 focus:ring-theme-primary" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Chips de filtres actifs -->
+        <div v-if="activeFilterChips.length" class="flex flex-wrap gap-2 mt-4 pt-4 border-t border-theme-border">
+          <button
+            v-for="(chip, idx) in activeFilterChips"
+            :key="idx"
+            @click="chip.clear()"
+            class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-theme-accent/10 text-theme-accent-hover border border-theme-accent/30 hover:bg-theme-error/10 hover:text-theme-error hover:border-theme-error/30 transition-all"
+          >
+            {{ chip.label }}
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+          </button>
+        </div>
+      </div>
+
       <!-- Main Content -->
-      <div v-if="activeTab === 'active'" class="mt-12">
+      <div v-if="activeTab === 'active'">
+        <p class="text-center text-theme-text-muted mb-6">{{ filteredMembers.length }} membre(s) trouvé(s)</p>
+
         <!-- Cards View -->
         <div v-if="viewMode === 'cards'">
-          <!-- Barre de filtres et tri sticky -->
-          <div class="sticky top-0 z-30 bg-theme-bg px-4 py-3 shadow-md rounded-xl flex flex-wrap gap-4 items-center mb-6 border border-theme-border">
-            <div class="flex flex-col min-w-[220px]">
-              <label class="text-xs font-semibold text-theme-text mb-1">Plage de dates</label>
-              <ThemedDatePicker
-                v-model="filterDateRange"
-                range
-                :format="'dd/MM/yyyy'"
-                :placeholder="'Plage de dates'"
-              />
-            </div>
-            <div class="flex-1"></div>
-            <button @click="setSort('pseudo')" :class="'p-2 rounded ' + (sortColumn === 'pseudo' ? 'bg-theme-primary text-white' : 'bg-theme-bg-muted text-theme-text')">
-              Pseudo {{ sortColumn === 'pseudo' ? (sortOrder === 'asc' ? '↑' : '↓') : '↕' }}
-            </button>
-            <button @click="setSort('rank')" :class="'p-2 rounded ' + (sortColumn === 'rank' ? 'bg-theme-primary text-white' : 'bg-theme-bg-muted text-theme-text')">
-              Rang {{ sortColumn === 'rank' ? (sortOrder === 'asc' ? '↑' : '↓') : '↕' }}
-            </button>
-            <button @click="setSort('recruiter')" :class="'p-2 rounded ' + (sortColumn === 'recruiter' ? 'bg-theme-primary text-white' : 'bg-theme-bg-muted text-theme-text')">
-              Recruteur {{ sortColumn === 'recruiter' ? (sortOrder === 'asc' ? '↑' : '↓') : '↕' }}
-            </button>
-            <button @click="setSort('recruited_at')" :class="'p-2 rounded ' + (sortColumn === 'recruited_at' ? 'bg-theme-primary text-white' : 'bg-theme-bg-muted text-theme-text')">
-              Arrivée {{ sortColumn === 'recruited_at' ? (sortOrder === 'asc' ? '↑' : '↓') : '↕' }}
-            </button>
-            <button @click="setSort('mules')" :class="'p-2 rounded ' + (sortColumn === 'mules' ? 'bg-theme-primary text-white' : 'bg-theme-bg-muted text-theme-text')">
-              Mules {{ sortColumn === 'mules' ? (sortOrder === 'asc' ? '↑' : '↓') : '↕' }}
-            </button>
-            <button @click="setSort('warnings')" :class="'p-2 rounded ' + (sortColumn === 'warnings' ? 'bg-theme-primary text-white' : 'bg-theme-bg-muted text-theme-text')">
-              Avertissements {{ sortColumn === 'warnings' ? (sortOrder === 'asc' ? '↑' : '↓') : '↕' }}
-            </button>
-            <div class="flex-1"></div>
-            <button @click="resetCardFilters" class="ml-4 px-4 py-2 rounded-lg bg-theme-error text-white font-semibold shadow hover:bg-theme-error/80 transition-all">Réinitialiser le tri</button>
-          </div>
           <MembersTable
-            :filtered-members="filteredMembers"
+            :filtered-members="paginatedMembers"
             :classes="classes"
             :filtered-mules-by-character="filteredMulesByCharacter"
             :character-warning-counts="characterWarningCounts"
@@ -124,27 +191,8 @@
 
         <!-- List View -->
         <div v-else>
-          <div class="flex flex-wrap gap-4 items-center mb-4">
-            <!-- Plage de dates -->
-            <div class="flex flex-col min-w-[220px]">
-              <label class="text-xs font-semibold text-theme-text mb-1">Plage de dates</label>
-              <ThemedDatePicker
-                v-model="filterDateRange"
-                range
-                :format="'dd/MM/yyyy'"
-                :placeholder="'Plage de dates'"
-              />
-            </div> 
-             <div class="flex-1"></div> <div class="text-center mb-8">
-      <h2 class="text-3xl font-bold text-theme-primary mb-2">Membres Actifs</h2>
-      <p class="text-theme-text-muted">{{ filteredMembers.length }} membre(s) trouvé(s)</p>
-    </div>
-            <div class="flex-1"></div>
-            <button @click="resetListSort" class="px-4 py-2 rounded-lg bg-theme-error text-white font-semibold shadow hover:bg-theme-error/80 transition-all">Réinitialiser le tri</button>
-
-          </div>
           <MembersTableList
-            :filtered-members="filteredMembers"
+            :filtered-members="paginatedMembers"
             :classes="classes"
             :filtered-mules-by-character="filteredMulesByCharacter"
             :character-warning-counts="characterWarningCounts"
@@ -166,6 +214,8 @@
             @set-sort="setSort"
           />
         </div>
+
+        <Pagination :page="currentPage" :total-pages="totalPages" @update:page="currentPage = $event" />
       </div>
 
       <!-- Archived Characters -->
@@ -243,6 +293,7 @@ import ViewToggle from '@/components/ViewToggle.vue';
 import MulesModal from '@/components/MulesModal.vue';
 import NotesModal from '@/components/NotesModal.vue';
 import ThemedDatePicker from '@/components/ThemedDatePicker.vue';
+import Pagination from '@/components/Pagination.vue';
 import { computed } from 'vue';
 import { useThemeStore } from '@/stores/themeStore';
 
@@ -264,6 +315,7 @@ export default {
     MulesModal,
     NotesModal,
     ThemedDatePicker,
+    Pagination,
   },
   setup() {
     const themeStore = useThemeStore();
@@ -334,6 +386,11 @@ export default {
       // Tri avancé (colonne et sens)
       sortColumn: null,
       sortOrder: 'asc',
+      // UI des filtres avancés
+      showAdvancedFilters: false,
+      // Pagination (vue Fiches et Liste)
+      currentPage: 1,
+      pageSize: 24,
     };
   },
   computed: {
@@ -463,6 +520,45 @@ export default {
       if (this.filterWarningsMin !== null && this.filterWarningsMin !== undefined) chips.push({ label: `Avert. ≥ ${this.filterWarningsMin}`, clear: () => (this.filterWarningsMin = null) });
       if (this.filterWarningsMax !== null && this.filterWarningsMax !== undefined) chips.push({ label: `Avert. ≤ ${this.filterWarningsMax}`, clear: () => (this.filterWarningsMax = null) });
       return chips;
+    },
+    availableRanks() {
+      const ranks = new Set(this.charactersNotArchived.map(c => c.rank?.name).filter(Boolean));
+      return Array.from(ranks).sort();
+    },
+    availableRecruiters() {
+      const recruiters = new Set(this.charactersNotArchived.map(c => c.recruiter?.pseudo).filter(Boolean));
+      return Array.from(recruiters).sort();
+    },
+    totalPages() {
+      return Math.max(1, Math.ceil(this.filteredMembers.length / this.pageSize));
+    },
+    paginatedMembers() {
+      const start = (this.currentPage - 1) * this.pageSize;
+      return this.filteredMembers.slice(start, start + this.pageSize);
+    },
+    // Utilisée uniquement pour détecter un changement de recherche/filtre/tri et réinitialiser la pagination
+    filterSignature() {
+      return JSON.stringify([
+        this.activeTab,
+        this.viewMode,
+        this.searchQuery,
+        this.archivedSearchQuery,
+        this.filterPseudo,
+        this.filterRecruiter,
+        this.filterRank,
+        this.filterDateRange,
+        this.filterMulesMin,
+        this.filterMulesMax,
+        this.filterWarningsMin,
+        this.filterWarningsMax,
+        this.sortColumn,
+        this.sortOrder,
+      ]);
+    },
+  },
+  watch: {
+    filterSignature() {
+      this.currentPage = 1;
     },
   },
   methods: {
@@ -686,6 +782,9 @@ export default {
         this.sortColumn = column;
         this.sortOrder = 'asc';
       }
+    },
+    toggleSortOrder() {
+      this.sortOrder = this.sortOrder === 'asc' ? 'desc' : 'asc';
     },
 
 

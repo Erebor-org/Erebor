@@ -1,107 +1,119 @@
 // Configuration centralisée des couleurs du thème
 // Modifiez ce fichier pour changer toutes les couleurs du site
+// NB: la valeur réellement appliquée à l'exécution vient de src/stores/themeStore.js
+// (ce fichier sert de référence / d'export pour d'éventuels usages externes).
 
 export const themeColors = {
   light: {
     // Backgrounds
     bg: '#ffffff',
-    'bg-muted': '#f7f8fa',
+    'bg-muted': '#FAF7F2',
     card: '#ffffff',
-    'card-hover': '#f0f2f5',
-    
+    'card-hover': '#FBF4E9',
+
     // Borders
-    border: '#e6e8ec',
-    'border-hover': '#d1d5db',
-    'border-focus': '#2563eb',
-    
+    border: '#ECE6DC',
+    'border-hover': '#DCD3C4',
+    'border-focus': '#9E1B32',
+
     // Text
-    text: '#0b1220',
-    'text-muted': '#5b6472',
-    'text-light': '#9ca3af',
-    
-    // Primary colors
-    primary: '#2563eb',
-    'primary-hover': '#1d4ed8',
-    'primary-light': '#dbeafe',
-    
+    text: '#1A1412',
+    'text-muted': '#6B625B',
+    'text-light': '#A79E93',
+
+    // Primary colors (rouge de guilde)
+    primary: '#9E1B32',
+    'primary-hover': '#7E1527',
+    'primary-light': '#F7E4E7',
+
+    // Accent (or)
+    accent: '#C9A227',
+    'accent-hover': '#A98620',
+    'accent-light': '#FBF1D6',
+
     // Accents
-    link: '#2563eb',
-    ring: '#93c5fd',
-    
+    link: '#9E1B32',
+    ring: '#E3AEB8',
+
     // Status colors
     success: '#16a34a',
     'success-light': '#dcfce7',
-    warning: '#f59e0b',
-    'warning-light': '#fef3c7',
-    error: '#dc2626',
+    warning: '#C9A227',
+    'warning-light': '#FBF1D6',
+    error: '#DC2626',
     'error-light': '#fee2e2',
-    
+
     // Interactive elements
-    button: '#2563eb',
-    'button-hover': '#1d4ed8',
-    'button-secondary': '#f3f4f6',
-    'button-secondary-hover': '#e5e7eb',
-    
+    button: '#9E1B32',
+    'button-hover': '#7E1527',
+    'button-secondary': '#FAF7F2',
+    'button-secondary-hover': '#ECE6DC',
+
     // Special elements
-    header: '#2563eb',
+    header: '#9E1B32',
     'header-text': '#ffffff',
-    toggle: '#f59e0b',
-    'toggle-active': '#2563eb',
-    
+    toggle: '#C9A227',
+    'toggle-active': '#9E1B32',
+
     // Shadows
-    shadow: '0 4px 16px rgba(0, 0, 0, 0.06)',
-    'shadow-hover': '0 8px 25px rgba(0, 0, 0, 0.1)',
+    shadow: '0 1px 2px rgba(26,20,18,0.04), 0 4px 16px rgba(26,20,18,0.06)',
+    'shadow-hover': '0 8px 28px rgba(26,20,18,0.12)',
   },
-  
+
   dark: {
     // Backgrounds
-    bg: '#0b0b0f',
-    'bg-muted': '#121218',
-    card: '#14141b',
-    'card-hover': '#1a1a22',
-    
+    bg: '#0F0B0A',
+    'bg-muted': '#17110F',
+    card: '#1C1512',
+    'card-hover': '#241A16',
+
     // Borders
-    border: '#262633',
-    'border-hover': '#3a3a4a',
-    'border-focus': '#d946ef',
-    
+    border: '#2E211C',
+    'border-hover': '#3D2B23',
+    'border-focus': '#E3B23C',
+
     // Text
-    text: '#f4f6fb',
-    'text-muted': '#a8adbb',
-    'text-light': '#6b7280',
-    
+    text: '#F5EFE6',
+    'text-muted': '#B3A79B',
+    'text-light': '#7A6F63',
+
     // Primary colors
-    primary: '#d946ef',
-    'primary-hover': '#c026d3',
-    'primary-light': '#2d1b3d',
-    
+    primary: '#E14456',
+    'primary-hover': '#C22E3F',
+    'primary-light': '#3A1418',
+
+    // Accent (or)
+    accent: '#E3B23C',
+    'accent-hover': '#C9992A',
+    'accent-light': '#3A2E12',
+
     // Accents
-    link: '#e879f9',
-    ring: '#f0abfc',
-    
+    link: '#E3B23C',
+    ring: '#6B2530',
+
     // Status colors
     success: '#22c55e',
     'success-light': '#1e3a2e',
-    warning: '#facc15',
+    warning: '#E3B23C',
     'warning-light': '#3d2c0d',
     error: '#ef4444',
     'error-light': '#3d1d1d',
-    
+
     // Interactive elements
-    button: '#d946ef',
-    'button-hover': '#c026d3',
-    'button-secondary': '#1a1a22',
-    'button-secondary-hover': '#262633',
-    
+    button: '#E14456',
+    'button-hover': '#C22E3F',
+    'button-secondary': '#1C1512',
+    'button-secondary-hover': '#2E211C',
+
     // Special elements
-    header: '#d946ef',
-    'header-text': '#ffffff',
-    toggle: '#facc15',
-    'toggle-active': '#d946ef',
-    
+    header: '#1C1512',
+    'header-text': '#F5EFE6',
+    toggle: '#E3B23C',
+    'toggle-active': '#E14456',
+
     // Shadows
-    shadow: '0 4px 16px rgba(0, 0, 0, 0.24)',
-    'shadow-hover': '0 8px 25px rgba(0, 0, 0, 0.35)',
+    shadow: '0 1px 2px rgba(0,0,0,0.2), 0 4px 16px rgba(0,0,0,0.35)',
+    'shadow-hover': '0 12px 32px rgba(0,0,0,0.5)',
   }
 };
 
