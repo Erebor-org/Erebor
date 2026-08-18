@@ -87,28 +87,28 @@
           </div>
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label for="startDate" class="block text-sm font-medium text-theme-text mb-2">
+              <label class="block text-sm font-medium text-theme-text mb-2">
                 Date de début
               </label>
-              <input
-                type="date"
-                id="startDate"
+              <ThemedDatePicker
                 v-model="startDate"
-                class="w-full bg-theme-bg-muted border-2 border-theme-border text-theme-text rounded-lg px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-theme-primary focus:border-theme-primary transition-all duration-200"
-                :max="endDate || new Date().toISOString().slice(0, 10)"
+                model-type="yyyy-MM-dd"
+                :format="'dd/MM/yyyy'"
+                :max-date="endDate ? new Date(endDate) : new Date()"
+                :placeholder="'Sélectionner une date'"
               />
             </div>
             <div>
-              <label for="endDate" class="block text-sm font-medium text-theme-text mb-2">
+              <label class="block text-sm font-medium text-theme-text mb-2">
                 Date de fin
               </label>
-              <input
-                type="date"
-                id="endDate"
+              <ThemedDatePicker
                 v-model="endDate"
-                class="w-full bg-theme-bg-muted border-2 border-theme-border text-theme-text rounded-lg px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-theme-primary focus:border-theme-primary transition-all duration-200"
-                :min="startDate || ''"
-                :max="new Date().toISOString().slice(0, 10)"
+                model-type="yyyy-MM-dd"
+                :format="'dd/MM/yyyy'"
+                :min-date="startDate ? new Date(startDate) : undefined"
+                :max-date="new Date()"
+                :placeholder="'Sélectionner une date'"
               />
             </div>
           </div>
@@ -318,6 +318,7 @@ import axios from 'axios';
 import Notification from '@/components/NotificationCenter.vue';
 import Chart from 'chart.js/auto';
 import ThemeSelect from '@/components/ThemeSelect.vue';
+import ThemedDatePicker from '@/components/ThemedDatePicker.vue';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -325,7 +326,8 @@ export default {
   name: 'GuildStatistics',
   components: {
     Notification,
-    ThemeSelect
+    ThemeSelect,
+    ThemedDatePicker
   },
   data() {
     return {
@@ -334,8 +336,8 @@ export default {
       filter: 'global',
       selectedRole: '',
       selectedRecruiter: '',
-      startDate: '',
-      endDate: '',
+      startDate: null,
+      endDate: null,
       loading: true,
       roles: [],
       recruiters: [],
@@ -519,8 +521,8 @@ export default {
       }
     },
     clearDateRange() {
-      this.startDate = '';
-      this.endDate = '';
+      this.startDate = null;
+      this.endDate = null;
       // fetchStatistics will be called automatically by the watcher
     },
     // Scroll to top logic

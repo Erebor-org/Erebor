@@ -48,18 +48,20 @@
 
           <div class="fs-group">
             <label class="fs-group-title">Rang</label>
-            <select v-model="filterRank" class="fs-select">
-              <option value="">Tous</option>
-              <option v-for="r in availableRanks" :key="r" :value="r">{{ r }}</option>
-            </select>
+            <ThemeSelect
+              v-model="filterRank"
+              :options="rankFilterOptions"
+              placeholder="Tous"
+            />
           </div>
 
           <div class="fs-group">
             <label class="fs-group-title">Recruteur</label>
-            <select v-model="filterRecruiter" class="fs-select">
-              <option value="">Tous</option>
-              <option v-for="r in availableRecruiters" :key="r" :value="r">{{ r }}</option>
-            </select>
+            <ThemeSelect
+              v-model="filterRecruiter"
+              :options="recruiterFilterOptions"
+              placeholder="Tous"
+            />
           </div>
 
           <div class="fs-group">
@@ -91,15 +93,13 @@
           <div class="fs-group">
             <label class="fs-group-title">Trier par</label>
             <div class="flex gap-2">
-              <select v-model="sortColumn" class="fs-select flex-1">
-                <option :value="null">Aucun tri</option>
-                <option value="pseudo">Pseudo</option>
-                <option value="rank">Rang</option>
-                <option value="recruiter">Recruteur</option>
-                <option value="recruited_at">Arrivée</option>
-                <option value="mules">Mules</option>
-                <option value="warnings">Avertissements</option>
-              </select>
+              <div class="flex-1 min-w-0">
+                <ThemeSelect
+                  v-model="sortColumn"
+                  :options="sortColumnOptions"
+                  placeholder="Aucun tri"
+                />
+              </div>
               <button
                 @click="toggleSortOrder"
                 :disabled="!sortColumn"
@@ -269,6 +269,7 @@ import ArchiveModal from '@/components/ArchiveModal.vue';
 import ViewToggle from '@/components/ViewToggle.vue';
 import NotesModal from '@/components/NotesModal.vue';
 import ThemedDatePicker from '@/components/ThemedDatePicker.vue';
+import ThemeSelect from '@/components/ThemeSelect.vue';
 import Pagination from '@/components/Pagination.vue';
 import { computed } from 'vue';
 import { useThemeStore } from '@/stores/themeStore';
@@ -290,6 +291,7 @@ export default {
     ViewToggle,
     NotesModal,
     ThemedDatePicker,
+    ThemeSelect,
     Pagination,
   },
   setup() {
@@ -362,6 +364,8 @@ export default {
       // Pagination (vue Fiche perso et Liste)
       currentPage: 1,
       pageSize: 24,
+      // Rangs dans l'ordre canonique renvoyé par l'API (lead -> légende -> néophyte)
+      allRanksOrdered: [],
     };
   },
   computed: {
@@ -493,8 +497,28 @@ export default {
       return chips;
     },
     availableRanks() {
-      const ranks = new Set(this.charactersNotArchived.map(c => c.rank?.name).filter(Boolean));
-      return Array.from(ranks).sort();
+      const inUse = new Set(this.charactersNotArchived.map(c => c.rank?.name).filter(Boolean));
+      if (this.allRanksOrdered.length === 0) {
+        return Array.from(inUse).sort();
+      }
+      return this.allRanksOrdered.map(r => r.name).filter(name => inUse.has(name));
+    },
+    rankFilterOptions() {
+      return [{ value: '', label: 'Tous' }, ...this.availableRanks.map(r => ({ value: r, label: r }))];
+    },
+    recruiterFilterOptions() {
+      return [{ value: '', label: 'Tous' }, ...this.availableRecruiters.map(r => ({ value: r, label: r }))];
+    },
+    sortColumnOptions() {
+      return [
+        { value: null, label: 'Aucun tri' },
+        { value: 'pseudo', label: 'Pseudo' },
+        { value: 'rank', label: 'Rang' },
+        { value: 'recruiter', label: 'Recruteur' },
+        { value: 'recruited_at', label: 'Arrivée' },
+        { value: 'mules', label: 'Mules' },
+        { value: 'warnings', label: 'Avertissements' },
+      ];
     },
     availableRecruiters() {
       const recruiters = new Set(this.charactersNotArchived.map(c => c.recruiter?.pseudo).filter(Boolean));
@@ -541,6 +565,16 @@ export default {
         this.notArchivedCharacters = this.charactersData.filter(character => !character.isArchived);
       } catch (error) {
         console.error('Error fetching characters:', error.response?.data || error.message);
+      }
+    },
+
+    // Rangs triés par l'API (requiredDays desc, lead/spéciaux en tête) pour le filtre "Rang"
+    async fetchRanksOrder() {
+      try {
+        const response = await axios.get(`${API_URL}/ranks`);
+        this.allRanksOrdered = response.data;
+      } catch (error) {
+        console.error('Error fetching ranks order:', error.response?.data || error.message);
       }
     },
 
@@ -937,7 +971,8 @@ export default {
       await this.fetchCharacters(); // Fetch all characters once
       await this.fetchAllMules(); // Fetch mules once
       await this.fetchWarningCounts();
-      
+      await this.fetchRanksOrder();
+
       // Add event listener for scroll on the RouterView container
       const scrollContainer = document.querySelector('.h-\\[calc\\(100vh-128px\\)\\]');
       if (scrollContainer) {

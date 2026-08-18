@@ -1,8 +1,19 @@
 <template>
   <div class="glass-card rounded-2xl overflow-hidden">
+    <div class="ladder-header">
+      <span></span>
+      <span>Personnage</span>
+      <span>Rang</span>
+      <span>Recruteur</span>
+      <span>Arrivée</span>
+      <span>Mules</span>
+      <span>Avert.</span>
+      <span></span>
+    </div>
+
     <div v-for="({ member, id }) in filteredMembers" :key="`member-${member.id}`" class="ladder-row">
       <div class="ladder-row-main">
-        <span @click.stop>
+        <span @click.stop class="ladder-avatar">
           <ClassDropdown
             :class-name="member.class"
             :classes="classes"
@@ -24,24 +35,41 @@
           />
         </div>
 
-        <button class="ladder-expand-trigger" @click="toggleExpand(id)">
+        <div class="ladder-col ladder-col--rank">
           <RankBadge :rank="member.rank" size="sm" />
-          <span class="ladder-meta-text">
-            {{ filteredMulesByCharacter(id).length }} mule{{ filteredMulesByCharacter(id).length === 1 ? '' : 's' }}
-            <template v-if="characterWarningCounts[member.id]"> · {{ characterWarningCounts[member.id] }} avert.</template>
-          </span>
+        </div>
+
+        <button class="ladder-col ladder-col--btn ladder-col--recruiter" @click="openRecruitmentModal(member)" title="Modifier le recrutement">
+          <span class="ladder-col-label">Recruteur</span>
+          <span class="ladder-col-value">{{ member.recruiter?.pseudo || '—' }}</span>
+        </button>
+
+        <button class="ladder-col ladder-col--btn ladder-col--arrival" @click="openRecruitmentModal(member)" title="Modifier le recrutement">
+          <span class="ladder-col-label">Arrivée</span>
+          <span class="ladder-col-value">{{ member.createdAt ? new Date(member.createdAt).toLocaleDateString('fr-FR') : '—' }}</span>
+        </button>
+
+        <button
+          class="ladder-col ladder-col--btn ladder-col--mules"
+          :class="{ 'ladder-col--active': expandedRows[id] }"
+          @click="toggleExpand(id)"
+          :title="expandedRows[id] ? 'Réduire' : 'Voir les mules'"
+        >
+          <span class="ladder-col-label">Mules</span>
+          <span class="ladder-col-value">{{ filteredMulesByCharacter(id).length }}</span>
+        </button>
+
+        <button
+          class="ladder-col ladder-col--btn ladder-col--warnings"
+          :class="{ 'ladder-col--warning': characterWarningCounts[member.id] > 0 }"
+          @click="viewWarnings(member.id, member.pseudo)"
+          title="Voir les avertissements"
+        >
+          <span class="ladder-col-label">Avert.</span>
+          <span class="ladder-col-value">{{ characterWarningCounts[member.id] || 0 }}</span>
         </button>
 
         <div class="ladder-actions">
-          <button
-            @click="viewWarnings(member.id, member.pseudo)"
-            class="p-2 text-theme-warning hover:bg-theme-warning/15 rounded-lg transition-all duration-200"
-            title="Voir les avertissements"
-          >
-            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-              <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
-            </svg>
-          </button>
           <button @click="$emit('open-notes-modal', member)" class="p-2 text-theme-primary hover:bg-theme-primary/10 rounded-lg transition-all duration-200" title="Note">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536M9 13h3l8-8a2.828 2.828 0 10-4-4l-8 8v3z" /></svg>
           </button>
@@ -60,11 +88,10 @@
 
       <!-- Détail déplié -->
       <div v-if="expandedRows[id]" class="ladder-detail">
-        <button class="ladder-detail-line ladder-detail-line--clickable" @click="openRecruitmentModal(member)" title="Modifier le recrutement">
+        <button class="ladder-detail-line ladder-detail-line--recruitment ladder-detail-line--clickable" @click="openRecruitmentModal(member)" title="Modifier le recrutement">
           <span>Recruteur</span> {{ member.recruiter?.pseudo || 'personne' }}
           <span class="mx-2">·</span>
           <span>Arrivée</span> {{ member.createdAt ? new Date(member.createdAt).toLocaleDateString('fr-FR') : 'inconnue' }}
-          <svg class="w-3.5 h-3.5 opacity-60 ml-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536M9 13h3l8-8a2.828 2.828 0 10-4-4l-8 8v3z" /></svg>
         </button>
 
         <div class="ladder-detail-line">
@@ -293,6 +320,29 @@ export default {
 </script>
 
 <style scoped>
+.ladder-header {
+  display: grid;
+  grid-template-columns: 3rem minmax(150px, 1.4fr) 8.5rem 8.5rem 6.5rem 4.5rem 4.5rem 7rem;
+  align-items: center;
+  column-gap: 1rem;
+  padding: 0.7rem 1.25rem;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.64rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+}
+.ladder-header span:nth-child(3),
+.ladder-header span:nth-child(4),
+.ladder-header span:nth-child(5) {
+  text-align: center;
+}
+.ladder-header span:nth-child(6),
+.ladder-header span:nth-child(7) {
+  text-align: center;
+}
+
 .ladder-row {
   border-bottom: 1px solid var(--border);
 }
@@ -301,45 +351,84 @@ export default {
 }
 
 .ladder-row-main {
-  display: flex;
+  display: grid;
+  grid-template-columns: 3rem minmax(150px, 1.4fr) 8.5rem 8.5rem 6.5rem 4.5rem 4.5rem 7rem;
   align-items: center;
-  gap: 0.85rem;
-  padding: 0.65rem 1.1rem;
+  column-gap: 1rem;
+  padding: 0.85rem 1.25rem;
+  min-height: 4.25rem;
   transition: background-color 0.2s;
 }
 .ladder-row-main:hover {
   background-color: rgba(var(--primary-rgb), 0.04);
 }
 
-.ladder-name {
-  flex-shrink: 0;
-  width: 180px;
-  min-width: 0;
-}
-
-.ladder-expand-trigger {
-  flex: 1;
+.ladder-avatar {
   display: flex;
-  align-items: center;
-  gap: 0.7rem;
-  text-align: left;
-  min-width: 0;
-  padding: 0.3rem 0;
 }
 
-.ladder-meta-text {
-  font-size: 0.78rem;
+.ladder-name {
+  min-width: 0;
+  font-size: 0.95rem;
+}
+
+.ladder-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.15rem;
+  min-width: 0;
+}
+
+.ladder-col--rank {
+  flex-direction: row;
+}
+
+.ladder-col-label {
+  font-size: 0.62rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
   color: var(--text-muted);
+}
+
+.ladder-col-value {
+  font-size: 0.84rem;
+  font-weight: 600;
+  color: var(--text);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+.ladder-col--btn {
+  border-radius: 0.65rem;
+  padding: 0.3rem 0.4rem;
+  margin: -0.3rem 0;
+  transition: background-color 0.2s;
+}
+.ladder-col--btn:hover {
+  background-color: rgba(var(--primary-rgb), 0.07);
+}
+
+.ladder-col--active {
+  background-color: rgba(var(--primary-rgb), 0.1);
+}
+.ladder-col--active .ladder-col-value {
+  color: var(--primary);
+}
+
+.ladder-col--warning .ladder-col-value {
+  color: var(--warning);
 }
 
 .ladder-actions {
   display: flex;
   align-items: center;
+  justify-content: flex-end;
   gap: 0.15rem;
-  flex-shrink: 0;
 }
 
 .ladder-chevron {
@@ -361,7 +450,7 @@ export default {
 }
 
 .ladder-detail {
-  padding: 0 1.1rem 1rem 4.3rem;
+  padding: 0 1.25rem 1.1rem calc(3rem + 1rem);
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
@@ -390,6 +479,10 @@ export default {
   background-color: rgba(var(--primary-rgb), 0.06);
 }
 
+.ladder-detail-line--recruitment {
+  display: none;
+}
+
 .ladder-mules {
   margin-top: 0.4rem;
   padding-top: 0.6rem;
@@ -412,5 +505,21 @@ export default {
   border: 1px solid var(--border);
   border-radius: 0.75rem;
   padding: 0.4rem 0.6rem;
+}
+
+@media (max-width: 880px) {
+  .ladder-header {
+    display: none;
+  }
+  .ladder-row-main {
+    grid-template-columns: 3rem minmax(120px, 1.4fr) 7.5rem 4.5rem 4.5rem 7rem;
+  }
+  .ladder-col--recruiter,
+  .ladder-col--arrival {
+    display: none;
+  }
+  .ladder-detail-line--recruitment {
+    display: flex;
+  }
 }
 </style>
