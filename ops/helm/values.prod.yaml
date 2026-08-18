@@ -47,8 +47,9 @@ deployments:
           CORS_ALLOW_ORIGIN: 
           JWT_SECRET_KEY: 
           JWT_PUBLIC_KEY: 
-          JWT_PASSPHRASE: 
-          FRONTEND_URL: 
+          JWT_PASSPHRASE:
+          JWT_TOKEN_TTL:
+          FRONTEND_URL:
         jwt_keys:
           JWT_PUBLIC_KEY_BASE64: 
           JWT_SECRET_KEY_BASE64: 
