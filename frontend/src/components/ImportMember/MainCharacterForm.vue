@@ -178,6 +178,7 @@
 import axios from 'axios';
 import RecruiterSelector from './RecruiterSelector.vue';
 import ThemedDatePicker from '@/components/ThemedDatePicker.vue';
+import { matchesBlacklistedPseudo, matchesBlacklistedAnkamaPseudo } from '@/utils/blacklist';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -218,20 +219,10 @@ export default {
   },
   computed: {
     isPseudoInvalid() {
-      return (
-        this.character.pseudo &&
-        this.blacklist.some(
-          entry => entry.pseudo.toLowerCase() === this.character.pseudo.toLowerCase()
-        )
-      );
+      return matchesBlacklistedPseudo(this.character.pseudo, this.blacklist);
     },
     isAnkamaPseudoInvalid() {
-      return (
-        this.character.ankamaPseudo &&
-        this.blacklist.some(
-          entry => entry.ankamaPseudo.toLowerCase() === this.character.ankamaPseudo.toLowerCase()
-        )
-      );
+      return matchesBlacklistedAnkamaPseudo(this.character.ankamaPseudo, this.blacklist);
     }
   },
   methods: {

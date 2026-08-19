@@ -187,6 +187,7 @@
 
 <script>
 import axios from 'axios';
+import { matchesBlacklistedPseudo, matchesBlacklistedAnkamaPseudo } from '@/utils/blacklist';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -241,20 +242,10 @@ export default {
       );
     },
     isMulePseudoInvalid() {
-      return (
-        this.muleCharacter.pseudo &&
-        this.blacklist.some(
-          entry => entry.pseudo.toLowerCase() === this.muleCharacter.pseudo.toLowerCase()
-        )
-      );
+      return matchesBlacklistedPseudo(this.muleCharacter.pseudo, this.blacklist);
     },
     isMuleAnkamaPseudoInvalid() {
-      return (
-        this.muleCharacter.ankamaPseudo &&
-        this.blacklist.some(
-          entry => entry.ankamaPseudo.toLowerCase() === this.muleCharacter.ankamaPseudo.toLowerCase()
-        )
-      );
+      return matchesBlacklistedAnkamaPseudo(this.muleCharacter.ankamaPseudo, this.blacklist);
     },
     canSubmitMule() {
       return this.muleCharacter.class && this.muleCharacter.linkedCharacterId;

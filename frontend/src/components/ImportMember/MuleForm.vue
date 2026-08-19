@@ -144,6 +144,8 @@
 </template>
 
 <script>
+import { matchesBlacklistedPseudo, matchesBlacklistedAnkamaPseudo } from '@/utils/blacklist';
+
 export default {
   props: {
     classes: {
@@ -177,19 +179,11 @@ export default {
     
     // Validation computed properties
     isPseudoInvalid() {
-      return (
-        this.mule.pseudo &&
-        this.blacklist.some(entry => entry.pseudo.toLowerCase() === this.mule.pseudo.toLowerCase())
-      );
+      return matchesBlacklistedPseudo(this.mule.pseudo, this.blacklist);
     },
-    
+
     isAnkamaPseudoInvalid() {
-      return (
-        this.mule.ankamaPseudo &&
-        this.blacklist.some(
-          entry => entry.ankamaPseudo.toLowerCase() === this.mule.ankamaPseudo.toLowerCase()
-        )
-      );
+      return matchesBlacklistedAnkamaPseudo(this.mule.ankamaPseudo, this.blacklist);
     }
   },
   methods: {

@@ -129,13 +129,19 @@ class NotificationService
 
     private function buildBlacklistAddedEmbed(Blacklist $blacklist): array
     {
+        $associatedCount = count($blacklist->getAssociatedCharacters());
+        $associatedLine = $associatedCount > 0
+            ? sprintf("\n**Personnages associés** : %d", $associatedCount)
+            : '';
+
         return [
             'title' => 'Ajout à la blacklist 🚫',
             'description' => sprintf(
-                "Le joueur **%s** (%s) a été ajouté à la blacklist.\n\n**Raison** : \"%s\"",
+                "Le joueur **%s** (%s) a été ajouté à la blacklist.\n\n**Raison** : \"%s\"%s",
                 $blacklist->getPseudo(),
                 $blacklist->getAnkamaPseudo(),
-                $blacklist->getReason()
+                $blacklist->getReason(),
+                $associatedLine
             ),
             'color' => 15158332, // Rouge clair
             'timestamp' => (new \DateTime())->format(\DateTime::ATOM),
