@@ -64,7 +64,7 @@
                   </div>
                   <div class="flex-1">
                     <div class="flex items-center justify-between mb-2">
-                      <h3 class="text-xl font-serif font-bold text-theme-text">Roue Dofus</h3>
+                      <h3 class="text-xl font-serif font-bold text-theme-text">Roue des Membres</h3>
                       <svg class="w-5 h-5 text-theme-primary opacity-0 group-hover:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
                       </svg>
@@ -76,7 +76,7 @@
                   <svg class="w-4 h-4 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
                   </svg>
-                  <span>Tirage au sort équitable avec élimination progressive</span>
+                  <span>Tirage au sort équitable</span>
                 </div>
               </div>
             </RouterLink>
@@ -105,7 +105,7 @@
                   <svg class="w-4 h-4 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
                   </svg>
-                  <span>Choisissez votre prochaine classe pour un nouveau personnage</span>
+                  <span>Choisissez votre prochaine classe pour un nouveau personnage ou un reroll si vous êtes un goat</span>
                 </div>
               </div>
             </RouterLink>

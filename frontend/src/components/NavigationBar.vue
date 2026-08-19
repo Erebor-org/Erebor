@@ -90,7 +90,7 @@
   onBeforeUnmount(() => {
     document.removeEventListener('mousedown', handleClickOutside);
   });
-  
+
   const logout = () => {
     authStore.logout();
     router.push('/');
@@ -98,24 +98,24 @@
 
   const user = computed(() => authStore.user);
   const isLoggedIn = computed(() => authStore.token !== null);
-  
+
   const isAdmin = computed(() => {
     const roles = user.value?.roles || [];
-    return roles.includes('ROLE_ADMIN') || 
-           roles.includes('ROLE_SUPER_ADMIN') || 
+    return roles.includes('ROLE_ADMIN') ||
+           roles.includes('ROLE_SUPER_ADMIN') ||
            roles.includes('ROLE_OWNERS');
   });
-  
+
   const isSuperSuperAdmin = computed(() => {
     const roles = user.value?.roles || [];
     return roles.includes('ROLE_OWNERS');
   });
-  
+
   const canManageWarnings = computed(() => {
     const roles = user.value?.roles || [];
     return roles.includes('ROLE_OWNERS');
   });
-  
+
   const canViewWarnings = computed(() => {
     const roles = user.value?.roles || [];
     return roles.includes('ROLE_SUPER_ADMIN') || roles.includes('ROLE_OWNERS');
@@ -128,7 +128,7 @@
     }
     return profile_icon;
   });
-  
+
   const toggleMobileMenu = () => {
     isMobileMenuOpen.value = !isMobileMenuOpen.value;
   };
@@ -183,16 +183,16 @@
 
         <!-- Center Section - Navigation Links (Desktop) -->
         <div class="hidden lg:flex items-center space-x-6">
-          
-          <RouterLink 
-            to="/home" 
+
+          <RouterLink
+            to="/home"
             v-if="isLoggedIn"
             class="nav-link"
             active-class="nav-link-active"
           >
             Accueil
           </RouterLink>
-          
+
           <RouterLink
             to="/membres"
             v-if="isLoggedIn && isAdmin"
@@ -234,7 +234,7 @@
                 :class="{ 'nav-link-active': route.path === '/wheel' }"
                 @click="closeWheelDropdown"
               >
-                Roue Dofus (Membres)
+                Roue des Membres
               </RouterLink>
               <RouterLink
                 to="/wheel-classes"
@@ -305,13 +305,13 @@
 
         <!-- Right Section - User Menu & Auth -->
         <div class="flex items-center space-x-4">
-          
+
           <!-- Theme Toggle -->
           <ThemeToggle />
-          
+
           <!-- Not Logged In -->
           <div v-if="!isLoggedIn" class="flex items-center space-x-3">
-            <RouterLink 
+            <RouterLink
               to="/inscription"
               class="px-6 py-2.5 bg-theme-primary hover:bg-theme-primary-hover text-white font-semibold rounded-xl transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-theme-ring focus:ring-opacity-30 shadow-lg"
             >
@@ -390,13 +390,13 @@
     </div>
 
     <!-- Mobile Menu -->
-    <div 
-      v-if="isMobileMenuOpen" 
+    <div
+      v-if="isMobileMenuOpen"
       class="lg:hidden bg-theme-bg-muted border-t border-theme-border shadow-xl"
     >
       <div class="px-4 py-6 space-y-4">
-        <RouterLink 
-          to="/home" 
+        <RouterLink
+          to="/home"
           v-if="isLoggedIn"
           class="mobile-nav-link"
           active-class="mobile-nav-link-active"
@@ -404,7 +404,7 @@
         >
           Accueil
         </RouterLink>
-        
+
         <RouterLink
           to="/membres"
           v-if="isLoggedIn && isAdmin"
@@ -457,24 +457,24 @@
 
         <div v-if="isLoggedIn" class="">
           <div class="font-semibold text-theme-primary mb-1">Roue</div>
-          <RouterLink 
-            to="/wheel" 
+          <RouterLink
+            to="/wheel"
             class="mobile-nav-link"
             :class="{ 'mobile-nav-link-active': route.path === '/wheel' }"
             @click="isMobileMenuOpen = false"
           >
             Roue Dofus (Membres)
           </RouterLink>
-          <RouterLink 
-            to="/wheel-classes" 
+          <RouterLink
+            to="/wheel-classes"
             class="mobile-nav-link"
             :class="{ 'mobile-nav-link-active': route.path === '/wheel-classes' }"
             @click="isMobileMenuOpen = false"
           >
             Roue des Classes
           </RouterLink>
-          <RouterLink 
-            to="/wheel-numbers" 
+          <RouterLink
+            to="/wheel-numbers"
             class="mobile-nav-link"
             :class="{ 'mobile-nav-link-active': route.path === '/wheel-numbers' }"
             @click="isMobileMenuOpen = false"
@@ -485,8 +485,8 @@
 
         <div v-if="isLoggedIn" class="">
           <div class="font-semibold text-theme-primary mb-1">Mon Compte</div>
-          <RouterLink 
-            to="/profil" 
+          <RouterLink
+            to="/profil"
             class="mobile-nav-link"
             :class="{ 'mobile-nav-link-active': route.path === '/profil' }"
             @click="isMobileMenuOpen = false"
