@@ -300,9 +300,11 @@ const nextRankProgress = computed(() => {
   const daysRemaining = Math.max(0, requiredDays - totalDays);
   const progressPercentage = Math.min(100, (totalDays / requiredDays) * 100);
 
-  // Show the banner for a week after the rank is reached, then stop
+  // Show the banner for a week after the rank is reached, then stop.
+  // The starting rank (everyone's default on joining) is never a real promotion, so it never gets a banner.
   const daysInCurrentRank = totalDays - achievedRank.requiredDays;
-  const justUnlockedRank = daysInCurrentRank >= 0 && daysInCurrentRank < 7;
+  const isStartingRank = achievedRank === ranksWithDays[0];
+  const justUnlockedRank = !isStartingRank && daysInCurrentRank >= 0 && daysInCurrentRank < 7;
 
   return {
     nextRankName: nextRank.name,
