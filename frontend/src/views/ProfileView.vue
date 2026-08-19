@@ -77,7 +77,7 @@
             <h3 class="text-xl font-serif font-bold brand-gradient-text mb-1">Nouveau rang débloqué !</h3>
             <p class="text-lg font-bold text-theme-primary mb-1">{{ nextRankProgress.achievedRankName }}</p>
             <p class="text-sm text-theme-text-muted">
-              Félicitations, vous avez atteint ce rang après {{ nextRankProgress.totalDays }} jour{{ nextRankProgress.totalDays !== 1 ? 's' : '' }} dans la guilde !
+              Félicitations, vous avez atteint ce rang après {{ nextRankProgress.achievedRankRequiredDays }} jour{{ nextRankProgress.achievedRankRequiredDays !== 1 ? 's' : '' }} dans la guilde !
             </p>
           </div>
 
@@ -300,21 +300,18 @@ const nextRankProgress = computed(() => {
   const daysRemaining = Math.max(0, requiredDays - totalDays);
   const progressPercentage = Math.min(100, (totalDays / requiredDays) * 100);
 
-  // Calculate days since reaching achieved rank
-  const daysInCurrentRank = Math.max(0, totalDays - (achievedRank.requiredDays || 0));
-  const showAnimation = daysInCurrentRank <= 2; // Show animation for 2 days after rank change
-
-  // Check if the user has exactly reached the achieved rank
-  const justUnlockedRank = totalDays >= achievedRank.requiredDays && daysInCurrentRank <= 2;
+  // Show the banner for a week after the rank is reached, then stop
+  const daysInCurrentRank = totalDays - achievedRank.requiredDays;
+  const justUnlockedRank = daysInCurrentRank >= 0 && daysInCurrentRank < 7;
 
   return {
     nextRankName: nextRank.name,
     achievedRankName: achievedRank.name,
+    achievedRankRequiredDays: achievedRank.requiredDays,
     totalDays,
     requiredDays,
     daysRemaining,
     progressPercentage,
-    showAnimation,
     justUnlockedRank
   };
 });
