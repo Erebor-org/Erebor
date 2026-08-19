@@ -1,0 +1,5 @@
+nelmio_cors:
+  defaults:
+    # Only needed in dev: locally there's no nginx in front of Symfony to set
+    # Access-Control-Allow-Origin, so the bundle has to do it itself.
+    allow_origin: ["%env(FRONTEND_URL)%"]

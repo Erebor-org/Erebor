@@ -1,6 +1,9 @@
 nelmio_cors:
   defaults:
-    #allow_origin: ["%env(FRONTEND_URL)%"]
+    # No allow_origin here: in prod, the nginx in front of this API (frontend/nginx/conf.d/symfony.conf)
+    # already sets Access-Control-Allow-Origin itself. If NelmioCorsBundle also set it, the response
+    # would carry the header twice and browsers reject that. The dev-only override lives in
+    # config/packages/dev/nelmio_cors.yaml, since local dev runs the Symfony server directly (no nginx).
     allow_credentials: true
     allow_headers: ["Content-Type", "Authorization", "X-Requested-With"]
     expose_headers: ["Link"]
