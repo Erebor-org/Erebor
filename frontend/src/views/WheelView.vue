@@ -1,113 +1,128 @@
 <template>
-  <div class="min-h-screen bg-theme-bg text-theme-text flex flex-col items-center p-4">
-    <div class="w-full flex justify-end mb-4">
-      <RouterLink to="/wheel-classes" class="btn btn-secondary">Basculer vers la roue des classes</RouterLink>
-    </div>
-    <h1 class="text-2xl font-bold mb-4 text-theme-primary">Roue de sélection Dofus</h1>
-    <div class="w-full max-w-6xl grid grid-cols-1 md:grid-cols-3 gap-6">
-      <!-- Sélecteur de personnages -->
-      <div class="bg-theme-card border border-theme-border rounded shadow p-4 flex flex-col">
-        <div class="flex items-center mb-2">
-          <input type="text" v-model="search" placeholder="Rechercher un pseudo..." class="input input-bordered w-full max-w-xs mr-2 bg-theme-bg text-theme-text border-theme-border" />
-          <button class="btn btn-sm ml-2" @click="toggleSelectAll">{{ allSelected ? 'Tout désélectionner' : 'Tout sélectionner' }}</button>
+  <div class="min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+      <!-- Page Header -->
+      <div class="text-center mb-8">
+        <h1 class="text-4xl md:text-5xl font-serif font-bold brand-gradient-text mb-4">Roue des Membres</h1>
+        <div class="w-24 h-1 rounded-full mx-auto" style="background-image: linear-gradient(90deg, var(--primary), var(--accent));"></div>
+        <p class="text-theme-text-muted mt-4">Tirage aléatoire parmi les membres sélectionnés</p>
+      </div>
+
+      <div class="flex justify-center mb-8">
+        <div class="inline-flex rounded-xl bg-theme-bg-muted p-1 border border-theme-border">
+          <RouterLink to="/wheel" class="wheel-tab wheel-tab--active">Membres</RouterLink>
+          <RouterLink to="/wheel-classes" class="wheel-tab">Classes</RouterLink>
+          <RouterLink to="/wheel-numbers" class="wheel-tab">Nombres</RouterLink>
         </div>
-        <!-- SUPPRIME le bloc chips ici -->
-        <div class="text-sm mb-2 font-semibold">{{ selectedCount }} sélectionné(s) sur {{ characters.length }}</div>
-        <div class="flex-1 overflow-y-auto max-h-80 border border-theme-border rounded bg-theme-bg">
-          <div v-for="char in filteredCharacters.length ? filteredCharacters : characters"
-            :key="char.id"
-            class="flex items-center py-2 px-2 border-b border-theme-border last:border-b-0 cursor-pointer transition-all"
-            :class="[
-              char.eliminated ? 'bg-theme-bg-muted text-theme-text-muted line-through opacity-60 cursor-not-allowed' : (char.selected ? 'bg-theme-primary/10 border-l-4 border-theme-primary' : 'hover:bg-theme-bg-muted'),
-              'group'
-            ]"
-            @click="!char.eliminated && (char.selected = !char.selected)"
-          >
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+        <!-- Sélecteur de personnages -->
+        <div class="glass-card rounded-2xl p-5 flex flex-col">
+          <div class="relative mb-3">
+            <svg class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-theme-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
             <input
-              type="checkbox"
-              v-model="char.selected"
-              :disabled="char.eliminated"
-              class="mr-3 w-5 h-5 accent-theme-primary cursor-pointer"
-              @click.stop
+              type="text"
+              v-model="search"
+              placeholder="Rechercher un pseudo..."
+              class="w-full bg-theme-bg-muted border border-theme-border text-theme-text rounded-xl py-2.5 pl-10 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-theme-primary focus:border-theme-primary transition-all duration-200"
             />
-            <img :src="getClassIcon(char.class)" alt="class icon" class="w-6 h-6 mr-2" />
-            <span>{{ char.pseudo }}</span>
+          </div>
+          <div class="flex items-center justify-between mb-3">
+            <span class="text-sm text-theme-text-muted">{{ selectedCount }} sélectionné{{ selectedCount === 1 ? '' : 's' }} sur {{ characters.length }}</span>
+            <button @click="toggleSelectAll" class="text-theme-primary hover:text-theme-primary-hover text-xs font-semibold">
+              {{ allSelected ? 'Tout désélectionner' : 'Tout sélectionner' }}
+            </button>
+          </div>
+          <div class="wheel-list">
+            <label
+              v-for="char in filteredCharacters.length ? filteredCharacters : characters"
+              :key="char.id"
+              class="wheel-list-row"
+              :class="{ 'wheel-list-row--eliminated': char.eliminated, 'wheel-list-row--selected': char.selected && !char.eliminated }"
+            >
+              <input type="checkbox" v-model="char.selected" :disabled="char.eliminated" class="accent-theme-primary w-4 h-4 flex-shrink-0" />
+              <img :src="getClassIcon(char.class)" alt="" class="wheel-list-icon" />
+              <span class="truncate">{{ char.pseudo }}</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Roue de sélection -->
+        <div class="glass-card rounded-2xl p-6 flex flex-col items-center">
+          <div class="wheel-ring">
+            <canvas ref="wheelCanvas" width="384" height="384"></canvas>
+          </div>
+
+          <button class="wheel-spin-btn mt-6" :disabled="remainingPlayers.length < 2 || spinning" @click="spinWheel">
+            {{ spinning ? 'Tirage en cours...' : 'Lancer la roue' }}
+          </button>
+
+          <div v-if="lastEliminated" class="mt-5 text-center">
+            <span class="text-xs uppercase tracking-wide text-theme-text-muted font-bold">Éliminé</span>
+            <div class="flex items-center justify-center gap-2 mt-1">
+              <img :src="getClassIcon(lastEliminated.class)" alt="" class="w-6 h-6 rounded-full border border-theme-border" />
+              <span class="font-semibold text-theme-text">{{ lastEliminated.pseudo }}</span>
+            </div>
+          </div>
+
+          <transition name="winner-pop">
+            <div v-if="winner && hasSpun && lastSpinPlayersCount > 1 && !spinning" class="mt-6 text-center">
+              <div class="text-xl font-serif font-bold brand-gradient-text">🎉 Gagnant : {{ winner.pseudo }} 🎉</div>
+              <img :src="getClassIcon(winner.class)" alt="" class="w-12 h-12 mx-auto mt-2 rounded-full border-2 border-theme-primary" />
+            </div>
+          </transition>
+
+          <div class="flex gap-3 mt-6">
+            <button class="wheel-btn-secondary" @click="undoElimination" :disabled="eliminatedHistory.length === 0">Annuler élimination</button>
+            <button class="wheel-btn-secondary" @click="resetWheel">Réinitialiser</button>
+          </div>
+          <label class="flex items-center gap-2 mt-4 text-sm text-theme-text-muted cursor-pointer">
+            <input type="checkbox" v-model="tirageInstantane" class="accent-theme-primary w-4 h-4" />
+            Tirage instantané (pas d'élimination)
+          </label>
+        </div>
+
+        <!-- Historique des éliminés -->
+        <div class="glass-card rounded-2xl p-5 flex flex-col">
+          <span class="text-xs font-bold uppercase tracking-wide text-theme-text-muted mb-3">Historique des éliminés</span>
+          <div class="wheel-list">
+            <div v-for="char in eliminatedHistory" :key="char.id" class="wheel-list-row wheel-list-row--readonly">
+              <img :src="getClassIcon(char.class)" alt="" class="wheel-list-icon" />
+              <span class="truncate">{{ char.pseudo }}</span>
+            </div>
+            <p v-if="eliminatedHistory.length === 0" class="text-sm text-theme-text-muted text-center py-8">Aucune élimination pour l'instant</p>
           </div>
         </div>
       </div>
-      <!-- Roue de sélection -->
-      <div class="flex flex-col items-center justify-center bg-theme-card border border-theme-border rounded shadow p-4">
-        <div class="w-96 h-96 flex items-center justify-center">
-          <canvas ref="wheelCanvas" width="384" height="384" class="border-4 border-theme-primary rounded-full shadow-2xl bg-theme-bg transition-all duration-300"></canvas>
-        </div>
-        <button class="btn btn-primary mt-8 w-full max-w-xs" :disabled="remainingPlayers.length < 2 || spinning" @click="spinWheel">
-          {{ spinning ? 'Tirage en cours...' : 'Lancer la roue' }}
-        </button>
-        <div v-if="lastEliminated" class="mt-4 text-center">
-          <div class="font-bold">Éliminé :</div>
-          <img :src="getClassIcon(lastEliminated.class)" alt="class icon" class="w-8 h-8 inline-block mr-2" />
-          <span class="text-lg">{{ lastEliminated.pseudo }}</span>
-        </div>
-        <transition name="winner-pop">
-          <div v-if="winner && hasSpun && lastSpinPlayersCount > 1 && !spinning" class="mt-6 text-center winner-anim">
-            <div class="text-2xl font-bold text-theme-success">🎉 Gagnant : {{ winner.pseudo }} 🎉</div>
-            <img :src="getClassIcon(winner.class)" alt="class icon" class="w-12 h-12 inline-block" />
-          </div>
-        </transition>
-        <!-- Contrôles -->
-    <div class="flex gap-4 mt-6">
-      <button class="btn btn-secondary" @click="undoElimination" :disabled="eliminatedHistory.length === 0">Annuler élimination</button>
-      <button class="btn btn-warning" @click="resetWheel">Réinitialiser</button>
-    </div>
-    <div class="flex items-center mt-4">
-      <label class="flex items-center">
-        <input type="checkbox" v-model="tirageInstantane" class="mr-2" />
-        Tirage instantané (pas d'élimination)
-      </label>
-    </div>
-      </div>
-      <!-- Historique des éliminés -->
-      <div class="bg-theme-card border border-theme-border rounded shadow p-4 flex flex-col">
-        <div class="font-bold mb-2">Historique des éliminés</div>
-        <div class="flex-1 overflow-y-auto max-h-80 border border-theme-border rounded bg-theme-bg">
-          <div v-for="char in eliminatedHistory" :key="char.id" class="flex items-center py-2 px-2 border-b border-theme-border last:border-b-0">
-            <img :src="getClassIcon(char.class)" alt="class icon" class="w-5 h-5 mr-2" />
-            <span>{{ char.pseudo }}</span>
-          </div>
-        </div>
-      </div>
-      <!-- Remets le bloc chips rangs ici, sur 2 rangées à l'horizontal -->
-      
-    </div>
-    <div class="mt-4 bg-theme-bg-muted border border-theme-border rounded-2xl shadow grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2 p-4 justify-items-center w-full px-2">
-        <button
-          v-for="rank in ranks.slice().sort((a, b) => a.id - b.id)"
-          :key="rank.id"
-          class="flex items-center gap-2 px-4 py-2 rounded-full border font-medium transition-colors duration-150 focus:outline-none w-full justify-center"
-          :class="checkedRanks.includes(rank.id)
-            ? 'bg-theme-primary text-theme-bg border-theme-primary shadow-md scale-105'
-            : 'bg-theme-bg-muted text-theme-text border-theme-border hover:bg-theme-primary/10 hover:border-theme-primary'"
-          @click="toggleRankCheckbox(rank.id)"
-          :title="rank.description || ''"
-          type="button"
-        >
-          <span>{{ rank.name }}</span>
-          <span v-if="rankMemberCount(rank.id) > 0"
-            class="ml-2 px-2 py-0.5 rounded-full text-xs font-bold border"
-            :class="checkedRanks.includes(rank.id)
-              ? 'bg-theme-bg text-theme-primary border-theme-primary'
-              : 'bg-theme-bg text-theme-primary border-theme-primary'"
+
+      <!-- Filtre par rang -->
+      <div class="glass-card rounded-2xl p-5 mt-6">
+        <span class="text-xs font-bold uppercase tracking-wide text-theme-text-muted mb-3 block">Sélectionner par rang</span>
+        <div class="flex flex-wrap gap-2">
+          <button
+            v-for="rank in ranks.slice().sort((a, b) => a.id - b.id)"
+            :key="rank.id"
+            class="wheel-rank-chip"
+            :class="{ 'wheel-rank-chip--active': checkedRanks.includes(rank.id) }"
+            @click="toggleRankCheckbox(rank.id)"
+            :title="rank.description || ''"
+            type="button"
           >
-            {{ rankMemberCount(rank.id) }}
-          </span>
-        </button>
+            <span>{{ rank.name }}</span>
+            <span v-if="rankMemberCount(rank.id) > 0" class="wheel-rank-count">{{ rankMemberCount(rank.id) }}</span>
+          </button>
+        </div>
       </div>
-    
+    </div>
   </div>
-  <div v-if="spinning" class="fixed inset-0 z-50 flex items-center justify-center bg-black/80">
-    <div class="flex flex-col items-center justify-center relative">
-      <canvas ref="wheelCanvas" width="1000" height="1000" class="border-8 border-theme-primary rounded-full shadow-2xl bg-theme-bg transition-all duration-300" style="max-width:95vw; max-height:95vh;"></canvas>
-      <div class="mt-8 text-white text-xl font-bold animate-pulse">Tirage en cours...</div>
+
+  <div v-if="spinning" class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
+    <div class="flex flex-col items-center justify-center">
+      <div class="wheel-ring wheel-ring--big">
+        <canvas ref="wheelCanvas" width="1000" height="1000" style="max-width:85vw; max-height:85vh;"></canvas>
+      </div>
+      <div class="mt-8 text-theme-text text-xl font-serif font-bold animate-pulse">Tirage en cours...</div>
     </div>
   </div>
 </template>
@@ -118,6 +133,14 @@ import axios from 'axios';
 import confetti from 'canvas-confetti';
 import { RouterLink } from 'vue-router';
 import { getClassIcon as getClassIconFromConfig } from '@/config/classIcons';
+import {
+  getWheelSliceColors,
+  getWheelSliceGradient,
+  getWheelConfettiColors,
+  drawWheelRimBezel,
+  drawWheelHub,
+  drawWheelPointer,
+} from '@/utils/wheelPalette';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -192,7 +215,7 @@ onMounted(() => {
 
 const filteredCharacters = computed(() => {
   return characters.value.filter(c =>
-    c.pseudo.toLowerCase().includes(search.value.toLowerCase()) 
+    c.pseudo.toLowerCase().includes(search.value.toLowerCase())
   );
 });
 
@@ -297,8 +320,10 @@ function drawWheel(angle = 0, nOverride?: number, playersOverride?: Character[] 
   const centerX = canvas.width / 2;
   const centerY = canvas.height / 2;
   const radius = Math.min(centerX, centerY) - 10;
-  const iconSize = 40;
-  const fontSize = 15;
+  const hubRadius = radius * 0.14;
+  const iconSize = canvas.width / 9.6;
+  const fontSize = canvas.width / 25.6;
+  const sliceColors = getWheelSliceColors(n);
   for (let i = 0; i < n; i++) {
     const angleStart = (i / n) * 2 * Math.PI + angle;
     const angleEnd = ((i + 1) / n) * 2 * Math.PI + angle;
@@ -307,10 +332,11 @@ function drawWheel(angle = 0, nOverride?: number, playersOverride?: Character[] 
     ctx.moveTo(centerX, centerY);
     ctx.arc(centerX, centerY, radius, angleStart, angleEnd);
     ctx.closePath();
-    ctx.fillStyle = `hsl(${(i * 360) / n}, 70%, 60%)`;
-    ctx.shadowColor = 'rgba(0,0,0,0.15)';
-    ctx.shadowBlur = 8;
+    ctx.fillStyle = getWheelSliceGradient(ctx, centerX, centerY, hubRadius, radius, sliceColors[i]);
     ctx.fill();
+    ctx.lineWidth = Math.max(1.5, canvas.width / 400);
+    ctx.strokeStyle = 'rgba(0,0,0,0.35)';
+    ctx.stroke();
     ctx.restore();
     // Position radiale pour l’icône et le texte
     const midAngle = angleStart + (angleEnd - angleStart) / 2;
@@ -320,7 +346,7 @@ function drawWheel(angle = 0, nOverride?: number, playersOverride?: Character[] 
     // Icône de classe
     const className = players[i].class?.toLowerCase() || 'iop';
     const icon = getIcon(className);
-    
+
     // Draw icon if already loaded
     if (icon.complete && icon.naturalWidth > 0) {
       ctx.save();
@@ -359,12 +385,9 @@ function drawWheel(angle = 0, nOverride?: number, playersOverride?: Character[] 
     const textX = centerX + Math.cos(midAngle) * textRadius;
     const textY = centerY + Math.sin(midAngle) * textRadius;
     ctx.save();
-    ctx.font = `bold ${fontSize}px sans-serif`;
+    ctx.font = `bold ${fontSize}px ui-serif, Georgia, serif`;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillStyle = '#222';
-    ctx.shadowColor = 'rgba(0,0,0,0.12)';
-    ctx.shadowBlur = 2;
     ctx.translate(textX, textY);
     ctx.rotate(midAngle + Math.PI / 2);
     let pseudo = players[i].pseudo;
@@ -374,23 +397,16 @@ function drawWheel(angle = 0, nOverride?: number, playersOverride?: Character[] 
       }
       pseudo += '…';
     }
+    ctx.lineWidth = 3;
+    ctx.strokeStyle = 'rgba(0,0,0,0.55)';
+    ctx.strokeText(pseudo, 0, 0);
+    ctx.fillStyle = '#ffffff';
     ctx.fillText(pseudo, 0, 0);
     ctx.restore();
   }
-  // Flèche
-  ctx.save();
-  ctx.translate(centerX, centerY);
-  ctx.rotate(0);
-  ctx.beginPath();
-  ctx.moveTo(0, -radius - 16);
-  ctx.lineTo(-18, -radius + 18);
-  ctx.lineTo(18, -radius + 18);
-  ctx.closePath();
-  ctx.fillStyle = '#2563eb';
-  ctx.shadowColor = ctx.fillStyle;
-  ctx.shadowBlur = 12;
-  ctx.fill();
-  ctx.restore();
+  drawWheelRimBezel(ctx, centerX, centerY, radius);
+  drawWheelHub(ctx, centerX, centerY, hubRadius);
+  drawWheelPointer(ctx, centerX, centerY, radius);
 }
 
 function undoElimination() {
@@ -437,7 +453,7 @@ watch(winner, (newWinner, oldWinner) => {
       spread: 80,
       origin: { y: 0.6 },
       zIndex: 9999,
-      colors: ['#2563eb', '#fbbf24', '#22c55e', '#ef4444', '#a21caf']
+      colors: getWheelConfettiColors()
     });
   }
 });
@@ -477,22 +493,151 @@ function rankMemberCount(rankId: number) {
 </script>
 
 <style scoped>
-.input {
-  @apply border rounded px-2 py-1;
+.wheel-tab {
+  padding: 0.6rem 1.6rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  border-radius: 0.6rem;
+  color: var(--text-muted);
+  transition: background-color 0.2s, color 0.2s;
 }
-.btn {
-  @apply px-4 py-2 rounded font-semibold shadow;
+.wheel-tab:hover {
+  color: var(--text);
 }
-.btn-primary {
-  @apply bg-theme-primary text-white hover:bg-theme-primary-hover;
+.wheel-tab--active {
+  background-image: linear-gradient(140deg, var(--accent), var(--primary));
+  color: #fff;
 }
-.btn-secondary {
-  @apply bg-theme-bg-muted text-theme-text hover:bg-theme-text-muted border border-theme-border;
+
+.wheel-list {
+  flex: 1;
+  overflow-y: auto;
+  max-height: 22rem;
+  border: 1px solid var(--border);
+  border-radius: 0.85rem;
 }
-.btn-warning {
-  @apply bg-theme-warning text-gray-900 hover:bg-yellow-500;
+
+.wheel-list-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.55rem 0.75rem;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.85rem;
+  color: var(--text);
+  cursor: pointer;
+  transition: background-color 0.2s;
 }
-/* SUPPRIME tout le CSS chips custom ici */
+.wheel-list-row:last-child {
+  border-bottom: none;
+}
+.wheel-list-row:hover {
+  background-color: rgba(var(--primary-rgb), 0.05);
+}
+.wheel-list-row--selected {
+  background-color: rgba(var(--primary-rgb), 0.08);
+  border-left: 3px solid var(--primary);
+  padding-left: calc(0.75rem - 3px);
+}
+.wheel-list-row--eliminated {
+  opacity: 0.45;
+  text-decoration: line-through;
+  cursor: not-allowed;
+}
+.wheel-list-row--readonly {
+  cursor: default;
+}
+
+.wheel-list-icon {
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 9999px;
+  border: 1px solid var(--border);
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.wheel-ring {
+  display: inline-flex;
+  padding: 6px;
+  border-radius: 9999px;
+  background-image: conic-gradient(from 200deg, var(--accent), transparent 40%, var(--primary), var(--accent));
+}
+.wheel-ring canvas {
+  border-radius: 9999px;
+  background-color: var(--bg);
+  display: block;
+}
+.wheel-ring--big {
+  padding: 10px;
+}
+
+.wheel-spin-btn {
+  width: 100%;
+  max-width: 20rem;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.75rem;
+  font-weight: 700;
+  color: #fff;
+  background-image: linear-gradient(140deg, var(--accent), var(--primary));
+  transition: filter 0.2s, opacity 0.2s;
+}
+.wheel-spin-btn:hover:not(:disabled) {
+  filter: brightness(1.08);
+}
+.wheel-spin-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.wheel-btn-secondary {
+  padding: 0.5rem 1rem;
+  border-radius: 0.6rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text);
+  background-color: var(--bg-muted);
+  border: 1px solid var(--border);
+  transition: border-color 0.2s, color 0.2s;
+}
+.wheel-btn-secondary:hover:not(:disabled) {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+.wheel-btn-secondary:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.wheel-rank-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.4rem 0.9rem;
+  border-radius: 9999px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+  transition: border-color 0.2s, background-color 0.2s, color 0.2s;
+}
+.wheel-rank-chip:hover {
+  border-color: var(--accent);
+  color: var(--accent-hover);
+}
+.wheel-rank-chip--active {
+  background-image: linear-gradient(140deg, var(--accent), var(--primary));
+  border-color: transparent;
+  color: #fff;
+}
+.wheel-rank-count {
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 0.05rem 0.4rem;
+  border-radius: 9999px;
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
 .winner-pop-enter-active {
   transition: all 0.5s cubic-bezier(.68,-0.55,.27,1.55);
 }
@@ -514,19 +659,5 @@ function rankMemberCount(rankId: number) {
 .winner-pop-leave-to {
   opacity: 0;
   transform: scale(0.7) rotate(10deg);
-}
-.arm-shake {
-  animation: armShake 0.7s cubic-bezier(.68,-0.55,.27,1.55) infinite;
-}
-@keyframes armShake {
-  0% { transform: rotate(-10deg); }
-  20% { transform: rotate(8deg); }
-  40% { transform: rotate(-6deg); }
-  60% { transform: rotate(5deg); }
-  80% { transform: rotate(-3deg); }
-  100% { transform: rotate(0deg); }
-}
-.arm-svg {
-  pointer-events: none;
 }
 </style>
