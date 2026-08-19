@@ -1,19 +1,23 @@
 <template>
   <div class="relative inline-block">
     <!-- Class Icon Button -->
-    <button 
+    <button
       @click="toggleDropdown"
-      class="group relative focus:outline-none focus:ring-2 focus:ring-theme-primary focus:ring-offset-2 focus:ring-offset-theme-bg rounded-xl transition-all duration-300"
+      class="group relative focus:outline-none focus:ring-2 focus:ring-theme-primary focus:ring-offset-2 focus:ring-offset-theme-bg rounded-full transition-all duration-300 hover:scale-105"
       :title="`Changer la classe (actuellement: ${className})`"
     >
-      <img
-        :src="classes[className]"
-        :alt="`Classe ${className}`"
-        class="w-20 h-20 rounded-xl border-2 border-theme-bg-muted group-hover:border-theme-primary transition-all duration-300 shadow-lg group-hover:shadow-theme-primary/25"
-      />
+      <span class="portrait-ring shadow-lg group-hover:shadow-theme-primary/25" :class="size === 'sm' ? 'w-10 h-10' : 'w-20 h-20'">
+        <img
+          :src="classes[className]"
+          :alt="`Classe ${className}`"
+        />
+      </span>
       <!-- Edit Indicator -->
-      <div class="absolute -top-3 -right-3 w-7 h-7 bg-gradient-to-r from-theme-primary to-theme-primary-hover rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 shadow-lg">
-        <svg class="w-4 h-4 text-theme-bg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <div
+        class="absolute bg-gradient-to-r from-theme-primary to-theme-primary-hover rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 shadow-lg border-2 border-theme-card"
+        :class="size === 'sm' ? '-top-0.5 -right-0.5 w-4 h-4' : '-top-1 -right-1 w-7 h-7'"
+      >
+        <svg class="text-white" :class="size === 'sm' ? 'w-2 h-2' : 'w-3.5 h-3.5'" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
         </svg>
       </div>
@@ -22,7 +26,8 @@
     <!-- Dropdown Menu -->
     <div
       v-if="isVisible"
-      class="absolute top-24 left-0 z-50 bg-theme-card border border-theme-bg-muted rounded-2xl shadow-2xl p-6 w-[500px] max-h-96 overflow-y-auto backdrop-blur-sm"
+      class="glass-modal absolute left-0 z-50 rounded-2xl shadow-2xl p-6 w-[500px] max-h-96 overflow-y-auto backdrop-blur-md"
+      :class="size === 'sm' ? 'top-12' : 'top-24'"
     >
       <!-- Header -->
       <div class="flex items-center justify-between mb-6 pb-4 border-b border-theme-bg-muted">
@@ -83,6 +88,11 @@ export default {
       type: String,
       required: true,
       validator: (value) => ['character', 'mule'].includes(value),
+    },
+    size: {
+      type: String,
+      default: 'lg', // 'lg' | 'sm'
+      validator: (value) => ['lg', 'sm'].includes(value),
     },
   },
   emits: ['update-class'],

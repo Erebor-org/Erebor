@@ -1,7 +1,7 @@
 <template>
-  <div v-if="show" class="fixed inset-0 bg-theme-bg/80 backdrop-blur-sm flex items-center justify-center z-50 p-4" @click.self="closeModal">
-    <div class="bg-theme-card border border-theme-border rounded-2xl shadow-2xl max-w-lg w-full p-6 relative">
-      <h3 class="text-xl font-bold text-theme-primary mb-4">Note du membre</h3>
+  <div v-if="show" class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4" @click.self="closeModal">
+    <div class="glass-modal rounded-2xl max-w-lg w-full p-6 relative">
+      <h3 class="text-xl font-serif font-bold text-theme-primary mb-4">Note du membre</h3>
       <div v-if="!isEditing">
         <div v-if="notesContent && notesContent.trim() !== ''" class="whitespace-pre-line text-theme-text mb-4">{{ notesContent }}</div>
         <div v-else class="italic text-theme-text-muted mb-4">Aucune note pour ce membre.</div>

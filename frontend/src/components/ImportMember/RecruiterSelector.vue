@@ -1,17 +1,13 @@
 <template>
   <div>
-    <label for="recruiter" class="block text-base font-medium text-[#b07d46] mb-1">
-      Recruteur :
-    </label>
-
     <!-- Si sélectionné -->
-    <div v-if="selectedRecruiterId" class="flex items-center gap-3">
-      <img :src="selectedRecruiterIcon" alt="Classe" class="w-10 h-10 rounded-full" />
-      <span class="text-base font-semibold text-[#b07d46]">{{ selectedRecruiterName }}</span>
+    <div v-if="selectedRecruiterId" class="flex items-center gap-3 bg-theme-bg-muted border-2 border-theme-border rounded-lg px-4 py-3">
+      <span class="portrait-ring w-9 h-9"><img :src="selectedRecruiterIcon" alt="Classe" /></span>
+      <span class="text-base font-semibold text-theme-text flex-1">{{ selectedRecruiterName }}</span>
       <button
         type="button"
         @click="clearRecruiter"
-        class="text-theme-error text-lg font-bold focus:outline-none"
+        class="text-theme-text-muted hover:text-theme-error text-lg font-bold focus:outline-none transition-colors"
       >
         &times;
       </button>
@@ -23,19 +19,17 @@
         type="text"
         v-model="searchQuery"
         placeholder="Rechercher un recruteur..."
-        class="w-full border-2 border-[#b07d46] bg-[#fffaf0] rounded-md p-2 text-base mb-2 focus:outline-none focus:ring-2 focus:ring-[#f3d9b1]"
+        class="w-full bg-theme-bg-muted border-2 border-theme-border text-theme-text rounded-lg px-4 py-3 text-base mb-2 focus:outline-none focus:ring-2 focus:ring-theme-primary focus:border-theme-primary transition-all duration-200 placeholder-gray-400"
       />
-      <ul
-        class="max-h-32 overflow-y-auto bg-[#fffaf0] border-2 border-[#b07d46] rounded-md p-2"
-      >
+      <ul class="max-h-32 overflow-y-auto glass-modal rounded-lg p-2">
         <li
           v-for="recruiter in filteredRecruiters"
           :key="recruiter.id"
           @click="selectRecruiter(recruiter)"
-          class="flex items-center gap-3 p-2 cursor-pointer hover:bg-[#f3d9b1] rounded-md"
+          class="flex items-center gap-3 p-2 cursor-pointer hover:bg-theme-primary/10 rounded-md transition-colors"
         >
-          <img :src="classes[recruiter.class]" alt="Classe" class="w-7 h-7" />
-          <span class="text-base text-[#b07d46]">{{ recruiter.pseudo }}</span>
+          <span class="portrait-ring w-7 h-7"><img :src="classes[recruiter.class]" alt="Classe" /></span>
+          <span class="text-sm text-theme-text">{{ recruiter.pseudo }}</span>
         </li>
       </ul>
     </div>

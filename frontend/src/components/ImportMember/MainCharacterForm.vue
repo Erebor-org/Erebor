@@ -1,12 +1,12 @@
 <template>
   <div>
     <div class="flex items-center space-x-3 mb-6">
-      <div class="w-8 h-8 bg-theme-primary rounded-lg flex items-center justify-center">
-        <svg class="w-5 h-5 text-theme-bg" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <div class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style="background-image: linear-gradient(140deg, var(--accent), var(--primary));">
+        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
         </svg>
       </div>
-      <h2 class="text-2xl font-bold text-theme-primary">Personnage Principal</h2>
+      <h2 class="text-xl font-serif font-bold text-theme-primary">Personnage Principal</h2>
     </div>
 
     <div class="space-y-6">
@@ -73,48 +73,22 @@
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <!-- Date -->
         <div class="space-y-2">
-          <label
-            for="recruitedAt"
-            class="block text-sm font-medium text-theme-text cursor-pointer hover:text-theme-primary transition-colors duration-200 group focus:outline-none focus:ring-2 focus:ring-theme-primary focus:ring-offset-2 focus:ring-offset-theme-bg-muted rounded-lg px-2 py-1 -ml-2"
-            @click="openDatePicker"
-            role="button"
-            tabindex="0"
-            @keydown.enter="openDatePicker"
-            @keydown.space="openDatePicker"
-          >
+          <label class="block text-sm font-medium text-theme-text">
             <div class="flex items-center space-x-2">
-              <svg class="w-4 h-4 transition-transform duration-200 group-hover:scale-110" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
               </svg>
               <span>Date de recrutement <span class="text-theme-error">*</span></span>
             </div>
           </label>
-          <div class="relative">
-            <input
-              type="date"
-              id="recruitedAt"
-              name="recruitedAt"
-              v-model="character.recruitedAt"
-              class="w-full bg-theme-bg-muted border-2 border-theme-border text-theme-text rounded-lg px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-theme-primary focus:border-theme-primary transition-all duration-200 pr-12 cursor-pointer"
-              required
-              @change="validateDate"
-              @click="openDatePicker"
-              :max="new Date().toISOString().slice(0, 10)"
-              style="color-scheme: light dark;"
-              ref="dateInput"
-            />
-            <button
-              type="button"
-              @click="openDatePicker"
-              class="absolute right-2 top-1/2 transform -translate-y-1/2 w-8 h-8 bg-theme-primary hover:bg-theme-primary-hover text-theme-bg rounded-lg flex items-center justify-center transition-all duration-200 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-theme-primary focus:ring-offset-2 focus:ring-offset-theme-bg-muted"
-              title="Ouvrir le sélecteur de date"
-              aria-label="Ouvrir le sélecteur de date"
-            >
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-              </svg>
-            </button>
-          </div>
+          <ThemedDatePicker
+            v-model="character.recruitedAt"
+            model-type="yyyy-MM-dd"
+            :format="'dd/MM/yyyy'"
+            :max-date="maxRecruitmentDate"
+            :placeholder="'Sélectionner une date'"
+            @update:model-value="validateDate"
+          />
           <div
             v-if="dateError"
             class="flex items-center space-x-2 text-theme-error text-sm"
@@ -203,12 +177,15 @@
 <script>
 import axios from 'axios';
 import RecruiterSelector from './RecruiterSelector.vue';
+import ThemedDatePicker from '@/components/ThemedDatePicker.vue';
+import { matchesBlacklistedPseudo, matchesBlacklistedAnkamaPseudo } from '@/utils/blacklist';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
 export default {
   components: {
-    RecruiterSelector
+    RecruiterSelector,
+    ThemedDatePicker,
   },
   props: {
     classes: {
@@ -237,24 +214,15 @@ export default {
       recruiters: [],
       selectedRecruiterName: '',
       selectedRecruiterIcon: '',
+      maxRecruitmentDate: new Date(),
     };
   },
   computed: {
     isPseudoInvalid() {
-      return (
-        this.character.pseudo &&
-        this.blacklist.some(
-          entry => entry.pseudo.toLowerCase() === this.character.pseudo.toLowerCase()
-        )
-      );
+      return matchesBlacklistedPseudo(this.character.pseudo, this.blacklist);
     },
     isAnkamaPseudoInvalid() {
-      return (
-        this.character.ankamaPseudo &&
-        this.blacklist.some(
-          entry => entry.ankamaPseudo.toLowerCase() === this.character.ankamaPseudo.toLowerCase()
-        )
-      );
+      return matchesBlacklistedAnkamaPseudo(this.character.ankamaPseudo, this.blacklist);
     }
   },
   methods: {
@@ -385,50 +353,10 @@ export default {
       console.log('Date validation passed');
       return true;
     },
-    
-    setupDateFallback() {
-      // For browsers that don't support date input, we could implement a custom date picker
-      // For now, just log a warning
-      console.warn('Consider implementing a custom date picker for better browser compatibility');
-    },
-    
-    openDatePicker() {
-      // Focus and click the date input to open the date picker
-      if (this.$refs.dateInput) {
-        // Add a subtle visual feedback
-        this.$refs.dateInput.classList.add('ring-2', 'ring-theme-primary');
-        
-        // Remove the ring after a short delay
-        setTimeout(() => {
-          this.$refs.dateInput.classList.remove('ring-2', 'ring-theme-primary');
-        }, 300);
-        
-        this.$refs.dateInput.focus();
-        
-        // Try to use showPicker() method (modern browsers)
-        if (typeof this.$refs.dateInput.showPicker === 'function') {
-          this.$refs.dateInput.showPicker();
-        } else {
-          // Fallback: trigger a click event to open the date picker
-          this.$refs.dateInput.click();
-        }
-      }
-    }
   },
   mounted() {
     this.fetchRecruiters();
     this.emitUpdate();
-    
-    // Check if the browser supports the date input
-    const dateInput = document.getElementById('recruitedAt');
-    if (dateInput && dateInput.type === 'date') {
-      // Browser supports date input
-      console.log('Date input supported');
-    } else {
-      // Fallback for browsers that don't support date input
-      console.warn('Date input not supported, using fallback');
-      this.setupDateFallback();
-    }
   },
   watch: {
     'character.pseudo'() {

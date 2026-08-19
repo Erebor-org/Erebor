@@ -1,12 +1,12 @@
 <template>
   <form @submit.prevent="submitMuleCharacter">
     <div class="flex items-center space-x-3 mb-6">
-      <div class="w-8 h-8 bg-gradient-to-br from-theme-primary to-theme-primary-hover rounded-lg flex items-center justify-center">
-        <svg class="w-5 h-5 text-theme-bg" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <div class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style="background-image: linear-gradient(140deg, var(--accent), var(--primary));">
+        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
         </svg>
       </div>
-      <h2 class="text-2xl font-bold text-theme-primary">Ajouter une Mule</h2>
+      <h2 class="text-xl font-serif font-bold text-theme-primary">Ajouter une Mule</h2>
     </div>
 
     <div class="space-y-6">
@@ -125,17 +125,17 @@
               v-for="character in filteredNotArchivedCharacters"
               :key="character.id"
               @click="selectNotArchivedCharacter(character)"
-              class="flex items-center space-x-3 p-3 cursor-pointer hover:bg-theme-bg-muted rounded-lg transition-colors duration-200 group"
+              class="flex items-center space-x-3 p-2 cursor-pointer hover:bg-theme-primary/10 rounded-lg transition-colors duration-200 group"
             >
-              <img :src="classes[character.class]" :alt="`Classe ${character.class}`" class="w-8 h-8 rounded-lg border-2 border-theme-border group-hover:border-theme-primary transition-colors duration-200" />
+              <span class="portrait-ring w-8 h-8"><img :src="classes[character.class]" :alt="`Classe ${character.class}`" /></span>
               <span class="text-base text-theme-text group-hover:text-theme-primary transition-colors duration-200">{{ character.pseudo }}</span>
             </div>
           </div>
         </div>
-        
+
         <!-- Si sélectionné -->
         <div v-else class="flex items-center space-x-4 p-4 bg-theme-bg-muted rounded-lg border border-theme-border">
-          <img :src="classes[selectedCharacter?.class]" :alt="`Classe ${selectedCharacter?.class}`" class="w-10 h-10 rounded-lg border-2 border-theme-border" />
+          <span class="portrait-ring w-10 h-10"><img :src="classes[selectedCharacter?.class]" :alt="`Classe ${selectedCharacter?.class}`" /></span>
           <div class="flex-1">
             <span class="text-lg font-semibold text-theme-primary">{{ selectedCharacter?.pseudo }}</span>
             <span class="block text-sm text-theme-text-muted">({{ selectedCharacter?.ankamaPseudo }})</span>
@@ -187,6 +187,7 @@
 
 <script>
 import axios from 'axios';
+import { matchesBlacklistedPseudo, matchesBlacklistedAnkamaPseudo } from '@/utils/blacklist';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -241,20 +242,10 @@ export default {
       );
     },
     isMulePseudoInvalid() {
-      return (
-        this.muleCharacter.pseudo &&
-        this.blacklist.some(
-          entry => entry.pseudo.toLowerCase() === this.muleCharacter.pseudo.toLowerCase()
-        )
-      );
+      return matchesBlacklistedPseudo(this.muleCharacter.pseudo, this.blacklist);
     },
     isMuleAnkamaPseudoInvalid() {
-      return (
-        this.muleCharacter.ankamaPseudo &&
-        this.blacklist.some(
-          entry => entry.ankamaPseudo.toLowerCase() === this.muleCharacter.ankamaPseudo.toLowerCase()
-        )
-      );
+      return matchesBlacklistedAnkamaPseudo(this.muleCharacter.ankamaPseudo, this.blacklist);
     },
     canSubmitMule() {
       return this.muleCharacter.class && this.muleCharacter.linkedCharacterId;

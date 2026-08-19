@@ -70,22 +70,32 @@ export default {
 }
 
 :deep(.dp__input_icon) {
-  color: var(--text-muted) !important;
+  color: var(--accent) !important;
 }
 
 :deep(.dp__menu) {
   background-color: var(--card) !important;
-  border-color: var(--border) !important;
-  box-shadow: var(--shadow-hover) !important;
+  border-color: rgba(var(--accent-rgb), 0.2) !important;
+  border-radius: 1rem !important;
+  box-shadow: 0 24px 64px -24px rgba(0, 0, 0, 0.5) !important;
 }
 
+/* En-tête des jours de la semaine (Mo Tu We...) en or, à la manière des
+   libellés de section du reste du site (cf. .fs-group-title). */
 :deep(.dp__calendar_header_item) {
-  color: var(--text) !important;
+  color: var(--accent) !important;
+  font-weight: 700;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
 }
-
 
 :deep(.dp__calendar_header_item:hover) {
-  background-color: var(--bg-muted) !important;
+  background-color: transparent !important;
+}
+
+:deep(.dp__calendar_header_separator) {
+  background-color: rgba(var(--accent-rgb), 0.25) !important;
 }
 
 :deep(.dp__cell_inner) {
@@ -93,37 +103,40 @@ export default {
 }
 
 :deep(.dp__cell_inner:hover) {
-  background-color: var(--bg-muted) !important;
+  background-color: rgba(var(--primary-rgb), 0.12) !important;
 }
 
-:deep(.dp__active_date) {
-  background-color: var(--primary) !important;
-  color: #ffffff !important;
-}
-
-:deep(.dp__active_date:hover) {
-  background-color: var(--primary-hover) !important;
-}
-
+/* Date sélectionnée / bornes de plage : dégradé rouge-or du blason,
+   comme .brand-gradient-bg utilisé ailleurs sur le site. */
+:deep(.dp__active_date),
 :deep(.dp__range_start),
 :deep(.dp__range_end) {
-  background-color: var(--primary) !important;
+  background-color: transparent !important;
+  background-image: linear-gradient(135deg, var(--primary), var(--accent)) !important;
   color: #ffffff !important;
+  box-shadow: 0 2px 8px rgba(var(--primary-rgb), 0.45);
+}
+
+:deep(.dp__active_date:hover),
+:deep(.dp__range_start:hover),
+:deep(.dp__range_end:hover) {
+  filter: brightness(1.08);
 }
 
 :deep(.dp__range_between) {
-  background-color: var(--primary-light) !important;
+  background-color: rgba(var(--primary-rgb), 0.16) !important;
   color: var(--primary) !important;
 }
 
+/* "Aujourd'hui" en liseré or, distinct de la sélection (dégradé plein). */
 :deep(.dp__today) {
-  border-color: var(--primary) !important;
-  color: var(--primary) !important;
+  border-color: var(--accent) !important;
+  color: var(--accent) !important;
 }
 
 :deep(.dp__disabled) {
-  color: var(--text-light) !important;
-  opacity: 0.5;
+  color: var(--text-muted) !important;
+  opacity: 0.4;
 }
 
 :deep(.dp__arrow_top),
@@ -155,8 +168,9 @@ export default {
   padding: 8px 12px;
   border-radius: 8px;
   transition: all 0.2s ease;
-  font-weight: 600;
-  font-size: 1rem;
+  font-family: ui-serif, Georgia, Cambria, "Times New Roman", serif;
+  font-weight: 700;
+  font-size: 1.05rem;
   color: var(--primary) !important;
 }
 

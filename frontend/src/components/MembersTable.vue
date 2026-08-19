@@ -1,256 +1,150 @@
 <template>
   <div class="space-y-6">
-    <!-- Header -->
-    <div class="text-center mb-8">
-      <h2 class="text-3xl font-bold text-theme-primary mb-2">Membres Actifs</h2>
-      <p class="text-theme-text-muted">{{ filteredMembers.length }} membre(s) trouvé(s)</p>
-    </div>
-
     <!-- Members Grid -->
     <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
       <div
         v-for="({ member, id }) in filteredMembers"
         :key="`member-${member.id}`"
-        class="bg-theme-card border border-theme-border rounded-2xl p-6 hover:border-theme-primary/50 transition-all duration-300 group"
+        class="glass-card fiche-card rounded-2xl p-5 hover:border-theme-primary/50 transition-all duration-300 group"
       >
-        <!-- Member Header -->
-        <div class="flex items-start justify-between mb-6">
-          <div class="flex items-center space-x-5">
-            <!-- Class Icon -->
-            <ClassDropdown
-              :class-name="member.class"
-              :classes="classes"
-              :entity-id="member.id"
-              :entity-type="'character'"
-              @update-class="updateCharacterClass"
-            />
-            <div>
-              <h3 class="text-3xl font-bold text-theme-primary mb-3 group-hover:text-theme-primary-hover transition-colors duration-300 drop-shadow-lg">
+        <!-- Archiver -->
+        <button
+          @click="openModal(member)"
+          class="fiche-archive-btn"
+          title="Archiver le membre"
+        >
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-14 0h14" />
+          </svg>
+        </button>
+
+        <!-- Portrait + rang -->
+        <div class="fiche-portrait-wrap">
+          <ClassDropdown
+            :class-name="member.class"
+            :classes="classes"
+            :entity-id="member.id"
+            :entity-type="'character'"
+            @update-class="updateCharacterClass"
+          />
+          <span class="fiche-rank-pill"><RankBadge :rank="member.rank" size="sm" /></span>
+        </div>
+
+        <h3 class="fiche-name">
+          <EditablePseudo
+            :entity="member"
+            :entity-type="'character'"
+            :editing-pseudo="editingPseudo"
+            :edit-pseudo="editPseudo"
+            @start-editing="startEditingPseudo"
+            @save-pseudo="savePseudo"
+          />
+        </h3>
+        <button
+          @click="toggleAnkamaDisplay(member.id)"
+          class="fiche-ankama"
+          :title="ankamaDisplayed[member.id] ? 'Masquer Ankama ID' : 'Afficher Ankama ID'"
+        >
+          <span v-if="ankamaDisplayed[member.id]">{{ member.ankamaPseudo }}</span>
+          <span v-else>••••••••</span>
+          <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+          </svg>
+        </button>
+
+        <!-- Tuiles de statistiques -->
+        <div class="fiche-tiles">
+          <button class="fiche-tile" @click="openRecruitmentModal(member)" title="Modifier le recrutement">
+            <span class="l">Recruteur</span>
+            <span class="v">{{ member?.recruiter?.pseudo || '—' }}</span>
+          </button>
+          <button class="fiche-tile" @click="openRecruitmentModal(member)" title="Modifier le recrutement">
+            <span class="l">Arrivée</span>
+            <span class="v">{{ member.createdAt ? new Date(member.createdAt).toLocaleDateString('fr-FR') : '—' }}</span>
+          </button>
+          <button
+            class="fiche-tile"
+            :class="{ 'fiche-tile--active': localExpandedRows[id] }"
+            @click="toggleExpand(id)"
+          >
+            <span class="l">Mules</span>
+            <span class="v">{{ filteredMulesByCharacter(id).length }}</span>
+          </button>
+          <button
+            class="fiche-tile"
+            @click="viewWarnings(member.id, member.pseudo)"
+            :class="{ 'fiche-tile--warning': (characterWarningCounts && characterWarningCounts[member.id]) > 0 }"
+          >
+            <span class="l">Avert.</span>
+            <span class="v">{{ (characterWarningCounts && characterWarningCounts[member.id]) || 0 }}</span>
+          </button>
+        </div>
+
+        <!-- Notes Modal Trigger -->
+        <div class="mb-3 w-full">
+          <button
+            @click="openNotesModal(member)"
+            class="w-full flex items-center justify-center gap-2 px-4 py-2 bg-theme-primary/5 hover:bg-theme-primary/10 border border-theme-primary/40 rounded-xl text-theme-primary hover:text-theme-primary-hover font-semibold text-sm transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-theme-primary/30"
+          >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536M9 13h3l8-8a2.828 2.828 0 10-4-4l-8 8v3z" /></svg>
+            <span>{{ member.notes && member.notes.trim() !== '' ? 'Voir la note' : 'Ajouter une note' }}</span>
+          </button>
+        </div>
+        <!-- Mules (repliées par défaut, dépliées via la tuile "Mules") -->
+        <div v-if="localExpandedRows[id]" class="fiche-mules w-full text-left">
+          <div class="flex items-center justify-between mb-2">
+            <span class="fiche-mules-title">Mules</span>
+            <button @click="toggleExpand(id)" class="fiche-mules-collapse">Réduire</button>
+          </div>
+
+          <div class="space-y-1.5">
+            <div
+              v-for="(mule, muleIndex) in filteredMulesByCharacter(id)"
+              :key="`mule-${mule.id}-${muleIndex}`"
+              class="fiche-mule-row"
+            >
+              <span @click.stop>
+                <ClassDropdown
+                  :class-name="mule.class"
+                  :classes="classes"
+                  :entity-id="mule.id"
+                  :entity-type="'mule'"
+                  size="sm"
+                  @update-class="updateMuleClass"
+                />
+              </span>
+              <div class="flex-1 min-w-0" @click.stop>
                 <EditablePseudo
-                  :entity="member"
-                  :entity-type="'character'"
+                  :entity="mule"
+                  :entity-type="'mule'"
                   :editing-pseudo="editingPseudo"
                   :edit-pseudo="editPseudo"
                   @start-editing="startEditingPseudo"
                   @save-pseudo="savePseudo"
                 />
-              </h3>
-              <div class="space-y-2">
-                <button 
-                  @click="toggleAnkamaDisplay(member.id)"
-                  class="text-theme-text-muted text-sm hover:text-theme-primary transition-colors duration-200 flex items-center space-x-2"
-                  :title="ankamaDisplayed[member.id] ? 'Masquer Ankama ID' : 'Afficher Ankama ID'"
-                >
-                  <span class="text-theme-primary font-semibold">Ankama:</span> 
-                  <span v-if="ankamaDisplayed[member.id]">{{ member.ankamaPseudo }}</span>
-                  <span v-else class="text-theme-text-muted">••••••••</span>
-                  <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                  </svg>
-                </button>
               </div>
-            </div>
-          </div>
-          
-          <!-- Actions Menu -->
-          <div class="flex items-center space-x-3">
-            <button
-              @click="viewWarnings(member.id, member.pseudo)"
-              class="p-3 text-theme-warning hover:text-theme-warning hover:bg-theme-warning/20 rounded-xl transition-all duration-200 flex items-center space-x-2"
-              :title="`${(characterWarningCounts && characterWarningCounts[member.id]) || 0} avertissement(s)`"
-            >
-              <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                      d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 
-                        1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 
-                        0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
-              </svg>
-              <span class="text-sm font-bold text-theme-warning">
-                {{ (characterWarningCounts && characterWarningCounts[member.id]) || 0 }}
-              </span>
-            </button>
-            <button
-              @click="openModal(member)"
-              class="p-3 text-theme-text-muted hover:text-theme-error hover:bg-theme-error/20 rounded-xl transition-all duration-200"
-              title="Archiver le membre"
-            >
-              <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-14 0h14" />
-              </svg>
-            </button>
-          </div>
-        </div>
-
-        <!-- Member Details -->
-        <div class="grid grid-cols-2 gap-5 mb-6">
-          <div class="text-center p-4 bg-theme-bg-muted/30 rounded-xl border border-theme-border">
-            <p class="text-xs text-theme-text-muted uppercase tracking-wider mb-2">Rang</p>
-            <p class="text-sm text-theme-text font-medium">{{ member?.rank?.name || 'Aucun' }}</p>
-          </div>
-          <div class="text-center p-4 bg-theme-bg-muted/30 rounded-xl border border-theme-border relative group">
-            <p class="text-xs text-theme-text-muted uppercase tracking-wider mb-2">Recruteur</p>
-            <p class="text-sm text-theme-text font-medium">{{ member?.recruiter?.pseudo || 'Aucun' }}</p>
-            <button
-              @click="openRecruitmentModal(member)"
-              class="absolute top-2 right-2 p-1.5 text-theme-text-muted hover:text-theme-primary hover:bg-theme-primary/10 rounded-lg transition-all duration-200 opacity-0 group-hover:opacity-100"
-              title="Modifier le recruteur"
-            >
-              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536M9 13h3l8-8a2.828 2.828 0 10-4-4l-8 8v3z" />
-              </svg>
-            </button>
-          </div>
-        </div>
-
-        <!-- Arrival Date -->
-        <div class="text-center p-4 bg-theme-bg-muted/30 rounded-xl border border-theme-border mb-6 relative group">
-          <p class="text-xs text-theme-text-muted uppercase tracking-wider mb-2">Arrivée</p>
-          <p class="text-sm text-theme-text font-medium">
-            {{ member.createdAt ? new Date(member.createdAt).toLocaleDateString('fr-FR') : 'Date inconnue' }}
-          </p>
-          <button
-            @click="openRecruitmentModal(member)"
-            class="absolute top-2 right-2 p-1.5 text-theme-text-muted hover:text-theme-primary hover:bg-theme-primary/10 rounded-lg transition-all duration-200 opacity-0 group-hover:opacity-100"
-            title="Modifier la date de recrutement"
-          >
-            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536M9 13h3l8-8a2.828 2.828 0 10-4-4l-8 8v3z" />
-            </svg>
-          </button>
-        </div>
-
-            <!-- Notes Modal Trigger -->
-            <div class="mt-4 mb-4">
               <button
-                @click="openNotesModal(member)"
-                class="w-full flex items-center justify-center gap-2 px-4 py-3 bg-theme-bg-muted hover:bg-theme-primary/10 border border-theme-primary rounded-xl text-theme-primary hover:text-theme-primary-hover font-semibold text-base transition-all duration-200 shadow-sm focus:outline-none focus:ring-2 focus:ring-theme-primary/30"
+                @click="confirmSwitchWithMule(member, mule)"
+                class="meta-chip hover:bg-theme-primary/15 transition-colors duration-200"
+                title="Échanger ce personnage principal avec cette mule"
               >
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536M9 13h3l8-8a2.828 2.828 0 10-4-4l-8 8v3z" /></svg>
-                <span>{{ member.notes && member.notes.trim() !== '' ? 'Voir la note' : 'Ajouter une note' }}</span>
+                Switch
               </button>
-            </div>
-        <!-- Mules Section -->
-        <div class="border-t border-theme-border pt-6">
-          <div class="flex items-center justify-between mb-4">
-            <h4 class="text-sm font-semibold text-theme-text uppercase tracking-wider">Mules</h4>
-            <button
-              v-if="filteredMulesByCharacter && filteredMulesByCharacter(id) && filteredMulesByCharacter(id).length > 0"
-              @click="openAddMuleModal(member)"
-              class="text-theme-primary hover:text-theme-primary text-sm font-medium transition-colors duration-200 flex items-center space-x-2"
-            >
-              <span>Ajouter une mule</span>
-              <svg class="w-4 h-4 transition-transform duration-200" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-              </svg>
-            </button>
-          </div>
-          <span v-if="!filteredMulesByCharacter || !filteredMulesByCharacter(id) || filteredMulesByCharacter(id).length === 0" class="text-theme-text-muted text-sm">Aucune mule sur ce personnage</span>
-
-          <!-- Expanded Mules -->
-          <div v-if="localExpandedRows[id]" class="space-y-4">
-            <div class="flex justify-end mb-2">
-              <button @click="toggleExpand(id)" class="px-3 py-1 bg-theme-bg-muted hover:bg-theme-primary/10 border border-theme-primary rounded-lg text-theme-primary hover:text-theme-primary-hover font-semibold text-xs transition-all duration-200 shadow-sm focus:outline-none focus:ring-2 focus:ring-theme-primary/30">
-                Réduire
-              </button>
-            </div>
-            <div
-              v-for="(mule, muleIndex) in filteredMulesByCharacter(id)"
-              :key="`mule-${mule.id}-${muleIndex}`"
-              class="bg-theme-bg/50 rounded-xl p-4 border border-theme-bg-muted hover:border-theme-primary/30 transition-all duration-200"
-            >
-              <div class="flex items-center justify-between">
-                <div class="flex items-center space-x-4">
-                  <ClassDropdown
-                    :class-name="mule.class"
-                    :classes="classes"
-                    :entity-id="mule.id"
-                    :entity-type="'mule'"
-                    @update-class="updateMuleClass"
-                  />
-                  <div>
-                    <h5 class="text-lg font-bold text-theme-primary mb-2 drop-shadow-lg">
-                      <EditablePseudo
-                        :entity="mule"
-                        :entity-type="'mule'"
-                        :editing-pseudo="editingPseudo"
-                        :edit-pseudo="editPseudo"
-                        @start-editing="startEditingPseudo"
-                        @save-pseudo="savePseudo"
-                      />
-                    </h5>
-                    <p class="text-theme-text-muted text-sm">
-                      <span class="text-theme-primary font-semibold">Ankama:</span> 
-                      <span v-if="ankamaDisplayed[`mule-${mule.id}`]">{{ mule.ankamaPseudo }}</span>
-                      <span v-else class="text-theme-text-muted">••••••••</span>
-                      <button 
-                        @click="toggleAnkamaDisplay(`mule-${mule.id}`)"
-                        class="ml-2 text-theme-text-muted hover:text-theme-primary transition-colors duration-200"
-                        :title="ankamaDisplayed[`mule-${mule.id}`] ? 'Masquer' : 'Afficher'"
-                      >
-                        <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                        </svg>
-                      </button>
-                    </p>
-                  </div>
-                </div>
-                <div class="flex flex-col items-end space-y-2">
-                  <button
-                    @click="openMuleModal(mule)"
-                    class="p-2 text-theme-text-muted hover:text-theme-error hover:bg-theme-error/20 rounded-lg transition-all duration-200"
-                    title="Archiver la mule"
-                  >
-                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
-                    </svg>
-                  </button>
-                  <button
-                    @click="confirmSwitchWithMule(member, mule)"
-                    class="p-2 text-theme-primary hover:bg-theme-primary/10 rounded-lg transition-all duration-200 text-xs font-semibold border border-theme-primary"
-                    title="Échanger ce personnage principal avec cette mule"
-                  >
-                    Switch avec ce main
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Mules Preview (when not expanded) -->
-          <div v-else-if="filteredMulesByCharacter && filteredMulesByCharacter(id) && filteredMulesByCharacter(id).length > 0" class="mt-4">
-            <div class="flex flex-wrap gap-3 justify-center">
-              <div
-                v-for="(mule, muleIndex) in filteredMulesByCharacter(id)"
-                :key="`preview-mule-${mule.id}-${muleIndex}`"
-                class="group relative"
-                :title="`${mule.pseudo} (${mule.class})`"
+              <button
+                @click="openMuleModal(mule)"
+                class="p-1.5 text-theme-text-muted hover:text-theme-error hover:bg-theme-error/15 rounded-lg transition-all duration-200"
+                title="Archiver la mule"
               >
-                <img
-                  :src="classes[mule.class]"
-                  :alt="`Classe ${mule.class}`"
-                  class="w-12 h-12 rounded-lg border-2 border-theme-bg-muted group-hover:border-theme-primary transition-all duration-300 cursor-pointer"
-                  @click="toggleExpand(id)"
-                />
-              </div>
-            </div>
-            <p class="text-center text-xs text-theme-text-muted mt-2">Cliquez sur une icône pour voir les détails</p>
-          </div>
-
-          <!-- Empty Mules State -->
-          <div v-else-if="!filteredMulesByCharacter || !filteredMulesByCharacter(id) || filteredMulesByCharacter(id).length === 0" class="text-center py-6">
-            <button
-              @click="openAddMuleModal(member)"
-              class="group inline-flex flex-col items-center p-4 rounded-xl border-2 border-dashed border-theme-border hover:border-theme-primary hover:bg-theme-primary/10 transition-all duration-300"
-              title="Ajouter une mule pour ce personnage"
-            >
-              <div class="w-16 h-16 bg-theme-bg-muted rounded-full flex items-center justify-center mb-3 group-hover:bg-theme-primary/20 transition-all duration-300">
-                <svg class="w-8 h-8 text-theme-text-muted group-hover:text-theme-primary transition-colors duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
                 </svg>
-              </div>
-              <p class="text-sm text-theme-text-muted group-hover:text-theme-primary transition-colors duration-300">Ajouter une mule</p>
+              </button>
+            </div>
+
+            <button @click="openAddMuleModal(member)" class="fiche-mule-add-row">
+              <span class="fiche-mule-add-icon">+</span>
+              <span>Ajouter une mule</span>
             </button>
           </div>
         </div>
@@ -287,6 +181,7 @@ import ClassDropdown from './ClassDropdown.vue';
 import EditablePseudo from './EditablePseudo.vue';
 import ConfirmModal from './ConfirmModal.vue';
 import UpdateRecruitmentModal from './UpdateRecruitmentModal.vue';
+import RankBadge from './RankBadge.vue';
 import { useAuthStore } from '@/stores/authStore';
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -297,6 +192,7 @@ export default {
     EditablePseudo,
     ConfirmModal,
     UpdateRecruitmentModal,
+    RankBadge,
   },
   data() {
     return {
@@ -471,3 +367,181 @@ export default {
   },
 };
 </script>
+
+<style scoped>
+.fiche-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.fiche-archive-btn {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  padding: 0.5rem;
+  border-radius: 0.75rem;
+  color: var(--text-muted);
+  transition: color 0.2s, background-color 0.2s;
+}
+.fiche-archive-btn:hover {
+  color: var(--error);
+  background-color: rgba(var(--primary-rgb), 0.08);
+}
+
+.fiche-portrait-wrap {
+  position: relative;
+  margin-bottom: 0.6rem;
+}
+
+.fiche-rank-pill {
+  position: absolute;
+  bottom: -0.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 9999px;
+  padding: 0.2rem 0.65rem;
+  white-space: nowrap;
+}
+
+.fiche-name {
+  font-family: ui-serif, Georgia, Cambria, "Times New Roman", serif;
+  font-weight: 700;
+  font-size: 1.4rem;
+  color: var(--primary);
+  margin: 0.6rem 0 0.3rem;
+}
+
+.fiche-ankama {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  margin-bottom: 0.85rem;
+  transition: color 0.2s;
+}
+.fiche-ankama:hover {
+  color: var(--primary);
+}
+
+.fiche-tiles {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+  margin-bottom: 0.85rem;
+}
+
+.fiche-tile {
+  background-color: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--border);
+  border-radius: 0.85rem;
+  padding: 0.55rem 0.5rem;
+  text-align: center;
+  transition: border-color 0.2s, background-color 0.2s;
+}
+.fiche-tile:hover {
+  border-color: var(--primary);
+  background-color: rgba(var(--primary-rgb), 0.05);
+}
+.fiche-tile .l {
+  display: block;
+  font-size: 0.62rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+.fiche-tile .v {
+  display: block;
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text);
+  margin-top: 0.15rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.fiche-tile--warning .v {
+  color: var(--warning);
+}
+
+.fiche-tile--active {
+  border-color: var(--primary);
+  background-color: rgba(var(--primary-rgb), 0.08);
+}
+
+/* ---------- Mules (dépliées) ---------- */
+.fiche-mules {
+  border-top: 1px solid var(--border);
+  padding-top: 0.75rem;
+  margin-top: 0.15rem;
+}
+
+.fiche-mules-title {
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+}
+
+.fiche-mules-collapse {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--primary);
+}
+.fiche-mules-collapse:hover {
+  color: var(--primary-hover);
+}
+
+.fiche-mule-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.35rem 0.4rem;
+  border-radius: 0.65rem;
+  transition: background-color 0.2s;
+}
+.fiche-mule-row:hover {
+  background-color: rgba(255, 255, 255, 0.02);
+}
+
+.fiche-mule-add-row {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.45rem 0.6rem;
+  border-radius: 0.65rem;
+  border: 1px dashed var(--border);
+  color: var(--text-muted);
+  font-size: 0.82rem;
+  font-weight: 500;
+  transition: border-color 0.2s, color 0.2s, background-color 0.2s;
+}
+.fiche-mule-add-row:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+  background-color: rgba(var(--primary-rgb), 0.05);
+}
+
+.fiche-mule-add-icon {
+  width: 1.4rem;
+  height: 1.4rem;
+  border-radius: 9999px;
+  border: 1px dashed currentColor;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 0.9rem;
+  line-height: 1;
+}
+</style>

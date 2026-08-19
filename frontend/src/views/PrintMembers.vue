@@ -13,22 +13,6 @@
       @muleAdded="addMuleToTable"
     />
 
-    <!-- Mules Modal -->
-    <MulesModal
-      :show="showMulesModal"
-      :member="selectedMemberForMules"
-      :classes="classes"
-      :filtered-mules-by-character="filteredMulesByCharacter"
-      :editing-pseudo="editingPseudo"
-      :edit-pseudo="editPseudo"
-      @close="closeMulesModal"
-      @save-pseudo="savePseudo"
-      @update-mule-class="updateMuleClass"
-      @open-mule-modal="openMuleModal"
-      @open-add-mule-modal="openAddMuleModal"
-      @refresh-data="refreshMembersAndMules"
-    />
-
     <!-- Notes Modal -->
     <NotesModal
       :show="showNotesModal"
@@ -40,9 +24,9 @@
     <!-- Main Container -->
     <div ref="mainContainer" class="container mx-auto px-4 py-8">
       <!-- Page Header -->
-      <div class="text-center mb-12">
-        <h1 class="text-6xl font-bold text-theme-primary mb-6">Gestion des Membres</h1>
-        <div class="w-32 h-1 bg-theme-primary mx-auto rounded-full shadow-lg shadow-theme-primary/50"></div>
+      <div class="text-center mb-10">
+        <h1 class="text-4xl md:text-5xl font-serif font-bold brand-gradient-text mb-4">Gestion des Membres</h1>
+        <div class="w-24 h-1 rounded-full mx-auto" style="background-image: linear-gradient(90deg, var(--primary), var(--accent));"></div>
       </div>
 
       <!-- Search Header -->
@@ -54,137 +38,180 @@
         @show-modal-member="showModalMember = true"
       />
 
-      <!-- View Toggle -->
-      <div class="flex justify-center mb-6">
-        <ViewToggle
-          :view-mode="viewMode"
-          @update:view-mode="(newMode) => { console.log('ViewToggle clicked:', newMode); viewMode = newMode; }"
-        />
-      </div>
+      <div class="members-layout" :class="{ 'members-layout--full': activeTab !== 'active' }">
+        <!-- Sidebar de filtres (membres actifs uniquement) -->
+        <aside v-if="activeTab === 'active'" class="filters-sidebar glass-card rounded-2xl p-5">
+          <div class="fs-title">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" /></svg>
+            Filtrer le roster
+          </div>
 
-      <!-- Main Content -->
-      <div v-if="activeTab === 'active'" class="mt-12">
-        <!-- Cards View -->
-        <div v-if="viewMode === 'cards'">
-          <!-- Barre de filtres et tri sticky -->
-          <div class="sticky top-0 z-30 bg-theme-bg px-4 py-3 shadow-md rounded-xl flex flex-wrap gap-4 items-center mb-6 border border-theme-border">
-            <div class="flex flex-col min-w-[220px]">
-              <label class="text-xs font-semibold text-theme-text mb-1">Plage de dates</label>
-              <ThemedDatePicker
-                v-model="filterDateRange"
-                range
-                :format="'dd/MM/yyyy'"
-                :placeholder="'Plage de dates'"
+          <div class="fs-group">
+            <label class="fs-group-title">Rang</label>
+            <ThemeSelect
+              v-model="filterRank"
+              :options="rankFilterOptions"
+              placeholder="Tous"
+            />
+          </div>
+
+          <div class="fs-group">
+            <label class="fs-group-title">Recruteur</label>
+            <ThemeSelect
+              v-model="filterRecruiter"
+              :options="recruiterFilterOptions"
+              placeholder="Tous"
+            />
+          </div>
+
+          <div class="fs-group">
+            <label class="fs-group-title">Mules (min / max)</label>
+            <div class="flex gap-2">
+              <input v-model.number="filterMulesMin" type="number" min="0" placeholder="min" class="fs-input" />
+              <input v-model.number="filterMulesMax" type="number" min="0" placeholder="max" class="fs-input" />
+            </div>
+          </div>
+
+          <div class="fs-group">
+            <label class="fs-group-title">Avertissements (min / max)</label>
+            <div class="flex gap-2">
+              <input v-model.number="filterWarningsMin" type="number" min="0" placeholder="min" class="fs-input" />
+              <input v-model.number="filterWarningsMax" type="number" min="0" placeholder="max" class="fs-input" />
+            </div>
+          </div>
+
+          <div class="fs-group">
+            <label class="fs-group-title">Plage de dates</label>
+            <ThemedDatePicker
+              v-model="filterDateRange"
+              range
+              :format="'dd/MM/yyyy'"
+              :placeholder="'Plage de dates'"
+            />
+          </div>
+
+          <div class="fs-group">
+            <label class="fs-group-title">Trier par</label>
+            <div class="flex gap-2">
+              <div class="flex-1 min-w-0">
+                <ThemeSelect
+                  v-model="sortColumn"
+                  :options="sortColumnOptions"
+                  placeholder="Aucun tri"
+                />
+              </div>
+              <button
+                @click="toggleSortOrder"
+                :disabled="!sortColumn"
+                class="px-3 rounded-lg border border-theme-border bg-theme-bg text-theme-text hover:border-theme-primary hover:text-theme-primary transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+                :title="sortOrder === 'asc' ? 'Ordre croissant' : 'Ordre décroissant'"
+              >
+                {{ sortOrder === 'asc' ? '↑' : '↓' }}
+              </button>
+            </div>
+          </div>
+
+          <!-- Chips de filtres actifs -->
+          <div v-if="activeFilterChips.length" class="flex flex-wrap gap-1.5 pt-3 mt-2 border-t border-theme-border">
+            <button
+              v-for="(chip, idx) in activeFilterChips"
+              :key="idx"
+              @click="chip.clear()"
+              class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-theme-accent/10 text-theme-accent-hover border border-theme-accent/30 hover:bg-theme-error/10 hover:text-theme-error hover:border-theme-error/30 transition-all"
+            >
+              {{ chip.label }}
+              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+            </button>
+          </div>
+
+          <button @click="resetCardFilters" class="w-full mt-3 px-4 py-2 rounded-lg bg-theme-bg-muted hover:bg-theme-error hover:text-white text-theme-text-muted font-medium text-sm transition-all">
+            Réinitialiser les filtres
+          </button>
+        </aside>
+
+        <!-- Colonne principale -->
+        <div class="members-main">
+          <div class="flex items-center justify-between mb-6 flex-wrap gap-3">
+            <ViewToggle
+              :view-mode="viewMode"
+              @update:view-mode="(newMode) => { viewMode = newMode; }"
+            />
+            <p v-if="activeTab === 'active'" class="text-theme-text-muted text-sm">{{ filteredMembers.length }} membre(s) trouvé(s)</p>
+          </div>
+
+          <!-- Main Content -->
+          <div v-if="activeTab === 'active'">
+            <!-- Fiche perso -->
+            <div v-if="viewMode === 'cards'">
+              <MembersTable
+                :filtered-members="paginatedMembers"
+                :classes="classes"
+                :filtered-mules-by-character="filteredMulesByCharacter"
+                :character-warning-counts="characterWarningCounts"
+                :editing-pseudo="editingPseudo"
+                :edit-pseudo="editPseudo"
+                :total-active-members="charactersNotArchived.length"
+                @open-modal="openModal"
+                @view-warnings="viewWarnings"
+                @update-character-class="updateCharacterClass"
+                @update-mule-class="updateMuleClass"
+                @start-editing-pseudo="startEditingPseudo"
+                @save-pseudo="savePseudo"
+                @open-mule-modal="openMuleModal"
+                @open-add-mule-modal="openAddMuleModal"
+                @open-notes-modal="openNotesModal"
+                @save-note="saveMemberNote"
+                @refresh-data="refreshMembersAndMules"
+                @update-recruitment="handleRecruitmentUpdate"
               />
             </div>
-            <div class="flex-1"></div>
-            <button @click="setSort('pseudo')" :class="'p-2 rounded ' + (sortColumn === 'pseudo' ? 'bg-theme-primary text-white' : 'bg-theme-bg-muted text-theme-text')">
-              Pseudo {{ sortColumn === 'pseudo' ? (sortOrder === 'asc' ? '↑' : '↓') : '↕' }}
-            </button>
-            <button @click="setSort('rank')" :class="'p-2 rounded ' + (sortColumn === 'rank' ? 'bg-theme-primary text-white' : 'bg-theme-bg-muted text-theme-text')">
-              Rang {{ sortColumn === 'rank' ? (sortOrder === 'asc' ? '↑' : '↓') : '↕' }}
-            </button>
-            <button @click="setSort('recruiter')" :class="'p-2 rounded ' + (sortColumn === 'recruiter' ? 'bg-theme-primary text-white' : 'bg-theme-bg-muted text-theme-text')">
-              Recruteur {{ sortColumn === 'recruiter' ? (sortOrder === 'asc' ? '↑' : '↓') : '↕' }}
-            </button>
-            <button @click="setSort('recruited_at')" :class="'p-2 rounded ' + (sortColumn === 'recruited_at' ? 'bg-theme-primary text-white' : 'bg-theme-bg-muted text-theme-text')">
-              Arrivée {{ sortColumn === 'recruited_at' ? (sortOrder === 'asc' ? '↑' : '↓') : '↕' }}
-            </button>
-            <button @click="setSort('mules')" :class="'p-2 rounded ' + (sortColumn === 'mules' ? 'bg-theme-primary text-white' : 'bg-theme-bg-muted text-theme-text')">
-              Mules {{ sortColumn === 'mules' ? (sortOrder === 'asc' ? '↑' : '↓') : '↕' }}
-            </button>
-            <button @click="setSort('warnings')" :class="'p-2 rounded ' + (sortColumn === 'warnings' ? 'bg-theme-primary text-white' : 'bg-theme-bg-muted text-theme-text')">
-              Avertissements {{ sortColumn === 'warnings' ? (sortOrder === 'asc' ? '↑' : '↓') : '↕' }}
-            </button>
-            <div class="flex-1"></div>
-            <button @click="resetCardFilters" class="ml-4 px-4 py-2 rounded-lg bg-theme-error text-white font-semibold shadow hover:bg-theme-error/80 transition-all">Réinitialiser le tri</button>
-          </div>
-          <MembersTable
-            :filtered-members="filteredMembers"
-            :classes="classes"
-            :filtered-mules-by-character="filteredMulesByCharacter"
-            :character-warning-counts="characterWarningCounts"
-            :editing-pseudo="editingPseudo"
-            :edit-pseudo="editPseudo"
-            :total-active-members="charactersNotArchived.length"
-            @open-modal="openModal"
-            @view-warnings="viewWarnings"
-            @update-character-class="updateCharacterClass"
-            @update-mule-class="updateMuleClass"
-            @start-editing-pseudo="startEditingPseudo"
-            @save-pseudo="savePseudo"
-            @open-mule-modal="openMuleModal"
-            @open-add-mule-modal="openAddMuleModal"
-            @open-notes-modal="openNotesModal"
-            @save-note="saveMemberNote"
-            @refresh-data="refreshMembersAndMules"
-            @update-recruitment="handleRecruitmentUpdate"
-          />
-        </div>
 
-        <!-- List View -->
-        <div v-else>
-          <div class="flex flex-wrap gap-4 items-center mb-4">
-            <!-- Plage de dates -->
-            <div class="flex flex-col min-w-[220px]">
-              <label class="text-xs font-semibold text-theme-text mb-1">Plage de dates</label>
-              <ThemedDatePicker
-                v-model="filterDateRange"
-                range
-                :format="'dd/MM/yyyy'"
-                :placeholder="'Plage de dates'"
+            <!-- Liste -->
+            <div v-else>
+              <MembersTableList
+                :filtered-members="paginatedMembers"
+                :classes="classes"
+                :filtered-mules-by-character="filteredMulesByCharacter"
+                :character-warning-counts="characterWarningCounts"
+                :editing-pseudo="editingPseudo"
+                :edit-pseudo="editPseudo"
+                :total-active-members="charactersNotArchived.length"
+                @open-modal="openModal"
+                @view-warnings="viewWarnings"
+                @update-character-class="updateCharacterClass"
+                @update-mule-class="updateMuleClass"
+                @start-editing-pseudo="startEditingPseudo"
+                @save-pseudo="savePseudo"
+                @open-mule-modal="openMuleModal"
+                @open-add-mule-modal="openAddMuleModal"
+                @open-notes-modal="openNotesModal"
+                @update-recruitment="handleRecruitmentUpdate"
+                @refresh-data="refreshMembersAndMules"
               />
-            </div> 
-             <div class="flex-1"></div> <div class="text-center mb-8">
-      <h2 class="text-3xl font-bold text-theme-primary mb-2">Membres Actifs</h2>
-      <p class="text-theme-text-muted">{{ filteredMembers.length }} membre(s) trouvé(s)</p>
-    </div>
-            <div class="flex-1"></div>
-            <button @click="resetListSort" class="px-4 py-2 rounded-lg bg-theme-error text-white font-semibold shadow hover:bg-theme-error/80 transition-all">Réinitialiser le tri</button>
+            </div>
 
+            <Pagination :page="currentPage" :total-pages="totalPages" @update:page="currentPage = $event" />
           </div>
-          <MembersTableList
-            :filtered-members="filteredMembers"
-            :classes="classes"
-            :filtered-mules-by-character="filteredMulesByCharacter"
-            :character-warning-counts="characterWarningCounts"
-            :editing-pseudo="editingPseudo"
-            :edit-pseudo="editPseudo"
-            :sort-column="sortColumn"
-            :sort-order="sortOrder"
-            :total-active-members="charactersNotArchived.length"
-            @open-modal="openModal"
-            @view-warnings="viewWarnings"
-            @update-character-class="updateCharacterClass"
-            @update-mule-class="updateMuleClass"
-            @start-editing-pseudo="startEditingPseudo"
-            @save-pseudo="savePseudo"
-            @open-mule-modal="openMuleModal"
-            @open-add-mule-modal="openAddMuleModal"
-            @open-mules-modal="openMulesModal"
-            @open-notes-modal="openNotesModal"
-            @set-sort="setSort"
-          />
+
+          <!-- Archived Characters -->
+          <div v-else>
+            <!-- Fiche perso -->
+            <ArchivedMembersTable
+              v-if="viewMode === 'cards'"
+              :filtered-archived-members="filteredArchivedMembers"
+              :classes="classes"
+              @open-unarchived-character-modal="openUnarchivedCharacterModal"
+            />
+
+            <!-- Liste -->
+            <ArchivedMembersTableList
+              v-else
+              :filtered-archived-members="filteredArchivedMembers"
+              :classes="classes"
+              @open-unarchived-character-modal="openUnarchivedCharacterModal"
+            />
+          </div>
         </div>
-      </div>
-
-      <!-- Archived Characters -->
-      <div v-if="activeTab === 'archived'" class="mt-12">
-        <!-- Cards View -->
-        <ArchivedMembersTable
-          v-if="viewMode === 'cards'"
-          :filtered-archived-members="filteredArchivedMembers"
-          :classes="classes"
-          @open-unarchived-character-modal="openUnarchivedCharacterModal"
-        />
-
-        <!-- List View -->
-        <ArchivedMembersTableList
-          v-else
-          :filtered-archived-members="filteredArchivedMembers"
-          :classes="classes"
-          @open-unarchived-character-modal="openUnarchivedCharacterModal"
-        />
       </div>
     </div>
 
@@ -240,9 +267,10 @@ import ArchivedMembersTable from '@/components/ArchivedMembersTable.vue';
 import ArchivedMembersTableList from '@/components/ArchivedMembersTableList.vue';
 import ArchiveModal from '@/components/ArchiveModal.vue';
 import ViewToggle from '@/components/ViewToggle.vue';
-import MulesModal from '@/components/MulesModal.vue';
 import NotesModal from '@/components/NotesModal.vue';
 import ThemedDatePicker from '@/components/ThemedDatePicker.vue';
+import ThemeSelect from '@/components/ThemeSelect.vue';
+import Pagination from '@/components/Pagination.vue';
 import { computed } from 'vue';
 import { useThemeStore } from '@/stores/themeStore';
 
@@ -261,9 +289,10 @@ export default {
     ArchivedMembersTableList,
     ArchiveModal,
     ViewToggle,
-    MulesModal,
     NotesModal,
     ThemedDatePicker,
+    ThemeSelect,
+    Pagination,
   },
   setup() {
     const themeStore = useThemeStore();
@@ -286,8 +315,6 @@ export default {
       selectedMule: null,
       showNotification: false,
       notArchivedMules: {},
-      showMulesModal: false,
-      selectedMemberForMules: null,
       showUnarchivedCharacterModal: false,
       currentCharacter: null,
       selectedCharacterForMule: null, // New state for pre-selected character when adding mule
@@ -334,6 +361,11 @@ export default {
       // Tri avancé (colonne et sens)
       sortColumn: null,
       sortOrder: 'asc',
+      // Pagination (vue Fiche perso et Liste)
+      currentPage: 1,
+      pageSize: 24,
+      // Rangs dans l'ordre canonique renvoyé par l'API (lead -> légende -> néophyte)
+      allRanksOrdered: [],
     };
   },
   computed: {
@@ -464,6 +496,65 @@ export default {
       if (this.filterWarningsMax !== null && this.filterWarningsMax !== undefined) chips.push({ label: `Avert. ≤ ${this.filterWarningsMax}`, clear: () => (this.filterWarningsMax = null) });
       return chips;
     },
+    availableRanks() {
+      const inUse = new Set(this.charactersNotArchived.map(c => c.rank?.name).filter(Boolean));
+      if (this.allRanksOrdered.length === 0) {
+        return Array.from(inUse).sort();
+      }
+      return this.allRanksOrdered.map(r => r.name).filter(name => inUse.has(name));
+    },
+    rankFilterOptions() {
+      return [{ value: '', label: 'Tous' }, ...this.availableRanks.map(r => ({ value: r, label: r }))];
+    },
+    recruiterFilterOptions() {
+      return [{ value: '', label: 'Tous' }, ...this.availableRecruiters.map(r => ({ value: r, label: r }))];
+    },
+    sortColumnOptions() {
+      return [
+        { value: null, label: 'Aucun tri' },
+        { value: 'pseudo', label: 'Pseudo' },
+        { value: 'rank', label: 'Rang' },
+        { value: 'recruiter', label: 'Recruteur' },
+        { value: 'recruited_at', label: 'Arrivée' },
+        { value: 'mules', label: 'Mules' },
+        { value: 'warnings', label: 'Avertissements' },
+      ];
+    },
+    availableRecruiters() {
+      const recruiters = new Set(this.charactersNotArchived.map(c => c.recruiter?.pseudo).filter(Boolean));
+      return Array.from(recruiters).sort();
+    },
+    totalPages() {
+      return Math.max(1, Math.ceil(this.filteredMembers.length / this.pageSize));
+    },
+    paginatedMembers() {
+      const start = (this.currentPage - 1) * this.pageSize;
+      return this.filteredMembers.slice(start, start + this.pageSize);
+    },
+    // Utilisée uniquement pour détecter un changement de recherche/filtre/tri et réinitialiser la pagination
+    filterSignature() {
+      return JSON.stringify([
+        this.activeTab,
+        this.viewMode,
+        this.searchQuery,
+        this.archivedSearchQuery,
+        this.filterPseudo,
+        this.filterRecruiter,
+        this.filterRank,
+        this.filterDateRange,
+        this.filterMulesMin,
+        this.filterMulesMax,
+        this.filterWarningsMin,
+        this.filterWarningsMax,
+        this.sortColumn,
+        this.sortOrder,
+      ]);
+    },
+  },
+  watch: {
+    filterSignature() {
+      this.currentPage = 1;
+    },
   },
   methods: {
     // ✅ Fetch all characters once and store them
@@ -474,6 +565,16 @@ export default {
         this.notArchivedCharacters = this.charactersData.filter(character => !character.isArchived);
       } catch (error) {
         console.error('Error fetching characters:', error.response?.data || error.message);
+      }
+    },
+
+    // Rangs triés par l'API (requiredDays desc, lead/spéciaux en tête) pour le filtre "Rang"
+    async fetchRanksOrder() {
+      try {
+        const response = await axios.get(`${API_URL}/ranks`);
+        this.allRanksOrdered = response.data;
+      } catch (error) {
+        console.error('Error fetching ranks order:', error.response?.data || error.message);
       }
     },
 
@@ -687,6 +788,9 @@ export default {
         this.sortOrder = 'asc';
       }
     },
+    toggleSortOrder() {
+      this.sortOrder = this.sortOrder === 'asc' ? 'desc' : 'asc';
+    },
 
 
     async updateCharacterClass(characterId, newClass) {
@@ -771,18 +875,6 @@ export default {
         this.showScrollToTop = scrollY > 300;
       }
     },
-    
-    // Mules Modal Methods
-    openMulesModal(member) {
-      this.selectedMemberForMules = member;
-      this.showMulesModal = true;
-    },
-    
-    closeMulesModal() {
-      this.showMulesModal = false;
-      this.selectedMemberForMules = null;
-    },
-
     openNotesModal(member) {
       this.selectedMemberForNotes = member;
       this.notesModalContent = member.notes || '';
@@ -879,7 +971,8 @@ export default {
       await this.fetchCharacters(); // Fetch all characters once
       await this.fetchAllMules(); // Fetch mules once
       await this.fetchWarningCounts();
-      
+      await this.fetchRanksOrder();
+
       // Add event listener for scroll on the RouterView container
       const scrollContainer = document.querySelector('.h-\\[calc\\(100vh-128px\\)\\]');
       if (scrollContainer) {
@@ -944,4 +1037,77 @@ td {
   height: auto;
   vertical-align: top;
 }
+
+/* ---------- Layout sidebar + colonne principale ---------- */
+.members-layout {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  gap: 1.5rem;
+  align-items: start;
+}
+
+.members-layout--full {
+  grid-template-columns: 1fr;
+}
+
+.filters-sidebar {
+  position: sticky;
+  top: 1rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.fs-title {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 1.1rem;
+}
+
+.fs-group {
+  margin-bottom: 1.1rem;
+}
+
+.fs-group-title {
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  margin-bottom: 0.4rem;
+}
+
+.fs-select,
+.fs-input {
+  width: 100%;
+  padding: 0.5rem 0.6rem;
+  border-radius: 0.5rem;
+  border: 1px solid var(--border);
+  background-color: var(--bg);
+  color: var(--text);
+  font-size: 0.82rem;
+}
+
+.fs-select:focus,
+.fs-input:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(var(--primary-rgb), 0.35);
+  border-color: var(--primary);
+}
+
+@media (max-width: 900px) {
+  .members-layout {
+    grid-template-columns: 1fr;
+  }
+  .filters-sidebar {
+    position: static;
+  }
+}
 </style>
+

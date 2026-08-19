@@ -1,42 +1,93 @@
 <template>
-  <div class="min-h-screen bg-theme-bg text-theme-text flex flex-col items-center p-4">
-    <div class="w-full flex justify-end mb-4">
-      <RouterLink to="/wheel" class="btn btn-secondary">Basculer vers la roue des membres</RouterLink>
+  <div class="min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+      <!-- Page Header -->
+      <div class="text-center mb-8">
+        <h1 class="text-4xl md:text-5xl font-serif font-bold brand-gradient-text mb-4">Roue des Classes</h1>
+        <div class="w-24 h-1 rounded-full mx-auto" style="background-image: linear-gradient(90deg, var(--primary), var(--accent));"></div>
+        <p class="text-theme-text-muted mt-4">Tirage aléatoire parmi les classes sélectionnées</p>
+      </div>
+
+      <div class="flex justify-center mb-8">
+        <div class="inline-flex rounded-xl bg-theme-bg-muted p-1 border border-theme-border">
+          <RouterLink to="/wheel" class="wheel-tab">Membres</RouterLink>
+          <RouterLink to="/wheel-classes" class="wheel-tab wheel-tab--active">Classes</RouterLink>
+          <RouterLink to="/wheel-numbers" class="wheel-tab">Nombres</RouterLink>
+        </div>
+      </div>
+
+      <div class="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+        <!-- Sélection des classes -->
+        <div class="glass-card rounded-2xl p-6">
+          <div class="flex items-center justify-between mb-4">
+            <span class="text-sm font-semibold text-theme-text">Classes à inclure</span>
+            <button @click="toggleSelectAll" class="text-theme-primary hover:text-theme-primary-hover text-xs font-semibold">
+              {{ selectedClasses.length === classList.length ? 'Tout désélectionner' : 'Tout sélectionner' }}
+            </button>
+          </div>
+
+          <div class="grid grid-cols-3 sm:grid-cols-4 gap-3">
+            <button
+              v-for="cls in classList"
+              :key="cls.key"
+              type="button"
+              @click="toggleClass(cls.key)"
+              class="wheel-class-tile"
+              :class="{ 'wheel-class-tile--active': selectedClasses.includes(cls.key) }"
+            >
+              <img :src="cls.icon" :alt="cls.label" class="w-10 h-10 rounded-lg" />
+              <span class="text-xs font-medium mt-1.5">{{ cls.label }}</span>
+              <div v-if="selectedClasses.includes(cls.key)" class="wheel-class-check">
+                <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" /></svg>
+              </div>
+            </button>
+          </div>
+        </div>
+
+        <!-- Roue -->
+        <div class="glass-card rounded-2xl p-6 flex flex-col items-center justify-center">
+          <div class="wheel-ring">
+            <canvas ref="wheelCanvas" width="384" height="384"></canvas>
+          </div>
+
+          <button class="wheel-spin-btn mt-6" :disabled="selectedClasses.length < 2 || spinning" @click="spinWheel">
+            {{ spinning ? 'Tirage en cours...' : 'Lancer la roue' }}
+          </button>
+
+          <transition name="winner-pop">
+            <div v-if="winner && !spinning" class="mt-6 text-center">
+              <div class="text-xl font-serif font-bold brand-gradient-text">🎉 Classe gagnante : {{ winner.label }} 🎉</div>
+              <img :src="winner.icon" :alt="winner.label" class="w-16 h-16 mx-auto mt-2 rounded-full border-2 border-theme-primary" />
+            </div>
+          </transition>
+        </div>
+      </div>
     </div>
-    <h1 class="text-2xl font-bold mb-6 text-theme-primary">Roue des Classes Dofus</h1>
-    <div class="w-full max-w-3xl bg-theme-card border border-theme-border rounded shadow p-6 flex flex-col items-center">
-      <div class="mb-4 text-lg font-semibold">Sélectionne les classes à inclure :</div>
-      <div class="flex flex-wrap gap-4 justify-center mb-6">
-        <label v-for="cls in classList" :key="cls.key" class="flex flex-col items-center cursor-pointer select-none">
-          <input type="checkbox" v-model="selectedClasses" :value="cls.key" class="mb-2 accent-theme-primary w-5 h-5" />
-          <img :src="cls.icon" :alt="cls.label" class="w-12 h-12 mb-1 rounded-full border border-theme-border bg-theme-bg" />
-          <span class="text-xs font-medium mt-1">{{ cls.label }}</span>
-        </label>
+  </div>
+
+  <div v-if="spinning" class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
+    <div class="flex flex-col items-center justify-center">
+      <div class="wheel-ring wheel-ring--big">
+        <canvas ref="wheelCanvas" width="800" height="800" style="max-width:85vw; max-height:85vh;"></canvas>
       </div>
-      <button class="btn btn-primary mt-2" :disabled="selectedClasses.length < 2 || spinning" @click="spinWheel">
-        {{ spinning ? 'Tirage en cours...' : 'Lancer la roue' }}
-      </button>
-    </div>
-    <transition name="winner-pop">
-      <div v-if="winner && !spinning" class="mt-8 text-center winner-anim">
-        <div class="text-2xl font-bold text-theme-success">🎉 Classe gagnante : {{ winner.label }} 🎉</div>
-        <img :src="winner.icon" :alt="winner.label" class="w-20 h-20 mx-auto mt-2 rounded-full border-4 border-theme-primary bg-theme-bg" />
-      </div>
-    </transition>
-    <div v-if="spinning" class="fixed inset-0 z-50 flex items-center justify-center bg-black/80">
-      <div class="flex flex-col items-center justify-center relative">
-        <canvas ref="wheelCanvas" width="800" height="800" class="border-8 border-theme-primary rounded-full shadow-2xl bg-theme-bg transition-all duration-300" style="max-width:95vw; max-height:95vh;"></canvas>
-        <div class="mt-8 text-white text-xl font-bold animate-pulse">Tirage en cours...</div>
-      </div>
+      <div class="mt-8 text-theme-text text-xl font-serif font-bold animate-pulse">Tirage en cours...</div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, nextTick } from 'vue';
+import { ref, nextTick } from 'vue';
 import confetti from 'canvas-confetti';
 import { classIcons } from '@/config/classIcons';
 import { RouterLink } from 'vue-router';
+import {
+  getWheelSliceColors,
+  getWheelSliceGradient,
+  getWheelConfettiColors,
+  drawWheelRimBezel,
+  drawWheelHub,
+  drawWheelPointer,
+} from '@/utils/wheelPalette';
 
 const classList = [
   { key: 'iop', label: 'Iop', icon: classIcons.iop },
@@ -73,6 +124,20 @@ let spinStart = 0;
 let spinDuration = 0;
 let currentAngle = 0;
 
+function toggleClass(key: string) {
+  if (selectedClasses.value.includes(key)) {
+    selectedClasses.value = selectedClasses.value.filter(k => k !== key);
+  } else {
+    selectedClasses.value.push(key);
+  }
+}
+
+function toggleSelectAll() {
+  selectedClasses.value = selectedClasses.value.length === classList.length
+    ? []
+    : classList.map(c => c.key);
+}
+
 function spinWheel() {
   if (spinning.value || selectedClasses.value.length < 2) return;
   spinning.value = true;
@@ -107,7 +172,7 @@ function animateWheel(now?: number) {
         spread: 80,
         origin: { y: 0.6 },
         zIndex: 9999,
-        colors: ['#2563eb', '#fbbf24', '#22c55e', '#ef4444', '#a21caf']
+        colors: getWheelConfettiColors()
       });
     });
     drawWheel(0, undefined, undefined);
@@ -126,8 +191,10 @@ function drawWheel(angle = 0, nOverride?: number, classesOverride?: typeof class
   const centerX = canvas.width / 2;
   const centerY = canvas.height / 2;
   const radius = Math.min(centerX, centerY) - 10;
-  const iconSize = 80;
-  const fontSize = 22;
+  const hubRadius = radius * 0.14;
+  const iconSize = canvas.width / 9.6;
+  const fontSize = canvas.width / 26;
+  const sliceColors = getWheelSliceColors(n);
   for (let i = 0; i < n; i++) {
     const angleStart = (i / n) * 2 * Math.PI + angle;
     const angleEnd = ((i + 1) / n) * 2 * Math.PI + angle;
@@ -136,10 +203,11 @@ function drawWheel(angle = 0, nOverride?: number, classesOverride?: typeof class
     ctx.moveTo(centerX, centerY);
     ctx.arc(centerX, centerY, radius, angleStart, angleEnd);
     ctx.closePath();
-    ctx.fillStyle = `hsl(${(i * 360) / n}, 70%, 60%)`;
-    ctx.shadowColor = 'rgba(0,0,0,0.15)';
-    ctx.shadowBlur = 8;
+    ctx.fillStyle = getWheelSliceGradient(ctx, centerX, centerY, hubRadius, radius, sliceColors[i]);
     ctx.fill();
+    ctx.lineWidth = Math.max(1.5, canvas.width / 400);
+    ctx.strokeStyle = 'rgba(0,0,0,0.35)';
+    ctx.stroke();
     ctx.restore();
     // Position radiale pour l’icône et le texte
     const midAngle = angleStart + (angleEnd - angleStart) / 2;
@@ -172,12 +240,9 @@ function drawWheel(angle = 0, nOverride?: number, classesOverride?: typeof class
     const textX = centerX + Math.cos(midAngle) * textRadius;
     const textY = centerY + Math.sin(midAngle) * textRadius;
     ctx.save();
-    ctx.font = `bold ${fontSize}px sans-serif`;
+    ctx.font = `bold ${fontSize}px ui-serif, Georgia, serif`;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillStyle = '#222';
-    ctx.shadowColor = 'rgba(0,0,0,0.12)';
-    ctx.shadowBlur = 2;
     ctx.translate(textX, textY);
     ctx.rotate(midAngle + Math.PI / 2);
     let label = classes[i].label;
@@ -187,36 +252,102 @@ function drawWheel(angle = 0, nOverride?: number, classesOverride?: typeof class
       }
       label += '…';
     }
+    ctx.lineWidth = 3;
+    ctx.strokeStyle = 'rgba(0,0,0,0.55)';
+    ctx.strokeText(label, 0, 0);
+    ctx.fillStyle = '#ffffff';
     ctx.fillText(label, 0, 0);
     ctx.restore();
   }
-  // Flèche
-  ctx.save();
-  ctx.translate(centerX, centerY);
-  ctx.rotate(0);
-  ctx.beginPath();
-  ctx.moveTo(0, -radius - 24);
-  ctx.lineTo(-28, -radius + 28);
-  ctx.lineTo(28, -radius + 28);
-  ctx.closePath();
-  ctx.fillStyle = '#2563eb';
-  ctx.shadowColor = ctx.fillStyle;
-  ctx.shadowBlur = 12;
-  ctx.fill();
-  ctx.restore();
+  drawWheelRimBezel(ctx, centerX, centerY, radius);
+  drawWheelHub(ctx, centerX, centerY, hubRadius);
+  drawWheelPointer(ctx, centerX, centerY, radius);
 }
 </script>
 
 <style scoped>
-.btn {
-  @apply px-4 py-2 rounded font-semibold shadow;
+.wheel-tab {
+  padding: 0.6rem 1.6rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  border-radius: 0.6rem;
+  color: var(--text-muted);
+  transition: background-color 0.2s, color 0.2s;
 }
-.btn-primary {
-  @apply bg-theme-primary text-white hover:bg-theme-primary-hover;
+.wheel-tab:hover {
+  color: var(--text);
 }
-.btn-secondary {
-  @apply bg-theme-bg-muted text-theme-text hover:bg-theme-text-muted border border-theme-border;
+.wheel-tab--active {
+  background-image: linear-gradient(140deg, var(--accent), var(--primary));
+  color: #fff;
 }
+
+.wheel-class-tile {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0.85rem 0.5rem;
+  border-radius: 0.85rem;
+  border: 2px solid var(--border);
+  background-color: rgba(255, 255, 255, 0.02);
+  transition: border-color 0.2s, background-color 0.2s, transform 0.15s;
+}
+.wheel-class-tile:hover {
+  border-color: var(--primary);
+  transform: translateY(-1px);
+}
+.wheel-class-tile--active {
+  border-color: var(--primary);
+  background-color: rgba(var(--primary-rgb), 0.12);
+}
+.wheel-class-check {
+  position: absolute;
+  top: -0.4rem;
+  right: -0.4rem;
+  width: 1.25rem;
+  height: 1.25rem;
+  border-radius: 9999px;
+  background-image: linear-gradient(140deg, var(--accent), var(--primary));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
+}
+
+.wheel-ring {
+  display: inline-flex;
+  padding: 6px;
+  border-radius: 9999px;
+  background-image: conic-gradient(from 200deg, var(--accent), transparent 40%, var(--primary), var(--accent));
+}
+.wheel-ring canvas {
+  border-radius: 9999px;
+  background-color: var(--bg);
+  display: block;
+}
+.wheel-ring--big {
+  padding: 10px;
+}
+
+.wheel-spin-btn {
+  width: 100%;
+  max-width: 20rem;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.75rem;
+  font-weight: 700;
+  color: #fff;
+  background-image: linear-gradient(140deg, var(--accent), var(--primary));
+  transition: filter 0.2s, opacity 0.2s;
+}
+.wheel-spin-btn:hover:not(:disabled) {
+  filter: brightness(1.08);
+}
+.wheel-spin-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 .winner-pop-enter-active {
   transition: all 0.5s cubic-bezier(.68,-0.55,.27,1.55);
 }

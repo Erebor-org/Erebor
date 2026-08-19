@@ -37,7 +37,7 @@
             <div class="flex items-center gap-3 mb-2">
               <span class="text-lg">👁️</span>
               <span class="font-semibold text-theme-text text-lg">Vue par défaut :</span>
-              <span :class="defaultViewMode === 'list' ? 'bg-theme-primary/10 text-theme-primary' : 'bg-theme-success/10 text-theme-success'" class="px-3 py-1 rounded-full font-bold text-base ml-2">{{ defaultViewMode === 'list' ? 'Liste' : 'Fiches' }}</span>
+              <span :class="defaultViewMode === 'list' ? 'bg-theme-primary/10 text-theme-primary' : 'bg-theme-success/10 text-theme-success'" class="px-3 py-1 rounded-full font-bold text-base ml-2">{{ defaultViewMode === 'list' ? 'Liste' : 'Fiche perso' }}</span>
             </div>
             <p class="text-theme-text-muted text-sm ml-8">Vue par défaut pour la page des membres.</p>
           </div>
@@ -47,7 +47,7 @@
       <!-- Default View Mode Section -->
       <div class="bg-theme-card rounded-lg p-6 shadow-lg mb-10 border border-theme-border">
         <h3 class="text-2xl font-bold text-theme-primary mb-6 flex items-center gap-2">👁️ <span>Vue par défaut des Membres</span></h3>
-        <p class="text-theme-text-muted mb-4">Choisissez la vue par défaut (liste ou fiches) pour la page de gestion des membres.</p>
+        <p class="text-theme-text-muted mb-4">Choisissez la vue par défaut (liste ou fiche perso) pour la page de gestion des membres.</p>
         <div class="flex justify-center">
           <div class="flex items-center space-x-2 bg-theme-bg-muted rounded-lg p-1 border border-theme-bg-muted">
             <button
@@ -63,7 +63,7 @@
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
               </svg>
-              <span>Fiches</span>
+              <span>Fiche perso</span>
             </button>
             
             <button
@@ -303,32 +303,32 @@ const notificationMessage = ref('')
 const defaultColors = {
   light: {
     bg: '#ffffff',
-    'bg-muted': '#f7f8fa',
+    'bg-muted': '#FAF7F2',
     card: '#ffffff',
-    border: '#e6e8ec',
-    text: '#0b1220',
-    'text-muted': '#5b6472',
-    primary: '#2563eb',
-    'primary-hover': '#1d4ed8',
-    link: '#2563eb',
-    ring: '#93c5fd',
+    border: '#ECE6DC',
+    text: '#1A1412',
+    'text-muted': '#6B625B',
+    primary: '#9E1B32',
+    'primary-hover': '#7E1527',
+    link: '#9E1B32',
+    ring: '#E3AEB8',
     success: '#16a34a',
-    warning: '#f59e0b',
-    error: '#dc2626'
+    warning: '#C9A227',
+    error: '#DC2626'
   },
   dark: {
-    bg: '#0b0b0f',
-    'bg-muted': '#121218',
-    card: '#14141b',
-    border: '#262633',
-    text: '#f4f6fb',
-    'text-muted': '#a8adbb',
-    primary: '#d946ef',
-    'primary-hover': '#c026d3',
-    link: '#e879f9',
-    ring: '#f0abfc',
+    bg: '#0F0B0A',
+    'bg-muted': '#17110F',
+    card: '#1C1512',
+    border: '#2E211C',
+    text: '#F5EFE6',
+    'text-muted': '#B3A79B',
+    primary: '#E14456',
+    'primary-hover': '#C22E3F',
+    link: '#E3B23C',
+    ring: '#6B2530',
     success: '#22c55e',
-    warning: '#facc15',
+    warning: '#E3B23C',
     error: '#ef4444'
   }
 }
@@ -559,7 +559,7 @@ const setDefaultViewMode = (mode) => {
   if (['list', 'cards'].includes(mode)) {
     defaultViewMode.value = mode
     localStorage.setItem('erebor-default-member-view', mode)
-    showNotificationMessage('success', 'Vue par défaut mise à jour', `La vue par défaut a été définie sur "${mode === 'list' ? 'Liste' : 'Fiches'}".`)
+    showNotificationMessage('success', 'Vue par défaut mise à jour', `La vue par défaut a été définie sur "${mode === 'list' ? 'Liste' : 'Fiche perso'}".`)
   }
 }
 
