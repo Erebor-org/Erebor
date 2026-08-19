@@ -163,6 +163,8 @@
                 @save-note="saveMemberNote"
                 @refresh-data="refreshMembersAndMules"
                 @update-recruitment="handleRecruitmentUpdate"
+                :ghost-voted-character-ids="ghostVotedCharacterIds"
+                @toggle-ghost-vote="toggleGhostVote"
               />
             </div>
 
@@ -187,6 +189,8 @@
                 @open-notes-modal="openNotesModal"
                 @update-recruitment="handleRecruitmentUpdate"
                 @refresh-data="refreshMembersAndMules"
+                :ghost-voted-character-ids="ghostVotedCharacterIds"
+                @toggle-ghost-vote="toggleGhostVote"
               />
             </div>
 
@@ -271,6 +275,7 @@ import NotesModal from '@/components/NotesModal.vue';
 import ThemedDatePicker from '@/components/ThemedDatePicker.vue';
 import ThemeSelect from '@/components/ThemeSelect.vue';
 import Pagination from '@/components/Pagination.vue';
+import { fetchCurrentGhostRound, voteGhost, unvoteGhost } from '@/services/ghostApi';
 import { computed } from 'vue';
 import { useThemeStore } from '@/stores/themeStore';
 
@@ -366,6 +371,8 @@ export default {
       pageSize: 24,
       // Rangs dans l'ordre canonique renvoyé par l'API (lead -> légende -> néophyte)
       allRanksOrdered: [],
+      // Membres fantômes : ids des personnages déjà signalés par l'utilisateur courant ce mois-ci
+      ghostVotedCharacterIds: new Set(),
     };
   },
   computed: {
@@ -949,6 +956,36 @@ export default {
         this.$refs.notificationRef.showNotification('Erreur lors de la mise à jour.', 'error');
       }
     },
+    // Membres fantômes : récupère qui l'utilisateur courant a déjà signalé ce mois-ci
+    async fetchGhostRound() {
+      try {
+        const { nominees } = await fetchCurrentGhostRound();
+        this.ghostVotedCharacterIds = new Set(
+          nominees.filter(n => n.hasVoted).map(n => n.id)
+        );
+      } catch (error) {
+        console.error('Error fetching ghost round:', error.response?.data || error.message);
+      }
+    },
+    async toggleGhostVote(characterId) {
+      const alreadyVoted = this.ghostVotedCharacterIds.has(characterId);
+      try {
+        if (alreadyVoted) {
+          await unvoteGhost(characterId);
+          this.ghostVotedCharacterIds.delete(characterId);
+          this.$refs.notificationRef.showNotification('Vote fantôme retiré.');
+        } else {
+          await voteGhost(characterId);
+          this.ghostVotedCharacterIds.add(characterId);
+          this.$refs.notificationRef.showNotification('Personnage signalé comme fantôme.');
+        }
+        // Force la réactivité (Set muté en place)
+        this.ghostVotedCharacterIds = new Set(this.ghostVotedCharacterIds);
+      } catch (error) {
+        console.error('Error toggling ghost vote:', error.response?.data || error.message);
+        this.$refs.notificationRef.showNotification('Erreur lors du signalement fantôme.', 'error');
+      }
+    },
     async refreshMembersAndMules() {
       await this.fetchCharacters();
       await this.fetchAllMules();
@@ -972,6 +1009,7 @@ export default {
       await this.fetchAllMules(); // Fetch mules once
       await this.fetchWarningCounts();
       await this.fetchRanksOrder();
+      await this.fetchGhostRound();
 
       // Add event listener for scroll on the RouterView container
       const scrollContainer = document.querySelector('.h-\\[calc\\(100vh-128px\\)\\]');

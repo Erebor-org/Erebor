@@ -7,6 +7,20 @@
         :key="`member-${member.id}`"
         class="glass-card fiche-card rounded-2xl p-5 hover:border-theme-primary/50 transition-all duration-300 group"
       >
+        <!-- Signaler comme fantôme -->
+        <button
+          @click="toggleGhostVote(member)"
+          class="fiche-ghost-btn"
+          :class="{ 'fiche-ghost-btn--active': ghostVotedCharacterIds.has(member.id) }"
+          :title="ghostVotedCharacterIds.has(member.id) ? 'Retirer mon vote fantôme' : 'Signaler comme fantôme'"
+        >
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 2a7 7 0 0 0-7 7v11.5a.5.5 0 0 0 .82.38L7.5 19l1.7 1.62a.75.75 0 0 0 1 0L12 19l1.8 1.62a.75.75 0 0 0 1 0L16.5 19l1.68 1.88A.5.5 0 0 0 19 20.5V9a7 7 0 0 0-7-7z" />
+            <circle cx="9.5" cy="10" r="1.25" />
+            <circle cx="14.5" cy="10" r="1.25" />
+          </svg>
+        </button>
+
         <!-- Archiver -->
         <button
           @click="openModal(member)"
@@ -242,6 +256,11 @@ export default {
       type: Number,
       required: true,
     },
+    ghostVotedCharacterIds: {
+      type: Set,
+      required: false,
+      default: () => new Set(),
+    },
   },
   emits: [
     'open-modal',
@@ -256,6 +275,7 @@ export default {
     'save-note',
     'refresh-data',
     'update-recruitment',
+    'toggle-ghost-vote',
   ],
   computed: {
     confirmSwitchMessage() {
@@ -269,6 +289,9 @@ export default {
     },
     openModal(member) {
       this.$emit('open-modal', member);
+    },
+    toggleGhostVote(member) {
+      this.$emit('toggle-ghost-vote', member.id);
     },
     viewWarnings(characterId, member) {
       this.$emit('view-warnings', characterId, member);
@@ -389,6 +412,24 @@ export default {
 .fiche-archive-btn:hover {
   color: var(--error);
   background-color: rgba(var(--primary-rgb), 0.08);
+}
+
+.fiche-ghost-btn {
+  position: absolute;
+  top: 1rem;
+  right: 3.25rem;
+  padding: 0.5rem;
+  border-radius: 0.75rem;
+  color: var(--text-muted);
+  transition: color 0.2s, background-color 0.2s;
+}
+.fiche-ghost-btn:hover {
+  color: var(--primary);
+  background-color: rgba(var(--primary-rgb), 0.08);
+}
+.fiche-ghost-btn--active {
+  color: var(--primary);
+  background-color: rgba(var(--primary-rgb), 0.12);
 }
 
 .fiche-portrait-wrap {

@@ -15,6 +15,7 @@ import WheelClassesView from '../views/WheelClassesView.vue';
 import NumberWheelView from '../views/NumberWheelView.vue';
 import ManageUsers from '../views/ManageUsers.vue';
 import ProfileView from '../views/ProfileView.vue';
+import GhostMembers from '../views/GhostMembers.vue';
 
 const routes = [
   { path: '/', redirect: () => {
@@ -25,6 +26,7 @@ const routes = [
   { path: '/home', name: 'Home', component: HomeView, meta: { requiresAuth: true } },
   { path: '/inscription', name: 'Register', component: Register },
   { path: '/membres', name: 'PrintMembers', component: PrintMembers, meta: { requiresAuth: true } },
+  { path: '/fantomes', name: 'GhostMembers', component: GhostMembers, meta: { requiresAuth: true } },
   { path: '/blacklist', name: 'Blacklist', component: Blacklist, meta: { requiresAuth: true } },
   { path: '/warnings/:id/:pseudo', name: 'ViewWarnings', component: ViewWarnings, meta: { requiresAuth: true } },
   { path: '/warnings-management', name: 'ManageWarnings', component: ManageWarnings, meta: { requiresAuth: true } },

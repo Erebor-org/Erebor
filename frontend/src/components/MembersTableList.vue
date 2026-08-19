@@ -74,6 +74,18 @@
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536M9 13h3l8-8a2.828 2.828 0 10-4-4l-8 8v3z" /></svg>
           </button>
           <button
+            @click="toggleGhostVote(member)"
+            class="p-2 rounded-lg transition-all duration-200"
+            :class="ghostVotedCharacterIds.has(member.id) ? 'text-theme-primary bg-theme-primary/12' : 'text-theme-text-muted hover:text-theme-primary hover:bg-theme-primary/10'"
+            :title="ghostVotedCharacterIds.has(member.id) ? 'Retirer mon vote fantôme' : 'Signaler comme fantôme'"
+          >
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 2a7 7 0 0 0-7 7v11.5a.5.5 0 0 0 .82.38L7.5 19l1.7 1.62a.75.75 0 0 0 1 0L12 19l1.8 1.62a.75.75 0 0 0 1 0L16.5 19l1.68 1.88A.5.5 0 0 0 19 20.5V9a7 7 0 0 0-7-7z" />
+              <circle cx="9.5" cy="10" r="1.25" />
+              <circle cx="14.5" cy="10" r="1.25" />
+            </svg>
+          </button>
+          <button
             @click="openModal(member)"
             class="p-2 text-theme-text-muted hover:text-theme-error hover:bg-theme-error/15 rounded-lg transition-all duration-200"
             title="Archiver le membre"
@@ -216,6 +228,11 @@ export default {
       type: Number,
       required: true,
     },
+    ghostVotedCharacterIds: {
+      type: Set,
+      required: false,
+      default: () => new Set(),
+    },
   },
   setup() {
     const expandedRows = reactive({});
@@ -249,6 +266,9 @@ export default {
     },
     openModal(member) {
       this.$emit('open-modal', member);
+    },
+    toggleGhostVote(member) {
+      this.$emit('toggle-ghost-vote', member.id);
     },
     openMuleModal(mule) {
       this.$emit('open-mule-modal', mule);
@@ -315,6 +335,7 @@ export default {
     'open-notes-modal',
     'refresh-data',
     'update-recruitment',
+    'toggle-ghost-vote',
   ],
 };
 </script>

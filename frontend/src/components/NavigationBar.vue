@@ -203,6 +203,15 @@
           </RouterLink>
 
           <RouterLink
+            to="/fantomes"
+            v-if="isLoggedIn && isAdmin"
+            class="nav-link"
+            active-class="nav-link-active"
+          >
+            Fantômes
+          </RouterLink>
+
+          <RouterLink
             to="/statistiques"
             v-if="isLoggedIn"
             class="nav-link"
@@ -413,6 +422,16 @@
           @click="isMobileMenuOpen = false"
         >
           Membres
+        </RouterLink>
+
+        <RouterLink
+          to="/fantomes"
+          v-if="isLoggedIn && isAdmin"
+          class="mobile-nav-link"
+          active-class="mobile-nav-link-active"
+          @click="isMobileMenuOpen = false"
+        >
+          Fantômes
         </RouterLink>
 
         <RouterLink
