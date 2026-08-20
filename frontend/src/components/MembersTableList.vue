@@ -22,6 +22,13 @@
             size="sm"
             @update-class="updateCharacterClass"
           />
+          <span
+            v-if="ghostTotalVotes[member.id]"
+            class="ladder-ghost-total-pastille"
+            :title="`Signalé ${ghostTotalVotes[member.id]} fois comme fantôme au total`"
+          >
+            👻{{ ghostTotalVotes[member.id] }}
+          </span>
         </span>
 
         <div class="ladder-name" @click.stop>
@@ -75,15 +82,16 @@
           </button>
           <button
             @click="toggleGhostVote(member)"
-            class="p-2 rounded-lg transition-all duration-200"
+            class="relative p-2 rounded-lg transition-all duration-200"
             :class="ghostVotedCharacterIds.has(member.id) ? 'text-theme-primary bg-theme-primary/12' : 'text-theme-text-muted hover:text-theme-primary hover:bg-theme-primary/10'"
-            :title="ghostVotedCharacterIds.has(member.id) ? 'Retirer mon vote fantôme' : 'Signaler comme fantôme'"
+            :title="(ghostVotedCharacterIds.has(member.id) ? 'Retirer mon vote fantôme' : 'Signaler comme fantôme') + (ghostVoteCounts[member.id] ? ` (${ghostVoteCounts[member.id]} vote${ghostVoteCounts[member.id] !== 1 ? 's' : ''} ce mois-ci)` : '')"
           >
             <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
               <path d="M12 2a7 7 0 0 0-7 7v11.5a.5.5 0 0 0 .82.38L7.5 19l1.7 1.62a.75.75 0 0 0 1 0L12 19l1.8 1.62a.75.75 0 0 0 1 0L16.5 19l1.68 1.88A.5.5 0 0 0 19 20.5V9a7 7 0 0 0-7-7z" />
               <circle cx="9.5" cy="10" r="1.25" />
               <circle cx="14.5" cy="10" r="1.25" />
             </svg>
+            <span v-if="ghostVoteCounts[member.id]" class="ladder-ghost-count">{{ ghostVoteCounts[member.id] }}</span>
           </button>
           <button
             @click="openModal(member)"
@@ -232,6 +240,16 @@ export default {
       type: Set,
       required: false,
       default: () => new Set(),
+    },
+    ghostVoteCounts: {
+      type: Object,
+      required: false,
+      default: () => ({}),
+    },
+    ghostTotalVotes: {
+      type: Object,
+      required: false,
+      default: () => ({}),
     },
   },
   setup() {
@@ -385,7 +403,23 @@ export default {
 }
 
 .ladder-avatar {
+  position: relative;
   display: flex;
+}
+
+.ladder-ghost-total-pastille {
+  position: absolute;
+  top: -0.35rem;
+  right: -0.35rem;
+  background-color: var(--card);
+  border: 1px solid var(--primary);
+  color: var(--primary);
+  border-radius: 9999px;
+  padding: 0 0.3rem;
+  font-size: 0.6rem;
+  font-weight: 700;
+  white-space: nowrap;
+  line-height: 1.4;
 }
 
 .ladder-name {
@@ -516,6 +550,24 @@ export default {
   text-transform: uppercase;
   letter-spacing: 0.05em;
   color: var(--text-muted);
+}
+
+.ladder-ghost-count {
+  position: absolute;
+  top: -0.2rem;
+  right: -0.2rem;
+  min-width: 1.1rem;
+  height: 1.1rem;
+  padding: 0 0.25rem;
+  border-radius: 9999px;
+  background-color: var(--primary);
+  color: white;
+  font-size: 0.6rem;
+  font-weight: 700;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .ladder-mule-row {

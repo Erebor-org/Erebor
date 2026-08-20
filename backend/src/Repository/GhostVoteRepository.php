@@ -56,6 +56,42 @@ class GhostVoteRepository extends ServiceEntityRepository
             ->getResult();
     }
 
+    /**
+     * Every vote ever cast, across every round (open and closed), character/round eager-loaded.
+     * Used to build the global ghost registry (one query instead of one per character).
+     */
+    public function findAllWithCharacterAndRound(): array
+    {
+        return $this->createQueryBuilder('v')
+            ->leftJoin('v.character', 'c')
+            ->addSelect('c')
+            ->leftJoin('v.round', 'r')
+            ->addSelect('r')
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * Total votes ever cast per character, across every round (open and closed) — a simple
+     * lifetime "how many times has this character been flagged" count for the Members page.
+     * Returns a plain [characterId => total] map, only for characters with at least one vote.
+     */
+    public function countAllByCharacter(): array
+    {
+        $rows = $this->createQueryBuilder('v')
+            ->select('IDENTITY(v.character) AS characterId', 'COUNT(v.id) AS total')
+            ->groupBy('v.character')
+            ->getQuery()
+            ->getResult();
+
+        $result = [];
+        foreach ($rows as $row) {
+            $result[(int) $row['characterId']] = (int) $row['total'];
+        }
+
+        return $result;
+    }
+
     public function remove(GhostVote $entity, bool $flush = false): void
     {
         $this->getEntityManager()->remove($entity);

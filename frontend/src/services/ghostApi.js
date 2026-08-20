@@ -29,3 +29,18 @@ export function closeGhostRound() {
 export function fetchGhostHistory(characterId) {
   return axios.get(`${API_URL}/ghost/characters/${characterId}/history`).then((res) => res.data);
 }
+
+// { [characterId]: totalVotesEver } across every round, open and closed
+export function fetchGhostTotals() {
+  return axios.get(`${API_URL}/ghost/totals`).then((res) => res.data);
+}
+
+// Every character ever nominated, with lifetime stats — for the "who to warn / who to kick" registry
+export function fetchGhostRegistry() {
+  return axios.get(`${API_URL}/ghost/registry`).then((res) => res.data);
+}
+
+// Closed rounds, most recent first, each with the list of characters who reached the threshold
+export function fetchGhostRounds() {
+  return axios.get(`${API_URL}/ghost/rounds`).then((res) => res.data);
+}

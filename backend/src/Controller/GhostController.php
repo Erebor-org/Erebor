@@ -244,6 +244,68 @@ class GhostController extends AbstractController
         ]);
     }
 
+    #[Route('/ghost/totals', name: 'ghost_totals', methods: ['GET'])]
+    public function getTotals(GhostVoteRepository $voteRepository): JsonResponse
+    {
+        return $this->json($voteRepository->countAllByCharacter());
+    }
+
+    #[Route('/ghost/registry', name: 'ghost_registry', methods: ['GET'])]
+    public function getRegistry(GhostVoteRepository $voteRepository): JsonResponse
+    {
+        $votes = $voteRepository->findAllWithCharacterAndRound();
+
+        $byCharacter = [];
+        foreach ($votes as $vote) {
+            $character = $vote->getCharacter();
+            $characterId = $character->getId();
+            $byCharacter[$characterId] ??= ['character' => $character, 'byRound' => []];
+            $round = $vote->getRound();
+            $roundId = $round->getId();
+            $byCharacter[$characterId]['byRound'][$roundId] ??= ['round' => $round, 'count' => 0];
+            $byCharacter[$characterId]['byRound'][$roundId]['count']++;
+        }
+
+        $result = [];
+        foreach ($byCharacter as $entry) {
+            $character = $entry['character'];
+            $totalVotes = 0;
+            $timesThresholdReached = 0;
+            $currentRoundVoteCount = 0;
+            $lastFlaggedAt = null;
+
+            foreach ($entry['byRound'] as $rc) {
+                $totalVotes += $rc['count'];
+                if ($rc['round']->getClosedAt() !== null) {
+                    if ($rc['count'] >= $rc['round']->getThreshold()) {
+                        $timesThresholdReached++;
+                        if (!$lastFlaggedAt || $rc['round']->getClosedAt() > $lastFlaggedAt) {
+                            $lastFlaggedAt = $rc['round']->getClosedAt();
+                        }
+                    }
+                } else {
+                    $currentRoundVoteCount = $rc['count'];
+                }
+            }
+
+            $result[] = array_merge($this->formatCharacterSummary($character), [
+                'isArchived' => $character->isArchived(),
+                'totalVotes' => $totalVotes,
+                'currentRoundVoteCount' => $currentRoundVoteCount,
+                'timesThresholdReached' => $timesThresholdReached,
+                'eligibleExclusion' => $timesThresholdReached >= 2,
+                'lastFlaggedAt' => $lastFlaggedAt?->format('Y-m-d'),
+            ]);
+        }
+
+        usort($result, function ($a, $b) {
+            return $b['timesThresholdReached'] <=> $a['timesThresholdReached']
+                ?: $b['totalVotes'] <=> $a['totalVotes'];
+        });
+
+        return $this->json($result);
+    }
+
     #[Route('/ghost/rounds', name: 'ghost_rounds_list', methods: ['GET'])]
     public function listClosedRounds(
         GhostRoundRepository $roundRepository,
@@ -253,20 +315,32 @@ class GhostController extends AbstractController
 
         $result = array_map(function (GhostRound $round) use ($voteRepository) {
             $votes = $voteRepository->findByRound($round);
-            $counts = [];
+            $byCharacter = [];
             foreach ($votes as $vote) {
                 $characterId = $vote->getCharacter()->getId();
-                $counts[$characterId] = ($counts[$characterId] ?? 0) + 1;
+                $byCharacter[$characterId] ??= ['character' => $vote->getCharacter(), 'count' => 0];
+                $byCharacter[$characterId]['count']++;
             }
-            $reachedCount = count(array_filter($counts, fn($c) => $c >= $round->getThreshold()));
+
+            $reached = [];
+            foreach ($byCharacter as $entry) {
+                if ($entry['count'] >= $round->getThreshold()) {
+                    $reached[] = [
+                        'characterId' => $entry['character']->getId(),
+                        'pseudo' => $entry['character']->getPseudo(),
+                        'voteCount' => $entry['count'],
+                    ];
+                }
+            }
 
             return [
                 'id' => $round->getId(),
                 'openedAt' => $round->getOpenedAt()->format('Y-m-d'),
                 'closedAt' => $round->getClosedAt()?->format('Y-m-d'),
                 'threshold' => $round->getThreshold(),
-                'nomineeCount' => count($counts),
-                'reachedThresholdCount' => $reachedCount,
+                'nomineeCount' => count($byCharacter),
+                'reachedThresholdCount' => count($reached),
+                'reachedThreshold' => $reached,
             ];
         }, $rounds);
 
@@ -308,6 +382,7 @@ class GhostController extends AbstractController
         return [
             'id' => $voter->getId(),
             'pseudo' => $character ? $character->getPseudo() : $voter->getUsername(),
+            'class' => $character?->getClass(),
         ];
     }
 
