@@ -130,16 +130,17 @@ class StatisticsController extends AbstractController
         ksort($bootyCounts);
 
         // Calculate class distribution
-        $classDistribution = [];
+        $classCounts = [];
         foreach ($characters as $character) {
             $class = $character->getClass();
-            if (!isset($classDistribution[$class])) {
-                $classDistribution[$class] = 0;
+            if (!isset($classCounts[$class])) {
+                $classCounts[$class] = 0;
             }
-            $classDistribution[$class]++;
+            $classCounts[$class]++;
         }
 
-        // Convert to percentages
+        // Convert to percentages (kept alongside the raw counts, which some UI needs verbatim)
+        $classDistribution = $classCounts;
         if ($totalCharacters > 0) {
             foreach ($classDistribution as $class => $count) {
                 $classDistribution[$class] = round(($count / $totalCharacters) * 100);
@@ -148,6 +149,7 @@ class StatisticsController extends AbstractController
 
         // Sort class distribution by class name
         ksort($classDistribution);
+        ksort($classCounts);
 
         // Calculate recruiter performance with full recruiter info
         $recruiterPerformance = [];
@@ -192,6 +194,7 @@ class StatisticsController extends AbstractController
             'totalCharactersIncludingMules' => $totalCharactersIncludingMules,
             'bootyCounts' => $bootyCounts,
             'classDistribution' => $classDistribution,
+            'classCounts' => $classCounts,
             'recruiterPerformance' => $recruiterPerformance,
             'memberRolesDistribution' => $memberRolesDistribution,
         ];
