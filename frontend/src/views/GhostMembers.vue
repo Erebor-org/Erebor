@@ -5,7 +5,10 @@
     <div class="container mx-auto px-4 py-8">
       <!-- Page Header -->
       <div class="text-center mb-10">
-        <h1 class="text-4xl md:text-5xl font-serif font-bold brand-gradient-text mb-4">Membres Fantômes</h1>
+        <div class="inline-flex items-center gap-2.5">
+          <h1 class="text-4xl md:text-5xl font-serif font-bold brand-gradient-text mb-4">Membres Fantômes</h1>
+          <span class="gh-page-beta-tag">Bêta</span>
+        </div>
         <div class="w-24 h-1 rounded-full mx-auto" style="background-image: linear-gradient(90deg, var(--primary), var(--accent));"></div>
         <p class="text-theme-text-muted mt-4">Vote collectif pour repérer les membres actifs mais absents de la vie de guilde</p>
       </div>
@@ -553,6 +556,21 @@ export default {
 </script>
 
 <style scoped>
+.gh-page-beta-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.15rem 0.6rem;
+  border-radius: 9999px;
+  border: 1px solid rgba(var(--accent-rgb), 0.4);
+  color: var(--accent);
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+  transform: translateY(-0.3rem);
+}
+
 .gh-picklist {
   max-height: 14rem;
   overflow-y: auto;
