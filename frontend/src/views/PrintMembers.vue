@@ -2,7 +2,7 @@
   <div class="min-h-screen">
     <!-- Notification -->
     <Notification ref="notificationRef" />
-    
+
     <!-- Import Member Modal -->
     <ImportMember
       :showModalMember="showModalMember"
@@ -43,7 +43,7 @@
         <aside v-if="activeTab === 'active'" class="filters-sidebar glass-card rounded-2xl p-5">
           <div class="fs-title">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" /></svg>
-            Filtrer le roster
+            Filtrer les membres
           </div>
 
           <div class="fs-group">
@@ -77,6 +77,14 @@
             <div class="flex gap-2">
               <input v-model.number="filterWarningsMin" type="number" min="0" placeholder="min" class="fs-input" />
               <input v-model.number="filterWarningsMax" type="number" min="0" placeholder="max" class="fs-input" />
+            </div>
+          </div>
+
+          <div class="fs-group">
+            <label class="fs-group-title">Signalements fantôme (min / max)</label>
+            <div class="flex gap-2">
+              <input v-model.number="filterGhostMin" type="number" min="0" placeholder="min" class="fs-input" />
+              <input v-model.number="filterGhostMax" type="number" min="0" placeholder="max" class="fs-input" />
             </div>
           </div>
 
@@ -144,7 +152,7 @@
             <!-- Fiche perso -->
             <div v-if="viewMode === 'cards'">
               <MembersTable
-                :filtered-members="paginatedMembers"
+                :filtered-members="filteredMembers"
                 :classes="classes"
                 :filtered-mules-by-character="filteredMulesByCharacter"
                 :character-warning-counts="characterWarningCounts"
@@ -163,13 +171,17 @@
                 @save-note="saveMemberNote"
                 @refresh-data="refreshMembersAndMules"
                 @update-recruitment="handleRecruitmentUpdate"
+                :ghost-voted-character-ids="ghostVotedCharacterIds"
+                :ghost-vote-counts="ghostVoteCounts"
+                :ghost-total-votes="ghostTotalVotes"
+                @toggle-ghost-vote="toggleGhostVote"
               />
             </div>
 
             <!-- Liste -->
             <div v-else>
               <MembersTableList
-                :filtered-members="paginatedMembers"
+                :filtered-members="filteredMembers"
                 :classes="classes"
                 :filtered-mules-by-character="filteredMulesByCharacter"
                 :character-warning-counts="characterWarningCounts"
@@ -187,10 +199,12 @@
                 @open-notes-modal="openNotesModal"
                 @update-recruitment="handleRecruitmentUpdate"
                 @refresh-data="refreshMembersAndMules"
+                :ghost-voted-character-ids="ghostVotedCharacterIds"
+                :ghost-vote-counts="ghostVoteCounts"
+                :ghost-total-votes="ghostTotalVotes"
+                @toggle-ghost-vote="toggleGhostVote"
               />
             </div>
-
-            <Pagination :page="currentPage" :total-pages="totalPages" @update:page="currentPage = $event" />
           </div>
 
           <!-- Archived Characters -->
@@ -227,7 +241,7 @@
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18" />
       </svg>
     </button>
-    
+
     <!-- Modals -->
     <ArchiveModal
       :show="showModal"
@@ -236,7 +250,7 @@
       @close="closeModal"
       @confirm="archiveCharacter(selectedMember?.id)"
     />
-    
+
     <ArchiveModal
       :show="showModalMule"
       :message="`Voulez-vous archiver le joueur ${selectedMule?.pseudo || ''} ?`"
@@ -244,7 +258,7 @@
       @close="closeMuleModal"
       @confirm="archiveMule(selectedMule?.id)"
     />
-    
+
     <ArchiveModal
       :show="showUnarchivedCharacterModal"
       :message="`Voulez-vous restaurer le joueur ${selectedUnarchivedCharacter?.pseudo || ''} ?`"
@@ -270,7 +284,7 @@ import ViewToggle from '@/components/ViewToggle.vue';
 import NotesModal from '@/components/NotesModal.vue';
 import ThemedDatePicker from '@/components/ThemedDatePicker.vue';
 import ThemeSelect from '@/components/ThemeSelect.vue';
-import Pagination from '@/components/Pagination.vue';
+import { fetchCurrentGhostRound, voteGhost, unvoteGhost, fetchGhostTotals as fetchGhostTotalsApi } from '@/services/ghostApi';
 import { computed } from 'vue';
 import { useThemeStore } from '@/stores/themeStore';
 
@@ -292,7 +306,6 @@ export default {
     NotesModal,
     ThemedDatePicker,
     ThemeSelect,
-    Pagination,
   },
   setup() {
     const themeStore = useThemeStore();
@@ -358,14 +371,19 @@ export default {
       filterMulesMax: null,
       filterWarningsMin: null,
       filterWarningsMax: null,
+      filterGhostMin: null,
+      filterGhostMax: null,
       // Tri avancé (colonne et sens)
       sortColumn: null,
       sortOrder: 'asc',
-      // Pagination (vue Fiche perso et Liste)
-      currentPage: 1,
-      pageSize: 24,
       // Rangs dans l'ordre canonique renvoyé par l'API (lead -> légende -> néophyte)
       allRanksOrdered: [],
+      // Membres fantômes : ids des personnages déjà signalés par l'utilisateur courant ce mois-ci
+      ghostVotedCharacterIds: new Set(),
+      // Membres fantômes : nombre de votes reçus ce mois-ci, par personnage
+      ghostVoteCounts: {},
+      // Membres fantômes : nombre de fois signalé au total, tous rounds confondus (pastille + tri)
+      ghostTotalVotes: {},
     };
   },
   computed: {
@@ -416,6 +434,12 @@ export default {
           if (this.filterWarningsMax !== null && this.filterWarningsMax !== undefined) {
             if ((this.characterWarningCounts[member.id] || 0) > this.filterWarningsMax) return false;
           }
+          if (this.filterGhostMin !== null && this.filterGhostMin !== undefined) {
+            if ((this.ghostTotalVotes[member.id] || 0) < this.filterGhostMin) return false;
+          }
+          if (this.filterGhostMax !== null && this.filterGhostMax !== undefined) {
+            if ((this.ghostTotalVotes[member.id] || 0) > this.filterGhostMax) return false;
+          }
           // Recherche globale (ancienne logique)
           const normalize = str =>
             str
@@ -445,6 +469,8 @@ export default {
               return this.filteredMulesByCharacter(member.id).length;
             case 'warnings':
               return this.characterWarningCounts[member.id] || 0;
+            case 'ghost':
+              return this.ghostTotalVotes[member.id] || 0;
             case 'recruited_at':
               return member.createdAt ? new Date(member.createdAt).getTime() : 0;
             default:
@@ -494,6 +520,8 @@ export default {
       if (this.filterMulesMax !== null && this.filterMulesMax !== undefined) chips.push({ label: `Mules ≤ ${this.filterMulesMax}`, clear: () => (this.filterMulesMax = null) });
       if (this.filterWarningsMin !== null && this.filterWarningsMin !== undefined) chips.push({ label: `Avert. ≥ ${this.filterWarningsMin}`, clear: () => (this.filterWarningsMin = null) });
       if (this.filterWarningsMax !== null && this.filterWarningsMax !== undefined) chips.push({ label: `Avert. ≤ ${this.filterWarningsMax}`, clear: () => (this.filterWarningsMax = null) });
+      if (this.filterGhostMin !== null && this.filterGhostMin !== undefined) chips.push({ label: `Fantôme ≥ ${this.filterGhostMin}`, clear: () => (this.filterGhostMin = null) });
+      if (this.filterGhostMax !== null && this.filterGhostMax !== undefined) chips.push({ label: `Fantôme ≤ ${this.filterGhostMax}`, clear: () => (this.filterGhostMax = null) });
       return chips;
     },
     availableRanks() {
@@ -518,42 +546,12 @@ export default {
         { value: 'recruited_at', label: 'Arrivée' },
         { value: 'mules', label: 'Mules' },
         { value: 'warnings', label: 'Avertissements' },
+        { value: 'ghost', label: 'Signalements fantôme' },
       ];
     },
     availableRecruiters() {
       const recruiters = new Set(this.charactersNotArchived.map(c => c.recruiter?.pseudo).filter(Boolean));
       return Array.from(recruiters).sort();
-    },
-    totalPages() {
-      return Math.max(1, Math.ceil(this.filteredMembers.length / this.pageSize));
-    },
-    paginatedMembers() {
-      const start = (this.currentPage - 1) * this.pageSize;
-      return this.filteredMembers.slice(start, start + this.pageSize);
-    },
-    // Utilisée uniquement pour détecter un changement de recherche/filtre/tri et réinitialiser la pagination
-    filterSignature() {
-      return JSON.stringify([
-        this.activeTab,
-        this.viewMode,
-        this.searchQuery,
-        this.archivedSearchQuery,
-        this.filterPseudo,
-        this.filterRecruiter,
-        this.filterRank,
-        this.filterDateRange,
-        this.filterMulesMin,
-        this.filterMulesMax,
-        this.filterWarningsMin,
-        this.filterWarningsMax,
-        this.sortColumn,
-        this.sortOrder,
-      ]);
-    },
-  },
-  watch: {
-    filterSignature() {
-      this.currentPage = 1;
     },
   },
   methods: {
@@ -853,7 +851,7 @@ export default {
             behavior: 'smooth',
           });
         }
-        
+
         // Force update of scroll state after a short delay
         setTimeout(() => {
           this.handleScroll();
@@ -914,7 +912,7 @@ export default {
           ...updatedCharacter,
           createdAt: updatedCharacter.recruitedAt || updatedCharacter.createdAt,
         };
-        
+
         // Update the character in local state
         const characterIndex = this.charactersData.findIndex(c => c.id === characterData.id);
         if (characterIndex !== -1) {
@@ -929,7 +927,7 @@ export default {
             this.charactersData[characterIndex].createdAt = characterData.createdAt;
           }
         }
-        
+
         // Also update in notArchivedCharacters if it exists
         const notArchivedIndex = this.charactersNotArchived.findIndex(c => c.id === characterData.id);
         if (notArchivedIndex !== -1) {
@@ -942,11 +940,59 @@ export default {
             this.charactersNotArchived[notArchivedIndex].createdAt = characterData.createdAt;
           }
         }
-        
+
         this.$refs.notificationRef.showNotification('Informations de recrutement mises à jour avec succès !');
       } catch (error) {
         console.error('Error updating recruitment info:', error);
         this.$refs.notificationRef.showNotification('Erreur lors de la mise à jour.', 'error');
+      }
+    },
+    // Membres fantômes : récupère qui l'utilisateur courant a déjà signalé ce mois-ci, et le nombre de votes de chacun
+    async fetchGhostRound() {
+      try {
+        const { nominees } = await fetchCurrentGhostRound();
+        this.ghostVotedCharacterIds = new Set(
+          nominees.filter(n => n.hasVoted).map(n => n.id)
+        );
+        const counts = {};
+        nominees.forEach(n => { counts[n.id] = n.voteCount; });
+        this.ghostVoteCounts = counts;
+      } catch (error) {
+        console.error('Error fetching ghost round:', error.response?.data || error.message);
+      }
+    },
+    // Membres fantômes : nombre de fois total signalé (tous rounds), pour la pastille et le tri
+    async fetchGhostTotals() {
+      try {
+        this.ghostTotalVotes = await fetchGhostTotalsApi();
+      } catch (error) {
+        console.error('Error fetching ghost totals:', error.response?.data || error.message);
+      }
+    },
+    async toggleGhostVote(characterId) {
+      const alreadyVoted = this.ghostVotedCharacterIds.has(characterId);
+      try {
+        let state;
+        if (alreadyVoted) {
+          state = await unvoteGhost(characterId);
+          this.ghostVotedCharacterIds.delete(characterId);
+          this.$refs.notificationRef.showNotification('Vote fantôme retiré.');
+        } else {
+          state = await voteGhost(characterId);
+          this.ghostVotedCharacterIds.add(characterId);
+          this.$refs.notificationRef.showNotification('Personnage signalé comme fantôme.');
+        }
+        this.ghostVoteCounts = { ...this.ghostVoteCounts, [characterId]: state.voteCount };
+        const currentTotal = this.ghostTotalVotes[characterId] || 0;
+        this.ghostTotalVotes = {
+          ...this.ghostTotalVotes,
+          [characterId]: alreadyVoted ? Math.max(0, currentTotal - 1) : currentTotal + 1,
+        };
+        // Force la réactivité (Set muté en place)
+        this.ghostVotedCharacterIds = new Set(this.ghostVotedCharacterIds);
+      } catch (error) {
+        console.error('Error toggling ghost vote:', error.response?.data || error.message);
+        this.$refs.notificationRef.showNotification('Erreur lors du signalement fantôme.', 'error');
       }
     },
     async refreshMembersAndMules() {
@@ -972,6 +1018,8 @@ export default {
       await this.fetchAllMules(); // Fetch mules once
       await this.fetchWarningCounts();
       await this.fetchRanksOrder();
+      await this.fetchGhostRound();
+      await this.fetchGhostTotals();
 
       // Add event listener for scroll on the RouterView container
       const scrollContainer = document.querySelector('.h-\\[calc\\(100vh-128px\\)\\]');
@@ -982,12 +1030,12 @@ export default {
         window.addEventListener('scroll', this.handleScroll);
         document.addEventListener('scroll', this.handleScroll);
       }
-      
+
       // Force a scroll test after a delay
       setTimeout(() => {
         this.handleScroll();
       }, 1000);
-      
+
     } catch (error) {
       console.error('Error during component initialization:', error);
     }

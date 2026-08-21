@@ -7,6 +7,15 @@
         :key="`member-${member.id}`"
         class="glass-card fiche-card rounded-2xl p-5 hover:border-theme-primary/50 transition-all duration-300 group"
       >
+        <!-- Signalements fantôme (total) -->
+        <span
+          v-if="ghostTotalVotes[member.id]"
+          class="fiche-ghost-pastille"
+          :title="`Signalé ${ghostTotalVotes[member.id]} fois comme fantôme au total`"
+        >
+          👻 {{ ghostTotalVotes[member.id] }}
+        </span>
+
         <!-- Archiver -->
         <button
           @click="openModal(member)"
@@ -89,6 +98,23 @@
           >
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536M9 13h3l8-8a2.828 2.828 0 10-4-4l-8 8v3z" /></svg>
             <span>{{ member.notes && member.notes.trim() !== '' ? 'Voir la note' : 'Ajouter une note' }}</span>
+          </button>
+        </div>
+
+        <!-- Signaler comme fantôme -->
+        <div class="mb-3 w-full">
+          <button
+            @click="toggleGhostVote(member)"
+            class="fiche-ghost-toggle"
+            :class="{ 'fiche-ghost-toggle--active': ghostVotedCharacterIds.has(member.id) }"
+          >
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 2a7 7 0 0 0-7 7v11.5a.5.5 0 0 0 .82.38L7.5 19l1.7 1.62a.75.75 0 0 0 1 0L12 19l1.8 1.62a.75.75 0 0 0 1 0L16.5 19l1.68 1.88A.5.5 0 0 0 19 20.5V9a7 7 0 0 0-7-7z" />
+              <circle cx="9.5" cy="10" r="1.25" />
+              <circle cx="14.5" cy="10" r="1.25" />
+            </svg>
+            <span>{{ ghostVotedCharacterIds.has(member.id) ? 'Signalé comme fantôme' : 'Signaler comme fantôme' }}</span>
+            <span v-if="ghostVoteCounts[member.id]" class="fiche-ghost-count">{{ ghostVoteCounts[member.id] }}</span>
           </button>
         </div>
         <!-- Mules (repliées par défaut, dépliées via la tuile "Mules") -->
@@ -242,6 +268,21 @@ export default {
       type: Number,
       required: true,
     },
+    ghostVotedCharacterIds: {
+      type: Set,
+      required: false,
+      default: () => new Set(),
+    },
+    ghostVoteCounts: {
+      type: Object,
+      required: false,
+      default: () => ({}),
+    },
+    ghostTotalVotes: {
+      type: Object,
+      required: false,
+      default: () => ({}),
+    },
   },
   emits: [
     'open-modal',
@@ -256,6 +297,7 @@ export default {
     'save-note',
     'refresh-data',
     'update-recruitment',
+    'toggle-ghost-vote',
   ],
   computed: {
     confirmSwitchMessage() {
@@ -269,6 +311,9 @@ export default {
     },
     openModal(member) {
       this.$emit('open-modal', member);
+    },
+    toggleGhostVote(member) {
+      this.$emit('toggle-ghost-vote', member.id);
     },
     viewWarnings(characterId, member) {
       this.$emit('view-warnings', characterId, member);
@@ -391,6 +436,50 @@ export default {
   background-color: rgba(var(--primary-rgb), 0.08);
 }
 
+.fiche-ghost-toggle {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border-radius: 0.75rem;
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  font-weight: 600;
+  font-size: 0.85rem;
+  transition: color 0.2s, background-color 0.2s, border-color 0.2s;
+}
+.fiche-ghost-toggle:hover {
+  color: var(--primary);
+  border-color: var(--primary);
+  background-color: rgba(var(--primary-rgb), 0.06);
+}
+.fiche-ghost-toggle--active {
+  color: white;
+  border-color: var(--primary);
+  background-color: var(--primary);
+}
+.fiche-ghost-toggle--active:hover {
+  background-color: var(--primary-hover);
+}
+.fiche-ghost-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.35rem;
+  height: 1.35rem;
+  padding: 0 0.3rem;
+  border-radius: 9999px;
+  background-color: rgba(255, 255, 255, 0.25);
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+.fiche-ghost-toggle:not(.fiche-ghost-toggle--active) .fiche-ghost-count {
+  background-color: rgba(var(--primary-rgb), 0.15);
+  color: var(--primary);
+}
+
 .fiche-portrait-wrap {
   position: relative;
   margin-bottom: 0.6rem;
@@ -405,6 +494,20 @@ export default {
   border: 1px solid var(--border);
   border-radius: 9999px;
   padding: 0.2rem 0.65rem;
+  white-space: nowrap;
+}
+
+.fiche-ghost-pastille {
+  position: absolute;
+  top: 1rem;
+  left: 1rem;
+  background-color: var(--card);
+  border: 1px solid var(--primary);
+  color: var(--primary);
+  border-radius: 9999px;
+  padding: 0.2rem 0.55rem;
+  font-size: 0.7rem;
+  font-weight: 700;
   white-space: nowrap;
 }
 

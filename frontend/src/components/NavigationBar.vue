@@ -203,6 +203,16 @@
           </RouterLink>
 
           <RouterLink
+            to="/fantomes"
+            v-if="isLoggedIn && isAdmin"
+            class="nav-link inline-flex items-center gap-1.5"
+            active-class="nav-link-active"
+          >
+            Fantômes
+            <span class="beta-tag">Bêta</span>
+          </RouterLink>
+
+          <RouterLink
             to="/statistiques"
             v-if="isLoggedIn"
             class="nav-link"
@@ -413,6 +423,17 @@
           @click="isMobileMenuOpen = false"
         >
           Membres
+        </RouterLink>
+
+        <RouterLink
+          to="/fantomes"
+          v-if="isLoggedIn && isAdmin"
+          class="mobile-nav-link inline-flex items-center gap-1.5"
+          active-class="mobile-nav-link-active"
+          @click="isMobileMenuOpen = false"
+        >
+          Fantômes
+          <span class="beta-tag">Bêta</span>
         </RouterLink>
 
         <RouterLink
@@ -637,6 +658,22 @@
 
 .mobile-nav-link-active {
   @apply text-theme-primary bg-theme-bg-muted;
+}
+
+/* Étiquette "Bêta" : discrète, ne doit pas rivaliser avec le libellé du lien */
+.beta-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.05rem 0.4rem;
+  border-radius: 9999px;
+  border: 1px solid rgba(var(--accent-rgb), 0.4);
+  color: var(--accent);
+  font-size: 0.6rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  line-height: 1.4;
+  white-space: nowrap;
 }
 
 /* Priment sur .nav-link / .mobile-nav-link grâce à la double classe */

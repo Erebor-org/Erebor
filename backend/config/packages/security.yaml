@@ -80,6 +80,10 @@ security:
     # Blacklist - Accessible to ADMIN and above (OWNERS have full access)
     - { path: ^/blacklist, roles: ROLE_ADMIN }
 
+    # Ghost members voting - Accessible to ADMIN and above (OWNERS have full access)
+    # Note: threshold/close operations are further restricted to OWNERS in the controller
+    - { path: ^/ghost, roles: ROLE_ADMIN }
+
     # Warnings - Read: SUPER_ADMIN+, Write: OWNERS only (OWNERS have full access)
     - { path: ^/warnings, roles: ROLE_SUPER_ADMIN }
     # Note: Warning write operations need to be checked in the controller
