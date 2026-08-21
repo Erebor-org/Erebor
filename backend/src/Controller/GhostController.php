@@ -363,9 +363,9 @@ class GhostController extends AbstractController
         }
 
         // Defensive fallback: a round is seeded by the migration and a new one is always opened on close,
-        // so this only matters if the open round was somehow removed manually.
+        // so this only matters if the open round was somehow removed manually (or the table is empty).
         $previousRounds = $roundRepository->findClosedRounds();
-        $threshold = $previousRounds[0]?->getThreshold() ?? self::DEFAULT_THRESHOLD;
+        $threshold = count($previousRounds) > 0 ? $previousRounds[0]->getThreshold() : self::DEFAULT_THRESHOLD;
 
         $round = new GhostRound();
         $round->setThreshold($threshold);

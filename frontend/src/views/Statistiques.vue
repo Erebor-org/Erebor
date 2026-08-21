@@ -203,19 +203,34 @@
             <h2 class="text-xl font-serif font-bold text-theme-primary">Répartition par Classe</h2>
           </div>
 
-          <div class="flex flex-col md:flex-row items-center">
-            <div class="w-full md:w-1/2 h-72">
-              <canvas ref="classChart"></canvas>
-            </div>
-            <div class="w-full md:w-1/2 mt-4 md:mt-0 md:pl-6">
-              <div class="grid grid-cols-2 gap-2.5">
-                <div v-for="(percentage, className) in statistics.classDistribution" :key="className" class="flex items-center gap-2">
-                  <span class="stat-dot" :style="{ backgroundColor: getClassColor(className) }"></span>
-                  <span class="text-sm text-theme-text truncate">{{ className }}: {{ percentage }}%</span>
-                </div>
+          <div class="rounded-xl border border-theme-border overflow-hidden">
+            <div
+              v-for="entry in visibleClassDistribution"
+              :key="entry.className"
+              class="stat-recruiter-row"
+              :title="`${entry.count} personnage${entry.count !== 1 ? 's' : ''}`"
+            >
+              <span class="stat-avatar">
+                <img :src="getClassIcon(entry.className)" :alt="`Classe ${entry.className}`" />
+              </span>
+              <span class="stat-recruiter-name">{{ entry.className }}</span>
+              <div class="stat-bar stat-bar--wide">
+                <div
+                  class="stat-bar-fill stat-bar-fill--solid"
+                  :style="{ width: `${entry.percentage}%`, backgroundColor: getClassColor(entry.className) }"
+                ></div>
               </div>
+              <span class="text-theme-primary font-semibold text-sm w-14 text-right">{{ entry.percentage }}%</span>
             </div>
           </div>
+
+          <button
+            v-if="sortedClassDistribution.length > 10"
+            @click="showAllClasses = !showAllClasses"
+            class="stat-toggle-more"
+          >
+            {{ showAllClasses ? 'Réduire ▲' : `Voir toutes les classes (${sortedClassDistribution.length}) ▼` }}
+          </button>
         </div>
 
         <!-- Recruiter Performance -->
@@ -303,9 +318,9 @@ export default {
       loading: true,
       roles: [],
       recruiters: [],
-      classChart: null,
       rolesChart: null,
       showScrollToTop: false,
+      showAllClasses: false,
       classColors: {
         sram: '#6b7280',
         forgelance: '#b91c1c',
@@ -330,6 +345,20 @@ export default {
     };
   },
   computed: {
+    // Trié par pourcentage décroissant pour se lire comme un vrai graphique en bâtons
+    sortedClassDistribution() {
+      if (!this.statistics?.classDistribution) return [];
+      const counts = this.statistics.classCounts || {};
+      return Object.entries(this.statistics.classDistribution)
+        .map(([className, percentage]) => ({ className, percentage, count: counts[className] ?? 0 }))
+        .sort((a, b) => b.percentage - a.percentage);
+    },
+    // Top 10 par défaut, liste complète si l'utilisateur déplie
+    visibleClassDistribution() {
+      return this.showAllClasses
+        ? this.sortedClassDistribution
+        : this.sortedClassDistribution.slice(0, 10);
+    },
     recruiterData() {
       if (!this.statistics || !this.statistics.recruiterPerformance) return [];
 
@@ -531,48 +560,7 @@ export default {
     renderCharts() {
       if (!this.statistics) return;
 
-      this.renderClassChart();
       this.renderRolesChart();
-    },
-    renderClassChart() {
-      if (this.classChart) {
-        this.classChart.destroy();
-      }
-
-      const ctx = this.$refs.classChart?.getContext('2d');
-      if (!ctx || !this.statistics.classDistribution) return;
-
-      const labels = Object.keys(this.statistics.classDistribution);
-      const data = Object.values(this.statistics.classDistribution);
-      const backgroundColor = labels.map(className => this.getClassColor(className));
-      const borderColor = this.cssVar('--card') || '#1C1512';
-
-      this.classChart = new Chart(ctx, {
-        type: 'pie',
-        data: {
-          labels,
-          datasets: [{
-            data,
-            backgroundColor,
-            borderColor,
-            borderWidth: 2,
-            hoverOffset: 6,
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: { display: false },
-            tooltip: {
-              ...this.tooltipStyle(),
-              callbacks: {
-                label: (context) => `${context.label}: ${context.raw}%`
-              }
-            }
-          }
-        }
-      });
     },
     renderRolesChart() {
       if (this.rolesChart) {
@@ -699,12 +687,8 @@ export default {
   background-image: linear-gradient(90deg, var(--primary), var(--accent));
   transition: width 0.3s ease;
 }
-
-.stat-dot {
-  width: 0.7rem;
-  height: 0.7rem;
-  border-radius: 9999px;
-  flex-shrink: 0;
+.stat-bar-fill--solid {
+  background-image: none;
 }
 
 .stat-recruiter-row {
@@ -752,6 +736,19 @@ export default {
   text-align: right;
   color: var(--text-muted);
   font-size: 0.82rem;
+}
+
+.stat-toggle-more {
+  display: block;
+  width: 100%;
+  text-align: center;
+  margin-top: 0.85rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--accent);
+}
+.stat-toggle-more:hover {
+  color: var(--primary);
 }
 
 @media (max-width: 640px) {

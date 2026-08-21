@@ -1,0 +1,40 @@
+{{- $name := "db-migrate" -}}
+# Runs the Doctrine migrations against the prod database before the new app version rolls out,
+# so every `helm upgrade` (i.e. every deploy from main) keeps the schema in sync automatically —
+# no more manually running migrations by hand after a feature that adds tables/columns.
+#
+# Only fires on upgrade of an existing release: it reuses the {{ include "erebor.fullname" . }}-symfony-config
+# Secret, which isn't created yet on a brand new install (pre-install hooks run before any
+# non-hook resource exists). A first-ever install still needs migrations run once by hand.
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "erebor.fullname" . }}-{{ $name }}
+  namespace: {{ template "erebor.namespace" . }}
+  labels:
+    app.kubernetes.io/name: {{ $name }}
+    {{- (include "erebor.commonLabels" .) | nindent 4 }}
+  annotations:
+    helm.sh/hook: pre-upgrade,pre-install
+    helm.sh/hook-weight: "-5"
+    helm.sh/hook-delete-policy: before-hook-creation,hook-succeeded
+    {{- (include "erebor.globalAnnotations" . ) | nindent 4 }}
+spec:
+  backoffLimit: 1
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ $name }}
+        {{- (include "erebor.commonLabels" .) | nindent 8 }}
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: {{ $name }}
+          image: {{ include "erebor.symfonyImage.url" . }}
+          imagePullPolicy: {{ default "Always" .Values.deployments.app.containers.symfony.imagePullPolicy }}
+          workingDir: /var/www/html
+          command: ["php", "bin/console", "doctrine:migrations:migrate", "--no-interaction"]
+          envFrom:
+            - secretRef:
+                name: {{ include "erebor.fullname" . }}-symfony-config
+      {{- (include "erebor.imagePullSecrets" .) | nindent 6 }}
