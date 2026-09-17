@@ -297,7 +297,7 @@
                 :class="{ 'nav-link-active': route.path === '/archivage-log' }"
                 @click="closeManageDropdown"
               >
-                Archivage depuis logs
+                Tri des inactifs
               </RouterLink>
               <RouterLink
                 v-if="canViewWarnings"
