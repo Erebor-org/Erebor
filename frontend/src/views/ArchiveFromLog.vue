@@ -5,7 +5,7 @@
     <div class="container mx-auto px-4 py-8 max-w-4xl">
       <!-- Header -->
       <div class="text-center mb-10">
-        <h1 class="text-4xl md:text-5xl font-serif font-bold brand-gradient-text mb-4">Archivage des personnages</h1>
+        <h1 class="text-4xl md:text-5xl font-serif font-bold brand-gradient-text mb-4">Tri des inactifs</h1>
         <div class="w-24 h-1 rounded-full mx-auto" style="background-image: linear-gradient(90deg, var(--primary), var(--accent));"></div>
         <p class="text-theme-text-muted mt-4">
           Collez le message de départ de guilde Dofus pour archiver automatiquement les personnages concernés
