@@ -292,6 +292,14 @@
                 Blacklist
               </RouterLink>
               <RouterLink
+                to="/archivage-log"
+                class="block px-4 py-3 nav-link"
+                :class="{ 'nav-link-active': route.path === '/archivage-log' }"
+                @click="closeManageDropdown"
+              >
+                Archivage depuis logs
+              </RouterLink>
+              <RouterLink
                 v-if="canViewWarnings"
                 to="/warnings-management"
                 class="block px-4 py-3 nav-link"
@@ -455,6 +463,14 @@
             @click="isMobileMenuOpen = false"
           >
             Blacklist
+          </RouterLink>
+          <RouterLink
+            to="/archivage-log"
+            class="mobile-nav-link"
+            active-class="mobile-nav-link-active"
+            @click="isMobileMenuOpen = false"
+          >
+            Archivage depuis logs
           </RouterLink>
           <RouterLink
             to="/warnings-management"

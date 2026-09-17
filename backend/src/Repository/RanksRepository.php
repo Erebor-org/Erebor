@@ -18,17 +18,17 @@ class RanksRepository extends ServiceEntityRepository
 
     public function save(Ranks $rank, bool $flush = false): void
     {
-        $this->_em->persist($rank);
+        $this->getEntityManager()->persist($rank);
         if ($flush) {
-            $this->_em->flush();
+            $this->getEntityManager()->flush();
         }
     }
 
     public function remove(Ranks $rank, bool $flush = false): void
     {
-        $this->_em->remove($rank);
+        $this->getEntityManager()->remove($rank);
         if ($flush) {
-            $this->_em->flush();
+            $this->getEntityManager()->flush();
         }
     }
     public function findByLead(): array
