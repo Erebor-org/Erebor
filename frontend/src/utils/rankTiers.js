@@ -17,7 +17,7 @@ const NAMED_ICONS = {
   héro: { icon: 'crossed-swords', color: 'legend' },
   légende: { icon: 'star', color: 'legend' },
   enroleur: { icon: 'flag', color: 'special' },
-  animateur: { icon: 'megaphone', color: 'special' },
+  troubadour: { icon: 'megaphone', color: 'special' },
   conseiller: { icon: 'scroll', color: 'lead' },
   'main du roi': { icon: 'gauntlet', color: 'lead' },
   'vieux roi': { icon: 'crown', color: 'lead' },

@@ -307,6 +307,15 @@
               </RouterLink>
               <RouterLink
                 v-if="isOwner"
+                to="/rangs-fonction"
+                class="block px-4 py-3 nav-link"
+                :class="{ 'nav-link-active': route.path === '/rangs-fonction' }"
+                @click="closeManageDropdown"
+              >
+                Rangs de fonction
+              </RouterLink>
+              <RouterLink
+                v-if="isOwner"
                 to="/admin/users"
                 class="block px-4 py-3 nav-link"
                 :class="{ 'nav-link-active': route.path === '/admin/users' }"
@@ -477,6 +486,15 @@
             @click="isMobileMenuOpen = false"
           >
             Avertissements
+          </RouterLink>
+          <RouterLink
+            to="/rangs-fonction"
+            v-if="isOwner"
+            class="mobile-nav-link"
+            active-class="mobile-nav-link-active"
+            @click="isMobileMenuOpen = false"
+          >
+            Rangs de fonction
           </RouterLink>
           <RouterLink
             to="/admin/users"

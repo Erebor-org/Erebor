@@ -14,6 +14,7 @@ import WheelView from '../views/WheelView.vue';
 import WheelClassesView from '../views/WheelClassesView.vue';
 import NumberWheelView from '../views/NumberWheelView.vue';
 import ManageUsers from '../views/ManageUsers.vue';
+import ManageSpecialRanks from '../views/ManageSpecialRanks.vue';
 import ProfileView from '../views/ProfileView.vue';
 import GhostMembers from '../views/GhostMembers.vue';
 import ArchiveFromLog from '../views/ArchiveFromLog.vue';
@@ -40,6 +41,7 @@ const routes = [
   { path: '/wheel-classes', name: 'WheelClasses', component: WheelClassesView, meta: { requiresAuth: true } },
   { path: '/wheel-numbers', name: 'NumberWheel', component: NumberWheelView, meta: { requiresAuth: true } },
   { path: '/admin/users', name: 'ManageUsers', component: ManageUsers, meta: { requiresAuth: true, requiresRoles: ['ROLE_OWNERS'] } },
+  { path: '/rangs-fonction', name: 'ManageSpecialRanks', component: ManageSpecialRanks, meta: { requiresAuth: true, requiresRoles: ['ROLE_OWNERS'] } },
   { path: '/profil', name: 'Profile', component: ProfileView, meta: { requiresAuth: true } },
 ];
 
