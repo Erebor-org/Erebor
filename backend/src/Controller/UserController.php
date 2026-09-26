@@ -11,6 +11,7 @@ use Symfony\Component\Security\Http\Attribute\CurrentUser;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use App\Repository\UserRepository;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 class UserController extends AbstractController
 {
@@ -147,7 +148,8 @@ class UserController extends AbstractController
         return new JsonResponse($userData);
     }
 
-    // Admin endpoints
+    // Admin endpoints - OWNERS only (also enforced by access_control on ^/admin/users)
+    #[IsGranted('ROLE_OWNERS')]
     #[Route('/admin/users', name: 'get_all_users', methods: ['GET'])]
     public function getAllUsers(
         UserRepository $userRepository,
@@ -181,6 +183,7 @@ class UserController extends AbstractController
         return new JsonResponse($usersData);
     }
 
+    #[IsGranted('ROLE_OWNERS')]
     #[Route('/admin/users/{id}', name: 'update_user', methods: ['PUT'])]
     public function updateUser(
         int $id,
@@ -257,6 +260,7 @@ class UserController extends AbstractController
         ]);
     }
 
+    #[IsGranted('ROLE_OWNERS')]
     #[Route('/admin/users/{id}', name: 'delete_user', methods: ['DELETE'])]
     public function deleteUser(
         int $id,
@@ -281,6 +285,7 @@ class UserController extends AbstractController
         return new JsonResponse(['message' => 'User deleted successfully']);
     }
 
+    #[IsGranted('ROLE_OWNERS')]
     #[Route('/admin/users/{id}/disconnect', name: 'force_disconnect_user', methods: ['POST'])]
     public function forceDisconnectUser(
         int $id,

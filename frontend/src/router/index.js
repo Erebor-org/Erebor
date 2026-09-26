@@ -14,6 +14,7 @@ import WheelView from '../views/WheelView.vue';
 import WheelClassesView from '../views/WheelClassesView.vue';
 import NumberWheelView from '../views/NumberWheelView.vue';
 import ManageUsers from '../views/ManageUsers.vue';
+import ManageSpecialRanks from '../views/ManageSpecialRanks.vue';
 import ProfileView from '../views/ProfileView.vue';
 import GhostMembers from '../views/GhostMembers.vue';
 import ArchiveFromLog from '../views/ArchiveFromLog.vue';
@@ -39,7 +40,8 @@ const routes = [
   { path: '/wheel', name: 'Wheel', component: WheelView, meta: { requiresAuth: true } },
   { path: '/wheel-classes', name: 'WheelClasses', component: WheelClassesView, meta: { requiresAuth: true } },
   { path: '/wheel-numbers', name: 'NumberWheel', component: NumberWheelView, meta: { requiresAuth: true } },
-  { path: '/admin/users', name: 'ManageUsers', component: ManageUsers, meta: { requiresAuth: true } },
+  { path: '/admin/users', name: 'ManageUsers', component: ManageUsers, meta: { requiresAuth: true, requiresRoles: ['ROLE_OWNERS'] } },
+  { path: '/rangs-fonction', name: 'ManageSpecialRanks', component: ManageSpecialRanks, meta: { requiresAuth: true, requiresRoles: ['ROLE_OWNERS'] } },
   { path: '/profil', name: 'Profile', component: ProfileView, meta: { requiresAuth: true } },
 ];
 
@@ -49,13 +51,20 @@ const router = createRouter({
 });
 
 // ✅ Redirect users who are not logged in
-router.beforeEach((to, from, next) => {
+router.beforeEach(async (to, from, next) => {
   const authStore = useAuthStore();
   
   // If the route requires auth and there's no token, redirect to register
   if (to.meta.requiresAuth && !authStore.token) {
     next('/inscription');
   } 
+  // Role-restricted routes: check the roles from the backend, not the localStorage copy.
+  // If the backend can't be reached, deny access.
+  else if (to.meta.requiresRoles) {
+    const synced = await authStore.syncRoles();
+    const allowed = synced && to.meta.requiresRoles.some(role => authStore.roles.includes(role));
+    allowed ? next() : next('/home');
+  }
   // If user is trying to access register page and is already logged in, redirect to home
   else if (to.path === '/inscription' && authStore.token) {
     next('/home');

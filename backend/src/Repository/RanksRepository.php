@@ -60,6 +60,20 @@ class RanksRepository extends ServiceEntityRepository
             ->getOneOrNullResult();
     }
     
+    // Highest non-lead rank reachable with this seniority
+    public function findClassicRankForDays(int $days): ?Ranks
+    {
+        return $this->createQueryBuilder('r')
+            ->where('r.lead = false')
+            ->andWhere('r.requiredDays IS NOT NULL')
+            ->andWhere('r.requiredDays <= :days')
+            ->setParameter('days', $days)
+            ->orderBy('r.requiredDays', 'DESC')
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
+
     public function findAllOrderedByRequiredDays(): array
     {
         return $this->createQueryBuilder('r')

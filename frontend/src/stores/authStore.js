@@ -65,6 +65,7 @@ export const useAuthStore = defineStore('auth', {
     username: (state) => state.user?.username || null,
     roles: (state) => state.user?.roles || [],
     isAdmin: (state) => state.user?.roles?.includes('ROLE_ADMIN') || false,
+    isOwner: (state) => state.user?.roles?.includes('ROLE_OWNERS') || false,
   },
 
   actions: {
@@ -148,6 +149,22 @@ export const useAuthStore = defineStore('auth', {
       } catch (error) {
         console.error('Error updating character:', error);
         throw error;
+      }
+    },
+
+    // Refresh the user's roles from the backend. The copy in localStorage can be stale
+    // (roles changed since login) or edited by hand, so it must not be trusted for access
+    // decisions. Returns true only if the backend answered.
+    async syncRoles() {
+      if (!this.token) return false;
+      try {
+        const response = await axios.get(`${API_URL}/user/profile`);
+        if (!response.data?.username) return false;
+        this.user = response.data;
+        localStorage.setItem('user', JSON.stringify(this.user));
+        return true;
+      } catch {
+        return false;
       }
     },
 

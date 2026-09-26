@@ -28,7 +28,7 @@
             <div class="relative role-filter-container">
               <button
                 @click="toggleRoleFilterDropdown"
-                class="mu-select-btn min-w-[190px]"
+                class="mu-select-btn min-w-[220px]"
               >
                 <div v-if="selectedRoleFilter" :class="getRoleIconClass(selectedRoleFilter)" class="mu-role-dot"></div>
                 <span class="flex-1 text-left truncate">{{ selectedRoleFilter ? getRoleLabel(selectedRoleFilter) : 'Tous les rôles' }}</span>
@@ -71,7 +71,7 @@
           <span class="mu-username">{{ user.username }}</span>
 
           <div class="relative role-dropdown-container">
-            <button @click="toggleRoleDropdown(user.id)" class="mu-select-btn min-w-[170px]">
+            <button @click="toggleRoleDropdown(user.id)" class="mu-select-btn min-w-[220px]">
               <span :class="getRoleIconClass(user.roles[0])" class="mu-role-dot"></span>
               <span class="flex-1 text-left truncate font-semibold">{{ getRoleLabel(user.roles[0]) }}</span>
               <svg class="w-4 h-4 text-theme-text-muted transition-transform duration-200 flex-shrink-0" :class="{ 'rotate-180': openRoleDropdowns[user.id] }" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
@@ -180,9 +180,9 @@ const openRoleDropdowns = ref({});
 
 const roleOptions = [
   { value: 'ROLE_USER', label: 'Utilisateur', iconClass: 'bg-blue-500/70' },
-  { value: 'ROLE_ADMIN', label: 'Administrateur', iconClass: 'bg-green-500/70' },
-  { value: 'ROLE_SUPER_ADMIN', label: 'Super Administrateur', iconClass: 'bg-purple-500/70' },
-  { value: 'ROLE_OWNERS', label: 'Propriétaires', iconClass: 'bg-gradient-to-br from-yellow-400 to-orange-500' },
+  { value: 'ROLE_ADMIN', label: 'Enroleur', iconClass: 'bg-green-500/70' },
+  { value: 'ROLE_SUPER_ADMIN', label: 'Main du Roi / Conseiller', iconClass: 'bg-purple-500/70' },
+  { value: 'ROLE_OWNERS', label: 'Meneur', iconClass: 'bg-gradient-to-br from-yellow-400 to-orange-500' },
 ];
 
 const getRoleLabel = (role) => {

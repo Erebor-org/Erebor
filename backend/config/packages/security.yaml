@@ -94,6 +94,9 @@ security:
     # User Management - OWNERS only (unlimited access)
     - { path: ^/admin/users, roles: ROLE_OWNERS }
 
+    # Special (function) ranks management: leads, enroleur, troubadour... - OWNERS only
+    - { path: ^/admin/special-ranks, roles: ROLE_OWNERS }
+
     # ROLE_OWNERS has unlimited access to all routes via role hierarchy
     # They inherit ROLE_SUPER_ADMIN, ROLE_ADMIN, and ROLE_USER permissions
 

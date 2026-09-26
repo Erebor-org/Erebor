@@ -21,7 +21,10 @@ services:
       - backend_var:/app/var
     ports:
       - "8000:8000"
-    command: sh -c "composer install && symfony server:stop && symfony server:start --no-tls --allow-http --listen-ip=0.0.0.0"
+    # The Symfony CLI keeps a PID file in the container filesystem, which survives restarts.
+    # After a restart, a new process can reuse that PID, so the CLI believes the server is
+    # "already running", exits 0 and the container loops. Wipe the stale state before starting.
+    command: sh -c "composer install && rm -rf /root/.symfony5/var /root/.config/symfony-cli/var && exec symfony server:start --no-tls --allow-http --listen-ip=0.0.0.0"
     # Using hosted database from backend/.env file
     restart: unless-stopped
     env_file:
