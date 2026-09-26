@@ -11,6 +11,9 @@ onMounted(async () => {
   // Disable profile fetch on mount - it's causing logout issues
   // The user is already authenticated with the token from localStorage
   
+  // Refresh roles from the backend so the navigation only shows what the user can access
+  authStore.syncRoles()
+
   // Start polling to check for forced disconnects
   startDisconnectPolling()
 })
