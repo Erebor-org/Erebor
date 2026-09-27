@@ -2,6 +2,7 @@
   <div class="relative inline-block">
     <!-- Class Icon Button -->
     <button
+      ref="trigger"
       @click="toggleDropdown"
       class="group relative focus:outline-none focus:ring-2 focus:ring-theme-primary focus:ring-offset-2 focus:ring-offset-theme-bg rounded-full transition-all duration-300 hover:scale-105"
       :title="`Changer la classe (actuellement: ${className})`"
@@ -23,11 +24,14 @@
       </div>
     </button>
 
-    <!-- Dropdown Menu -->
+    <!-- Dropdown Menu: teleported to <body> so it isn't trapped in the parent card's stacking
+         context (glass-card uses backdrop-filter, which made neighbouring cards paint over it) -->
+    <Teleport to="body">
     <div
       v-if="isVisible"
-      class="glass-modal absolute left-0 z-50 rounded-2xl shadow-2xl p-6 w-[500px] max-h-96 overflow-y-auto backdrop-blur-md"
-      :class="size === 'sm' ? 'top-12' : 'top-24'"
+      ref="panel"
+      class="glass-modal fixed z-[60] rounded-2xl shadow-2xl p-6 max-h-96 overflow-y-auto backdrop-blur-md"
+      :style="panelStyle"
     >
       <!-- Header -->
       <div class="flex items-center justify-between mb-6 pb-4 border-b border-theme-bg-muted">
@@ -65,6 +69,7 @@
         <p class="text-xs text-theme-text-muted">Cliquez sur une classe pour l'appliquer</p>
       </div>
     </div>
+    </Teleport>
   </div>
 </template>
 
@@ -99,20 +104,45 @@ export default {
   data() {
     return {
       isVisible: false,
+      panelStyle: {},
     };
   },
   mounted() {
     document.addEventListener('click', this.handleClickOutside);
+    // Capture phase: the page scrolls inside the RouterView container, not the window
+    window.addEventListener('scroll', this.updatePosition, true);
+    window.addEventListener('resize', this.updatePosition);
   },
   beforeUnmount() {
     document.removeEventListener('click', this.handleClickOutside);
+    window.removeEventListener('scroll', this.updatePosition, true);
+    window.removeEventListener('resize', this.updatePosition);
   },
   methods: {
     toggleDropdown() {
       this.isVisible = !this.isVisible;
+      if (this.isVisible) this.updatePosition();
     },
     closeDropdown() {
       this.isVisible = false;
+    },
+    // Place the panel under the portrait, kept inside the viewport (opens upwards if needed)
+    updatePosition() {
+      if (!this.isVisible || !this.$refs.trigger) return;
+      const margin = 8;
+      const gap = 8;
+      const panelHeight = 384; // max-h-96
+      const width = Math.min(500, window.innerWidth - margin * 2);
+      const rect = this.$refs.trigger.getBoundingClientRect();
+      const left = Math.min(Math.max(margin, rect.left), window.innerWidth - width - margin);
+      const spaceBelow = window.innerHeight - rect.bottom - gap - margin;
+      const style = { left: `${left}px`, width: `${width}px` };
+      if (spaceBelow < panelHeight && rect.top > spaceBelow) {
+        style.bottom = `${window.innerHeight - rect.top + gap}px`;
+      } else {
+        style.top = `${rect.bottom + gap}px`;
+      }
+      this.panelStyle = style;
     },
     selectClass(selectedClass) {
       if (selectedClass !== this.className) {
@@ -121,7 +151,7 @@ export default {
       this.closeDropdown();
     },
     handleClickOutside(event) {
-      if (!this.$el.contains(event.target)) {
+      if (!this.$el.contains(event.target) && !this.$refs.panel?.contains(event.target)) {
         this.closeDropdown();
       }
     },
