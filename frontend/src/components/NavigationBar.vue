@@ -76,6 +76,7 @@
   // Pages of the private Guild Wars 2 section (ROLE_DAMS), shown in the "GW2" menu
   const gw2Pages = [
     { to: '/gw2/personnages', label: 'Personnages' },
+    { to: '/gw2/inventaire', label: 'Inventaire & banque' },
   ];
 
   // Fermer le menu si on clique ailleurs

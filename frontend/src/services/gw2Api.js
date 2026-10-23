@@ -13,6 +13,12 @@ export function fetchGw2Characters() {
   return axios.get(`${API_URL}/gw2/characters`).then((res) => res.data);
 }
 
+// Bags of every character, shared slots and bank, with prices and sell/salvage advice.
+// refresh: bypass the 5 minute server cache
+export function fetchGw2Inventory({ refresh = false } = {}) {
+  return axios.get(`${API_URL}/gw2/inventory`, { params: refresh ? { refresh: 1 } : {} }).then((res) => res.data);
+}
+
 export function fetchGw2Character(name) {
   return axios.get(`${API_URL}/gw2/characters/${encodeURIComponent(name)}`).then((res) => res.data);
 }

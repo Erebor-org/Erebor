@@ -67,23 +67,61 @@ class Gw2ApiClient
      */
     public function getCharacterCores(array $names): array
     {
-        $cores = [];
-        $pending = [];
-        foreach ($names as $name) {
-            $item = $this->gw2Cache->getItem($this->accountKey('core.'.$name));
-            if ($item->isHit()) {
-                $cores[$name] = $item->get();
-            } else {
-                $pending[$name] = [$item, $this->request('/characters/'.rawurlencode($name).'/core')];
-            }
-        }
-        foreach ($pending as $name => [$item, $response]) {
-            $cores[$name] = $this->decode($response);
-            $item->set($cores[$name])->expiresAfter(self::TTL_ACCOUNT);
-            $this->gw2Cache->save($item);
-        }
+        return $this->getPerCharacter($names, 'core');
+    }
 
-        return $cores;
+    /**
+     * /characters/{name}/inventory (the bags) for every name, requested concurrently.
+     *
+     * @return array<string, array> inventory keyed by character name
+     */
+    public function getCharacterInventories(array $names): array
+    {
+        return $this->getPerCharacter($names, 'inventory');
+    }
+
+    /** Bank slots, in order; empty slots are null */
+    public function getBank(): array
+    {
+        return $this->cachedAccount('bank', fn () => $this->get('/account/bank'));
+    }
+
+    /** Shared inventory slots (available to every character); empty slots are null */
+    public function getSharedInventory(): array
+    {
+        return $this->cachedAccount('shared_inventory', fn () => $this->get('/account/inventory'));
+    }
+
+    /**
+     * Drops the cached bags, shared slots and bank so the next read hits the API again
+     * (static data like item names stays cached).
+     */
+    public function forgetInventories(array $names): void
+    {
+        $keys = [$this->accountKey('characters'), $this->accountKey('shared_inventory'), $this->accountKey('bank')];
+        foreach ($names as $name) {
+            $keys[] = $this->accountKey('inventory.'.$name);
+        }
+        $this->gw2Cache->deleteItems($keys);
+    }
+
+    /** Drops the cached trading post prices of these items */
+    public function forgetPrices(array $ids): void
+    {
+        $this->gw2Cache->deleteItems(array_map(fn ($id) => $this->staticKey('prices.'.(int) $id), $ids));
+    }
+
+    /** @return int[] ids of every item the material storage accepts */
+    public function getStorableMaterialIds(): array
+    {
+        return $this->remember($this->staticKey('materials'), self::TTL_STATIC, function () {
+            $ids = [];
+            foreach ($this->get('/materials', ['ids' => 'all']) as $category) {
+                $ids = array_merge($ids, $category['items'] ?? []);
+            }
+
+            return $ids;
+        });
     }
 
     /** Full character payload (bags, equipment, build tabs, crafting...) */
@@ -167,6 +205,28 @@ class Gw2ApiClient
                     $result[$id] = $found[$id];
                 }
             }
+        }
+
+        return $result;
+    }
+
+    /** One request per character, all sent before any is read so they run concurrently */
+    private function getPerCharacter(array $names, string $endpoint): array
+    {
+        $result = [];
+        $pending = [];
+        foreach ($names as $name) {
+            $item = $this->gw2Cache->getItem($this->accountKey($endpoint.'.'.$name));
+            if ($item->isHit()) {
+                $result[$name] = $item->get();
+            } else {
+                $pending[$name] = [$item, $this->request('/characters/'.rawurlencode($name).'/'.$endpoint)];
+            }
+        }
+        foreach ($pending as $name => [$item, $response]) {
+            $result[$name] = $this->decode($response);
+            $item->set($result[$name])->expiresAfter(self::TTL_ACCOUNT);
+            $this->gw2Cache->save($item);
         }
 
         return $result;

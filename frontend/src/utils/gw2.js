@@ -87,6 +87,31 @@ export const WEIGHT_CLASSES = { Heavy: 'Lourde', Medium: 'Intermédiaire', Light
 
 export const BINDINGS = { Character: "Lié à l'âme", Account: 'Lié au compte' };
 
+export const ITEM_TYPES = {
+  Armor: 'Armure',
+  Weapon: 'Arme',
+  Trinket: 'Colifichet',
+  Back: 'Objet de dos',
+  Bag: 'Sac',
+  Consumable: 'Consommable',
+  Container: 'Conteneur',
+  CraftingMaterial: "Matériau d'artisanat",
+  Gathering: 'Outil de récolte',
+  Gizmo: 'Gizmo',
+  MiniPet: 'Miniature',
+  Tool: 'Outil',
+  Trophy: 'Trophée',
+  UpgradeComponent: 'Amélioration',
+};
+
+// What to do with an item stack (Gw2SellAdvisor actions), in display order
+export const ADVICE_ACTIONS = {
+  sell: { label: 'Vendre au comptoir', short: 'Comptoir', color: 'var(--success)' },
+  salvage: { label: 'Recycler', short: 'Recycler', color: '#62A4DA' },
+  vendor: { label: 'Vendre au marchand', short: 'Marchand', color: '#E0B800' },
+  keep: { label: 'Garder', short: 'Garder', color: 'var(--text-muted)' },
+};
+
 export const SLOTS = {
   Helm: 'Casque',
   Shoulders: 'Épaulières',
@@ -126,6 +151,12 @@ export const PERMISSION_LABELS = {
   pvp: 'JcJ',
   wvw: 'McM',
 };
+
+// Copper amount split the in-game way: 1 po (gold) = 100 pa (silver) = 10 000 pc (copper)
+export function splitCoins(copper) {
+  const value = Math.max(0, Math.round(copper || 0));
+  return { gold: Math.floor(value / 10000), silver: Math.floor((value % 10000) / 100), copper: value % 100 };
+}
 
 export const attributeLabel = (attribute) => ATTRIBUTES[attribute] || attribute;
 export const rarityColor = (rarity) => RARITY_COLORS[rarity] || 'var(--border)';

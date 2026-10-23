@@ -26,7 +26,7 @@
         <img v-if="item.icon" :src="item.icon" :alt="item.name" class="gw-tooltip-icon" />
         <div class="min-w-0">
           <p class="font-bold leading-snug" :style="{ color: rarityColor(item.rarity) }">{{ item.name || `Objet #${item.id}` }}</p>
-          <p class="text-xs text-theme-text-muted">{{ typeLine }}</p>
+          <p class="text-xs text-theme-text-muted">{{ typeLine }}<template v-if="item.count > 1"> · ×{{ item.count }}</template></p>
         </div>
       </div>
 
@@ -71,7 +71,7 @@
 <script setup>
 import { ref, computed, nextTick, onBeforeUnmount } from 'vue';
 import {
-  SLOTS, WEAPON_TYPES, WEIGHT_CLASSES, RARITY_LABELS, BINDINGS,
+  SLOTS, WEAPON_TYPES, WEIGHT_CLASSES, RARITY_LABELS, BINDINGS, ITEM_TYPES,
   attributeLabel, rarityColor, capitalize,
 } from '@/utils/gw2';
 
@@ -85,12 +85,16 @@ const visible = ref(false);
 const position = ref({ left: 0, top: 0 });
 
 const MARGIN = 8;
+const TRINKETS = { Amulet: 'Amulette', Ring: 'Anneau', Accessory: 'Accessoire' };
 
 const typeLine = computed(() => {
   const { itemType, subType, weightClass, slot } = props.item;
+  // Worn items have a slot; items in bags or bank only have the type of piece (subType)
+  const piece = SLOTS[slot || subType] || slot;
   if (itemType === 'Weapon') return WEAPON_TYPES[subType] || subType;
-  if (itemType === 'Armor') return [SLOTS[slot] || slot, WEIGHT_CLASSES[weightClass] && `armure ${WEIGHT_CLASSES[weightClass].toLowerCase()}`].filter(Boolean).join(' · ');
-  return SLOTS[slot] || slot;
+  if (itemType === 'Armor') return [piece, WEIGHT_CLASSES[weightClass] && `armure ${WEIGHT_CLASSES[weightClass].toLowerCase()}`].filter(Boolean).join(' · ');
+  if (itemType === 'Trinket') return TRINKETS[subType] || ITEM_TYPES.Trinket;
+  return piece || ITEM_TYPES[itemType] || itemType;
 });
 
 // Next to the item, on the side with room, kept inside the viewport

@@ -17,7 +17,7 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
  */
 class Gw2AccessControlTest extends WebTestCase
 {
-    private const GW2_PATHS = ['/gw2/tokeninfo', '/gw2/characters', '/gw2/characters/Siisko%20Siam'];
+    private const GW2_PATHS = ['/gw2/tokeninfo', '/gw2/characters', '/gw2/characters/Siisko%20Siam', '/gw2/inventory'];
 
     public function testAnonymousRequestsAreRejected(): void
     {

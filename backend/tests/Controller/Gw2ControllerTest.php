@@ -4,6 +4,7 @@ namespace App\Tests\Controller;
 
 use App\Controller\Gw2Controller;
 use App\Service\Gw2\Gw2ApiClient;
+use App\Service\Gw2\Gw2ItemFormatter;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Cache\Adapter\ArrayAdapter;
 use Symfony\Component\HttpClient\MockHttpClient;
@@ -51,7 +52,9 @@ class Gw2ControllerTest extends TestCase
             return new MockResponse(json_encode($body));
         });
 
-        return new Gw2Controller(new Gw2ApiClient($http, new ArrayAdapter(), 'TEST-KEY'));
+        $client = new Gw2ApiClient($http, new ArrayAdapter(), 'TEST-KEY');
+
+        return new Gw2Controller($client, new Gw2ItemFormatter($client));
     }
 
     private function format(array $character): array
