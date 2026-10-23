@@ -3,39 +3,13 @@
     <div class="container mx-auto px-4 py-8 max-w-6xl">
       <!-- Page Header -->
       <div class="text-center mb-10">
-        <h1 class="text-4xl md:text-5xl font-serif font-bold brand-gradient-text mb-4">Guild Wars 2</h1>
+        <p class="text-xs uppercase tracking-[0.2em] text-theme-text-muted mb-2">Guild Wars 2</p>
+        <h1 class="text-4xl md:text-5xl font-serif font-bold brand-gradient-text mb-4">Personnages</h1>
         <div class="w-24 h-1 rounded-full mx-auto" style="background-image: linear-gradient(90deg, var(--primary), var(--accent));"></div>
-        <p class="text-theme-text-muted mt-4">Section privée : tes personnages et leur progression</p>
+        <p class="text-theme-text-muted mt-4">Tes personnages, leur progression et leur équipement</p>
       </div>
 
-      <!-- API key permissions -->
-      <div class="glass-card rounded-2xl p-5 mb-6">
-        <div v-if="tokenLoading" class="text-sm text-theme-text-muted">Vérification de la clé API...</div>
-        <div v-else-if="tokenError" class="text-sm text-theme-error font-medium">{{ tokenError }}</div>
-        <div v-else class="flex flex-col md:flex-row md:items-center gap-3">
-          <div class="flex items-center gap-2 flex-shrink-0">
-            <svg class="w-5 h-5" :class="tokenInfo.missing.length ? 'text-theme-warning' : 'text-theme-success'" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" /></svg>
-            <span class="font-semibold text-theme-text">Clé « {{ tokenInfo.name }} »</span>
-          </div>
-          <div class="flex flex-wrap gap-1.5">
-            <span
-              v-for="permission in tokenInfo.expected"
-              :key="permission"
-              class="gw-chip"
-              :class="tokenInfo.permissions.includes(permission) ? 'gw-chip--ok' : 'gw-chip--missing'"
-              :title="tokenInfo.permissions.includes(permission) ? 'Permission accordée' : 'Permission manquante'"
-            >
-              {{ permissionLabel(permission) }}
-            </span>
-            <span v-for="permission in extraPermissions" :key="permission" class="gw-chip" title="Permission accordée (non requise)">
-              {{ permissionLabel(permission) }}
-            </span>
-          </div>
-          <span v-if="tokenInfo.missing.length" class="text-xs text-theme-warning md:ml-auto">
-            {{ tokenInfo.missing.length }} permission{{ tokenInfo.missing.length > 1 ? 's' : '' }} manquante{{ tokenInfo.missing.length > 1 ? 's' : '' }}
-          </span>
-        </div>
-      </div>
+      <Gw2KeyStatus />
 
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
         <!-- Characters list -->
@@ -149,16 +123,21 @@
 
             <!-- Equipment -->
             <div class="glass-card rounded-2xl p-5">
-              <h3 class="font-serif font-bold text-theme-primary mb-3">Équipement porté</h3>
+              <div class="flex items-baseline justify-between mb-3">
+                <h3 class="font-serif font-bold text-theme-primary">Équipement porté</h3>
+                <span class="text-xs text-theme-text-muted">Survole un objet pour voir ses statistiques</span>
+              </div>
               <p v-if="sortedEquipment.length === 0" class="text-sm text-theme-text-muted">Aucun équipement</p>
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                <div v-for="item in sortedEquipment" :key="item.slot" class="gw-item" :style="{ '--rarity': rarityColor(item.rarity) }">
-                  <img v-if="item.icon" :src="item.icon" :alt="item.name" class="gw-item-icon" loading="lazy" />
-                  <span class="min-w-0">
-                    <span class="block text-sm font-medium text-theme-text truncate" :title="item.name">{{ item.name || `Objet #${item.id}` }}</span>
-                    <span class="block text-xs text-theme-text-muted">{{ slotLabel(item.slot) }}<template v-if="item.level"> · niv. {{ item.level }}</template></span>
-                  </span>
-                </div>
+                <Gw2ItemTooltip v-for="item in sortedEquipment" :key="item.slot" :item="item">
+                  <div class="gw-item" :style="{ '--rarity': rarityColor(item.rarity) }">
+                    <img v-if="item.icon" :src="item.icon" :alt="item.name" class="gw-item-icon" loading="lazy" />
+                    <span class="min-w-0">
+                      <span class="block text-sm font-medium text-theme-text truncate">{{ item.name || `Objet #${item.id}` }}</span>
+                      <span class="block text-xs text-theme-text-muted">{{ slotLabel(item.slot) }}<template v-if="item.level"> · niv. {{ item.level }}</template></span>
+                    </span>
+                  </div>
+                </Gw2ItemTooltip>
               </div>
             </div>
           </template>
@@ -170,15 +149,13 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue';
-import { fetchGw2TokenInfo, fetchGw2Characters, fetchGw2Character, gw2ErrorMessage } from '@/services/gw2Api';
+import Gw2KeyStatus from '@/components/gw2/Gw2KeyStatus.vue';
+import Gw2ItemTooltip from '@/components/gw2/Gw2ItemTooltip.vue';
+import { fetchGw2Characters, fetchGw2Character, gw2ErrorMessage } from '@/services/gw2Api';
 import {
-  RACES, CRAFTING, RARITY_COLORS, SLOTS, SLOT_ORDER, PERMISSION_LABELS,
-  professionLabel, professionColor, formatPlayedTime, formatDate,
+  RACES, CRAFTING, SLOTS, SLOT_ORDER,
+  professionLabel, professionColor, rarityColor, formatPlayedTime, formatDate,
 } from '@/utils/gw2';
-
-const tokenInfo = ref(null);
-const tokenLoading = ref(true);
-const tokenError = ref('');
 
 const characters = ref([]);
 const charactersLoading = ref(true);
@@ -193,29 +170,11 @@ const raceLabel = (race) => RACES[race] || race;
 const craftingLabel = (discipline) => CRAFTING[discipline] || discipline;
 // Jeweler and Scribe cap lower than the other disciplines
 const craftingMax = (discipline) => (['Jeweler', 'Scribe'].includes(discipline) ? 400 : 500);
-const rarityColor = (rarity) => RARITY_COLORS[rarity] || 'var(--border)';
 const slotLabel = (slot) => SLOTS[slot] || slot;
-const permissionLabel = (permission) => PERMISSION_LABELS[permission] || permission;
-
-const extraPermissions = computed(() =>
-  (tokenInfo.value?.permissions || []).filter(p => !tokenInfo.value.expected.includes(p))
-);
 
 const sortedEquipment = computed(() =>
   [...(detail.value?.equipment || [])].sort((a, b) => SLOT_ORDER.indexOf(a.slot) - SLOT_ORDER.indexOf(b.slot))
 );
-
-const loadTokenInfo = async () => {
-  tokenLoading.value = true;
-  tokenError.value = '';
-  try {
-    tokenInfo.value = await fetchGw2TokenInfo();
-  } catch (error) {
-    tokenError.value = gw2ErrorMessage(error, 'Impossible de vérifier la clé API');
-  } finally {
-    tokenLoading.value = false;
-  }
-};
 
 const loadCharacters = async () => {
   charactersLoading.value = true;
@@ -247,10 +206,7 @@ const selectCharacter = async (name) => {
   }
 };
 
-onMounted(() => {
-  loadTokenInfo();
-  loadCharacters();
-});
+onMounted(loadCharacters);
 </script>
 
 <style scoped>
@@ -268,12 +224,6 @@ onMounted(() => {
   color: var(--success);
   border-color: color-mix(in srgb, var(--success) 40%, transparent);
   background-color: color-mix(in srgb, var(--success) 10%, transparent);
-}
-.gw-chip--missing {
-  color: var(--error);
-  border-color: color-mix(in srgb, var(--error) 40%, transparent);
-  background-color: color-mix(in srgb, var(--error) 10%, transparent);
-  text-decoration: line-through;
 }
 
 .gw-row {

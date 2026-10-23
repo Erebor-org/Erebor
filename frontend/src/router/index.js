@@ -18,7 +18,7 @@ import ManageSpecialRanks from '../views/ManageSpecialRanks.vue';
 import ProfileView from '../views/ProfileView.vue';
 import GhostMembers from '../views/GhostMembers.vue';
 import ArchiveFromLog from '../views/ArchiveFromLog.vue';
-import Gw2View from '../views/Gw2View.vue';
+import Gw2Characters from '../views/gw2/Gw2Characters.vue';
 
 const routes = [
   { path: '/', redirect: () => {
@@ -45,7 +45,8 @@ const routes = [
   { path: '/rangs-fonction', name: 'ManageSpecialRanks', component: ManageSpecialRanks, meta: { requiresAuth: true, requiresRoles: ['ROLE_OWNERS'] } },
   { path: '/profil', name: 'Profile', component: ProfileView, meta: { requiresAuth: true } },
   // Private Guild Wars 2 section: ROLE_DAMS only (no other role inherits it, not even OWNERS)
-  { path: '/gw2', name: 'Gw2', component: Gw2View, meta: { requiresAuth: true, requiresRoles: ['ROLE_DAMS'] } },
+  { path: '/gw2', redirect: '/gw2/personnages' },
+  { path: '/gw2/personnages', name: 'Gw2Characters', component: Gw2Characters, meta: { requiresAuth: true, requiresRoles: ['ROLE_DAMS'] } },
 ];
 
 const router = createRouter({

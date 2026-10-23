@@ -91,7 +91,6 @@ class Gw2Controller extends AbstractController
             fn (array $e) => in_array($activeEquipmentTab, $e['tabs'] ?? [], true)
                 && str_starts_with($e['location'] ?? 'Equipped', 'Equipped'),
         ));
-        $items = $equipped ? $this->gw2->getItems(array_column($equipped, 'id')) : [];
 
         $bagSlots = 0;
         $usedSlots = 0;
@@ -134,20 +133,101 @@ class Gw2Controller extends AbstractController
                 'elite' => $specs[$id]['elite'] ?? false,
                 'icon' => $specs[$id]['icon'] ?? null,
             ], $specIds)),
-            'equipment' => array_map(fn (array $e) => [
-                'slot' => $e['slot'] ?? null,
-                'id' => $e['id'],
-                'name' => $items[$e['id']]['name'] ?? null,
-                'rarity' => $items[$e['id']]['rarity'] ?? null,
-                'level' => $items[$e['id']]['level'] ?? null,
-                'icon' => $items[$e['id']]['icon'] ?? null,
-            ], $equipped),
+            'equipment' => $this->formatEquipment($equipped),
             'bags' => [
                 'count' => count(array_filter($character['bags'] ?? [])),
                 'slots' => $bagSlots,
                 'used' => $usedSlots,
             ],
         ];
+    }
+
+    /**
+     * Worn items with what the in-game tooltip shows: stat combination and attributes,
+     * defense or weapon strength, runes/sigils and infusions.
+     */
+    private function formatEquipment(array $equipped): array
+    {
+        if (!$equipped) {
+            return [];
+        }
+
+        // One batched /items call for the worn items and everything slotted in them
+        $itemIds = [];
+        foreach ($equipped as $e) {
+            $itemIds = array_merge($itemIds, [$e['id']], $e['upgrades'] ?? [], $e['infusions'] ?? []);
+        }
+        $items = $this->gw2->getItems($itemIds);
+
+        // Selectable stats (ascended, legendary...) live on the equipment entry, fixed ones on the item
+        $statIdOf = fn (array $e) => $e['stats']['id'] ?? $items[$e['id']]['details']['infix_upgrade']['id'] ?? null;
+        $statIds = array_filter(array_map($statIdOf, $equipped));
+        $stats = $statIds ? $this->gw2->getItemStats($statIds) : [];
+
+        return array_map(function (array $e) use ($items, $stats, $statIdOf) {
+            $item = $items[$e['id']] ?? [];
+            $details = $item['details'] ?? [];
+
+            if (isset($e['stats']['attributes'])) {
+                $attributes = array_map(
+                    fn (string $attribute, int|float $modifier) => ['attribute' => $attribute, 'modifier' => $modifier],
+                    array_keys($e['stats']['attributes']),
+                    $e['stats']['attributes'],
+                );
+            } else {
+                $attributes = $details['infix_upgrade']['attributes'] ?? [];
+            }
+
+            return [
+                'slot' => $e['slot'] ?? null,
+                'id' => $e['id'],
+                'name' => $item['name'] ?? null,
+                'rarity' => $item['rarity'] ?? null,
+                'level' => $item['level'] ?? null,
+                'icon' => $item['icon'] ?? null,
+                'itemType' => $item['type'] ?? null,
+                'subType' => $details['type'] ?? null,
+                'weightClass' => $details['weight_class'] ?? null,
+                'defense' => ($details['defense'] ?? 0) ?: null,
+                'power' => isset($details['min_power']) ? [$details['min_power'], $details['max_power']] : null,
+                'statsName' => $stats[$statIdOf($e)]['name'] ?? null,
+                'attributes' => array_values(array_map(fn (array $a) => [
+                    'attribute' => $a['attribute'],
+                    'modifier' => $a['modifier'],
+                ], $attributes)),
+                'upgrades' => array_values(array_map(fn (int $id) => $this->formatUpgrade($id, $items), $e['upgrades'] ?? [])),
+                'infusions' => array_values(array_map(fn (int $id) => $this->formatUpgrade($id, $items), $e['infusions'] ?? [])),
+                'binding' => $e['binding'] ?? null,
+                'description' => $this->plainText($item['description'] ?? ''),
+            ];
+        }, $equipped);
+    }
+
+    private function formatUpgrade(int $id, array $items): array
+    {
+        $details = $items[$id]['details'] ?? [];
+        // Runes list their set bonuses, sigils and infusions describe a buff and/or flat attributes
+        $bonuses = $details['bonuses'] ?? [];
+        if (!$bonuses && !empty($details['infix_upgrade']['buff']['description'])) {
+            $bonuses = [$details['infix_upgrade']['buff']['description']];
+        }
+
+        return [
+            'id' => $id,
+            'name' => $items[$id]['name'] ?? null,
+            'icon' => $items[$id]['icon'] ?? null,
+            'bonuses' => array_values(array_filter(array_map(fn (string $b) => $this->plainText($b), $bonuses))),
+            'attributes' => array_values(array_map(fn (array $a) => [
+                'attribute' => $a['attribute'],
+                'modifier' => $a['modifier'],
+            ], $details['infix_upgrade']['attributes'] ?? [])),
+        ];
+    }
+
+    // GW2 texts embed their own markup (<c=@flavor>...</c>, <br>)
+    private function plainText(string $text): string
+    {
+        return trim(html_entity_decode(strip_tags(preg_replace('/<br\s*\/?>/i', "\n", $text))));
     }
 
     private function handle(callable $build): JsonResponse

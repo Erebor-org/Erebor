@@ -37,6 +37,56 @@ export const RARITY_COLORS = {
   Legendary: '#8E4FD6',
 };
 
+export const RARITY_LABELS = {
+  Junk: 'Inutile',
+  Basic: 'Simple',
+  Fine: 'Raffiné',
+  Masterwork: "Chef-d'œuvre",
+  Rare: 'Rare',
+  Exotic: 'Exotique',
+  Ascended: 'Élevé',
+  Legendary: 'Légendaire',
+};
+
+export const ATTRIBUTES = {
+  Power: 'Puissance',
+  Precision: 'Précision',
+  Toughness: 'Robustesse',
+  Vitality: 'Vitalité',
+  CritDamage: 'Férocité',
+  ConditionDamage: 'Dégâts par altération',
+  Healing: 'Guérison',
+  BoonDuration: 'Concentration',
+  ConditionDuration: 'Expertise',
+  AgonyResistance: "Résistance à l'agonie",
+};
+
+export const WEAPON_TYPES = {
+  Axe: 'Hache',
+  Dagger: 'Dague',
+  Mace: 'Masse',
+  Pistol: 'Pistolet',
+  Scepter: 'Sceptre',
+  Sword: 'Épée',
+  Focus: 'Focus',
+  Shield: 'Bouclier',
+  Torch: 'Torche',
+  Warhorn: 'Cor de guerre',
+  Greatsword: 'Espadon',
+  Hammer: 'Marteau',
+  LongBow: 'Arc long',
+  Rifle: 'Fusil',
+  ShortBow: 'Arc court',
+  Staff: 'Bâton',
+  Harpoon: 'Lance',
+  Speargun: 'Fusil-harpon',
+  Trident: 'Trident',
+};
+
+export const WEIGHT_CLASSES = { Heavy: 'Lourde', Medium: 'Intermédiaire', Light: 'Légère', Clothing: 'Vêtement' };
+
+export const BINDINGS = { Character: "Lié à l'âme", Account: 'Lié au compte' };
+
 export const SLOTS = {
   Helm: 'Casque',
   Shoulders: 'Épaulières',
@@ -76,6 +126,10 @@ export const PERMISSION_LABELS = {
   pvp: 'JcJ',
   wvw: 'McM',
 };
+
+export const attributeLabel = (attribute) => ATTRIBUTES[attribute] || attribute;
+export const rarityColor = (rarity) => RARITY_COLORS[rarity] || 'var(--border)';
+export const capitalize = (text) => (text ? text.charAt(0).toUpperCase() + text.slice(1) : text);
 
 export const professionLabel = (profession) => PROFESSIONS[profession]?.label || profession;
 export const professionColor = (profession) => PROFESSIONS[profession]?.color || 'var(--primary)';

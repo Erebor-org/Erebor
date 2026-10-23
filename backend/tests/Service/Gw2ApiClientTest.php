@@ -93,6 +93,7 @@ class Gw2ApiClientTest extends TestCase
         $this->assertCount(3, $this->requests); // 200 + 200 + 50
         $this->assertSame([200, 200, 50], array_map(fn ($r) => count(self::idsOf($r['url'])), $this->requests));
         $this->assertStringStartsWith('https://api.guildwars2.com/v2/items?', $this->requests[0]['url']);
+        $this->assertStringContainsString('lang=fr', $this->requests[0]['url']); // names in French
 
         // Second call: everything cached, only the new id is fetched
         $client->getItems([10, 20, 451]);
@@ -122,6 +123,7 @@ class Gw2ApiClientTest extends TestCase
         $client->getPrices([19684, 3, 1, 2]);
         $this->assertCount(2, $this->requests);
         $this->assertStringStartsWith('https://api.guildwars2.com/v2/commerce/prices?', $this->requests[0]['url']);
+        $this->assertStringNotContainsString('lang=', $this->requests[0]['url']);
     }
 
     public function testCharacterCoresAreFetchedPerCharacterWithEncodedNames(): void

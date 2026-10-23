@@ -22,6 +22,8 @@ class Gw2ApiClient
     // Pin the response schema so a GW2 API update can't silently change payload shapes
     public const SCHEMA_VERSION = '2022-03-23T19:00:00.000Z';
     public const MAX_IDS_PER_REQUEST = 200;
+    // Names and descriptions of static data (items, stats, specializations) in the site's language
+    public const LANG = 'fr';
 
     public const TTL_ACCOUNT = 300;
     public const TTL_PRICES = 300;
@@ -93,7 +95,13 @@ class Gw2ApiClient
     /** @return array<int, array> items keyed by id; unknown ids are left out */
     public function getItems(array $ids): array
     {
-        return $this->getByIds('/items', $ids, self::TTL_STATIC, 'items');
+        return $this->getByIds('/items', $ids, self::TTL_STATIC, 'items', true);
+    }
+
+    /** @return array<int, array> stat combinations ("Berserker", "Rampager"...) keyed by id */
+    public function getItemStats(array $ids): array
+    {
+        return $this->getByIds('/itemstats', $ids, self::TTL_STATIC, 'itemstats', true);
     }
 
     /** @return array<int, array> trading post prices keyed by item id; untradable ids are left out */
@@ -105,7 +113,7 @@ class Gw2ApiClient
     /** @return array<int, array> specializations keyed by id */
     public function getSpecializations(array $ids): array
     {
-        return $this->getByIds('/specializations', $ids, self::TTL_STATIC, 'specializations');
+        return $this->getByIds('/specializations', $ids, self::TTL_STATIC, 'specializations', true);
     }
 
     public function getGuild(string $guildId): array
@@ -117,8 +125,13 @@ class Gw2ApiClient
      * Bulk endpoints accept ?ids= with at most 200 ids. Each id is cached on its own, so
      * only the missing ones are fetched, in batches.
      */
-    private function getByIds(string $endpoint, array $ids, int $ttl, string $namespace): array
+    private function getByIds(string $endpoint, array $ids, int $ttl, string $namespace, bool $localized = false): array
     {
+        $query = $localized ? ['lang' => self::LANG] : [];
+        if ($localized) {
+            $namespace .= '.'.self::LANG;
+        }
+
         $ids = array_values(array_unique(array_filter(array_map('intval', $ids), fn (int $id) => $id > 0)));
 
         $result = [];
@@ -136,7 +149,7 @@ class Gw2ApiClient
 
         foreach (array_chunk(array_keys($missing), self::MAX_IDS_PER_REQUEST) as $chunk) {
             try {
-                $entries = $this->get($endpoint, ['ids' => implode(',', $chunk)]);
+                $entries = $this->get($endpoint, $query + ['ids' => implode(',', $chunk)]);
             } catch (Gw2ApiException $e) {
                 // The API answers 404 "all ids provided are invalid" when no id of the batch exists
                 if (Gw2ApiException::NOT_FOUND !== $e->getReason()) {
