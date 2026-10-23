@@ -149,7 +149,7 @@ class WarningController extends AbstractController
         #[CurrentUser] ?\App\Entity\User $user
     ): JsonResponse {
         // Only OWNERS can create warnings
-        if (!$user || !in_array('ROLE_OWNERS', $user->getRoles())) {
+        if (!$user || !$this->isGranted('ROLE_OWNERS')) {
             return $this->json(['error' => 'Access denied. Only Owners can create warnings.'], 403);
         }
         $data = json_decode($request->getContent(), true);
@@ -228,7 +228,7 @@ class WarningController extends AbstractController
         #[CurrentUser] ?\App\Entity\User $user
     ): JsonResponse {
         // Only OWNERS can update warnings
-        if (!$user || !in_array('ROLE_OWNERS', $user->getRoles())) {
+        if (!$user || !$this->isGranted('ROLE_OWNERS')) {
             return $this->json(['error' => 'Access denied. Only Owners can update warnings.'], 403);
         }
         $warning = $warningRepository->find($id);
@@ -282,7 +282,7 @@ class WarningController extends AbstractController
         #[CurrentUser] ?\App\Entity\User $user
     ): JsonResponse {
         // Only OWNERS can delete warnings
-        if (!$user || !in_array('ROLE_OWNERS', $user->getRoles())) {
+        if (!$user || !$this->isGranted('ROLE_OWNERS')) {
             return $this->json(['error' => 'Access denied. Only Owners can delete warnings.'], 403);
         }
         $warning = $warningRepository->find($id);

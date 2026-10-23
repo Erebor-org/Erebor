@@ -108,6 +108,9 @@
 
   const isOwner = computed(() => authStore.isOwner);
 
+  // Private Guild Wars 2 section, not part of the role hierarchy
+  const isDams = computed(() => (user.value?.roles || []).includes('ROLE_DAMS'));
+
   const canManageWarnings = computed(() => {
     const roles = user.value?.roles || [];
     return roles.includes('ROLE_OWNERS');
@@ -388,6 +391,16 @@
               >
                 Thème
               </RouterLink>
+              <!-- Private Guild Wars 2 section, kept in the account menu: the main bar is full at 1024px -->
+              <RouterLink
+                v-if="isDams"
+                to="/gw2"
+                class="block px-4 py-3 nav-link"
+                :class="{ 'nav-link-active': route.path === '/gw2' }"
+                @click="closeProfileDropdown"
+              >
+                Guild Wars 2
+              </RouterLink>
               <div class="dropdown-divider"></div>
               <button
                 @click="closeProfileDropdown(); logout();"
@@ -552,6 +565,15 @@
             @click="isMobileMenuOpen = false"
           >
             Thème
+          </RouterLink>
+          <RouterLink
+            v-if="isDams"
+            to="/gw2"
+            class="mobile-nav-link"
+            :class="{ 'mobile-nav-link-active': route.path === '/gw2' }"
+            @click="isMobileMenuOpen = false"
+          >
+            Guild Wars 2
           </RouterLink>
           <button
             @click="isMobileMenuOpen = false; logout();"

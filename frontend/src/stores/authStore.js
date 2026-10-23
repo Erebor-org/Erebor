@@ -163,7 +163,10 @@ export const useAuthStore = defineStore('auth', {
         this.user = response.data;
         localStorage.setItem('user', JSON.stringify(this.user));
         return true;
-      } catch {
+      } catch (error) {
+        // Expired or invalid token: log out instead of keeping the stale roles from localStorage
+        // (the axios interceptor deliberately lets /user/profile 401s through without redirecting)
+        if (error.response?.status === 401) this.logout();
         return false;
       }
     },
