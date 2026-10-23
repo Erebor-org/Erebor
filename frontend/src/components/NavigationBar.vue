@@ -77,6 +77,7 @@
   const gw2Pages = [
     { to: '/gw2/personnages', label: 'Personnages' },
     { to: '/gw2/inventaire', label: 'Inventaire & banque' },
+    { to: '/gw2/legendaires', label: 'Légendaires' },
   ];
 
   // Fermer le menu si on clique ailleurs

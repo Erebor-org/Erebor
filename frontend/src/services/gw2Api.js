@@ -23,6 +23,33 @@ export function fetchGw2Character(name) {
   return axios.get(`${API_URL}/gw2/characters/${encodeURIComponent(name)}`).then((res) => res.data);
 }
 
+// Legendaries: catalogue, followed ones, detail and combined view. refresh bypasses the server cache
+const refreshParams = (refresh) => ({ params: refresh ? { refresh: 1 } : {} });
+
+export function fetchGw2LegendaryCatalog({ refresh = false } = {}) {
+  return axios.get(`${API_URL}/gw2/legendaries/catalog`, refreshParams(refresh)).then((res) => res.data);
+}
+
+export function fetchGw2TrackedLegendaries({ refresh = false } = {}) {
+  return axios.get(`${API_URL}/gw2/legendaries/tracked`, refreshParams(refresh)).then((res) => res.data);
+}
+
+export function fetchGw2LegendaryCombined({ refresh = false } = {}) {
+  return axios.get(`${API_URL}/gw2/legendaries/combined`, refreshParams(refresh)).then((res) => res.data);
+}
+
+export function fetchGw2Legendary(id, { refresh = false } = {}) {
+  return axios.get(`${API_URL}/gw2/legendaries/${id}`, refreshParams(refresh)).then((res) => res.data);
+}
+
+export function trackGw2Legendary(id) {
+  return axios.post(`${API_URL}/gw2/legendaries/tracked`, { itemId: id }).then((res) => res.data);
+}
+
+export function untrackGw2Legendary(id) {
+  return axios.delete(`${API_URL}/gw2/legendaries/tracked/${id}`).then((res) => res.data);
+}
+
 const ERROR_MESSAGES = {
   not_configured: "La clé API Guild Wars 2 n'est pas configurée sur le serveur (GW2_API_KEY).",
   invalid_key: 'La clé API Guild Wars 2 est invalide ou a été révoquée.',

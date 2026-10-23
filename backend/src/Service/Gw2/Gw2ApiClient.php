@@ -93,12 +93,16 @@ class Gw2ApiClient
     }
 
     /**
-     * Drops the cached bags, shared slots and bank so the next read hits the API again
+     * Drops the cached bags, shared slots, bank, material storage, wallet and legendary armory
+     * so the next read hits the API again
      * (static data like item names stays cached).
      */
     public function forgetInventories(array $names): void
     {
-        $keys = [$this->accountKey('characters'), $this->accountKey('shared_inventory'), $this->accountKey('bank')];
+        $keys = [
+            $this->accountKey('characters'), $this->accountKey('shared_inventory'), $this->accountKey('bank'),
+            $this->accountKey('materials'), $this->accountKey('wallet'), $this->accountKey('legendaryarmory'),
+        ];
         foreach ($names as $name) {
             $keys[] = $this->accountKey('inventory.'.$name);
         }
@@ -109,6 +113,73 @@ class Gw2ApiClient
     public function forgetPrices(array $ids): void
     {
         $this->gw2Cache->deleteItems(array_map(fn ($id) => $this->staticKey('prices.'.(int) $id), $ids));
+    }
+
+    /** Material storage: [{id, category, count}] */
+    public function getMaterialStorage(): array
+    {
+        return $this->cachedAccount('materials', fn () => $this->get('/account/materials'));
+    }
+
+    /** Wallet: [{id (currency), value}] */
+    public function getWallet(): array
+    {
+        return $this->cachedAccount('wallet', fn () => $this->get('/account/wallet'));
+    }
+
+    /** Legendaries unlocked in the legendary armory: [{id, count}] */
+    public function getLegendaryArmory(): array
+    {
+        return $this->cachedAccount('legendaryarmory', fn () => $this->get('/account/legendaryarmory'));
+    }
+
+    /** @return array<int, array> achievement definitions (name, steps...) keyed by id */
+    public function getAchievements(array $ids): array
+    {
+        return $this->getByIds('/achievements', $ids, self::TTL_STATIC, 'achievements', true);
+    }
+
+    /**
+     * Progress of the account on these achievements, keyed by id: {current, max, done, bits}.
+     * Achievements not started yet are missing.
+     */
+    public function getAccountAchievements(array $ids): array
+    {
+        $ids = array_values(array_unique(array_map('intval', $ids)));
+        sort($ids);
+        if (!$ids) {
+            return [];
+        }
+
+        return $this->cachedAccount($this->accountAchievementsKey($ids), function () use ($ids) {
+            try {
+                return array_column($this->get('/account/achievements', ['ids' => implode(',', $ids)]), null, 'id');
+            } catch (Gw2ApiException $e) {
+                // 404 "all ids provided are invalid": none of them started yet
+                if (Gw2ApiException::NOT_FOUND === $e->getReason()) {
+                    return [];
+                }
+                throw $e;
+            }
+        });
+    }
+
+    public function forgetAccountAchievements(array $ids): void
+    {
+        $ids = array_values(array_unique(array_map('intval', $ids)));
+        sort($ids);
+        $this->gw2Cache->deleteItem($this->accountKey($this->accountAchievementsKey($ids)));
+    }
+
+    private function accountAchievementsKey(array $sortedIds): string
+    {
+        return 'achievements.'.md5(implode(',', $sortedIds));
+    }
+
+    /** @return array<int, array> currencies (karma, spirit shards...) keyed by id */
+    public function getCurrencies(array $ids): array
+    {
+        return $this->getByIds('/currencies', $ids, self::TTL_STATIC, 'currencies', true);
     }
 
     /** @return int[] ids of every item the material storage accepts */

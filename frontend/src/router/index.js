@@ -20,6 +20,8 @@ import GhostMembers from '../views/GhostMembers.vue';
 import ArchiveFromLog from '../views/ArchiveFromLog.vue';
 import Gw2Characters from '../views/gw2/Gw2Characters.vue';
 import Gw2Inventory from '../views/gw2/Gw2Inventory.vue';
+import Gw2Legendaries from '../views/gw2/Gw2Legendaries.vue';
+import Gw2LegendaryDetail from '../views/gw2/Gw2LegendaryDetail.vue';
 
 const routes = [
   { path: '/', redirect: () => {
@@ -49,6 +51,8 @@ const routes = [
   { path: '/gw2', redirect: '/gw2/personnages' },
   { path: '/gw2/personnages', name: 'Gw2Characters', component: Gw2Characters, meta: { requiresAuth: true, requiresRoles: ['ROLE_DAMS'] } },
   { path: '/gw2/inventaire', name: 'Gw2Inventory', component: Gw2Inventory, meta: { requiresAuth: true, requiresRoles: ['ROLE_DAMS'] } },
+  { path: '/gw2/legendaires', name: 'Gw2Legendaries', component: Gw2Legendaries, meta: { requiresAuth: true, requiresRoles: ['ROLE_DAMS'] } },
+  { path: '/gw2/legendaires/:id(\\d+)', name: 'Gw2LegendaryDetail', component: Gw2LegendaryDetail, meta: { requiresAuth: true, requiresRoles: ['ROLE_DAMS'] } },
 ];
 
 const router = createRouter({

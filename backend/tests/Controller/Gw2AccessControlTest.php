@@ -3,6 +3,7 @@
 namespace App\Tests\Controller;
 
 use App\Controller\Gw2Controller;
+use App\Controller\Gw2LegendaryController;
 use App\Entity\User;
 use App\Security\EffectiveRoles;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
@@ -17,7 +18,7 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
  */
 class Gw2AccessControlTest extends WebTestCase
 {
-    private const GW2_PATHS = ['/gw2/tokeninfo', '/gw2/characters', '/gw2/characters/Siisko%20Siam', '/gw2/inventory'];
+    private const GW2_PATHS = ['/gw2/tokeninfo', '/gw2/characters', '/gw2/characters/Siisko%20Siam', '/gw2/inventory', '/gw2/legendaries/catalog', '/gw2/legendaries/tracked', '/gw2/legendaries/combined', '/gw2/legendaries/30704'];
 
     public function testAnonymousRequestsAreRejected(): void
     {
@@ -39,12 +40,14 @@ class Gw2AccessControlTest extends WebTestCase
         }
     }
 
-    public function testControllerIsGuardedByIsGranted(): void
+    public function testControllersAreGuardedByIsGranted(): void
     {
-        $attributes = (new \ReflectionClass(Gw2Controller::class))->getAttributes(IsGranted::class);
+        foreach ([Gw2Controller::class, Gw2LegendaryController::class] as $controller) {
+            $attributes = (new \ReflectionClass($controller))->getAttributes(IsGranted::class);
 
-        $this->assertCount(1, $attributes);
-        $this->assertSame('ROLE_DAMS', $attributes[0]->newInstance()->attribute);
+            $this->assertCount(1, $attributes, $controller);
+            $this->assertSame('ROLE_DAMS', $attributes[0]->newInstance()->attribute, $controller);
+        }
     }
 
     public function roleProvider(): iterable

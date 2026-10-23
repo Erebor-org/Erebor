@@ -1,0 +1,172 @@
+{
+    "generatedAt": "2026-10-23T14:31:53+02:00",
+    "sources": [
+        "official API /v2/achievements (category \"Armes légendaires\")"
+    ],
+    "legendaries": {
+        "30684": {
+            "collection": 6980,
+            "precursor": [
+                2478,
+                2606,
+                2393
+            ]
+        },
+        "30685": {
+            "collection": 7186,
+            "precursor": [
+                2193,
+                2311,
+                2383
+            ]
+        },
+        "30686": {
+            "collection": 7063,
+            "precursor": [
+                2481,
+                2610,
+                2428
+            ]
+        },
+        "30687": {
+            "collection": 7056,
+            "precursor": [
+                2564,
+                2458,
+                2502
+            ]
+        },
+        "30688": {
+            "collection": 7174,
+            "precursor": [
+                2313,
+                2213,
+                2242
+            ]
+        },
+        "30689": {
+            "collection": 7250,
+            "precursor": []
+        },
+        "30690": {
+            "collection": 7113,
+            "precursor": [
+                2438,
+                2241,
+                2468
+            ]
+        },
+        "30691": {
+            "collection": 7149,
+            "precursor": [
+                2642,
+                2306,
+                2535
+            ]
+        },
+        "30692": {
+            "collection": 6967,
+            "precursor": [
+                2177,
+                2291,
+                2374
+            ]
+        },
+        "30693": {
+            "collection": 7161,
+            "precursor": [
+                2389,
+                2498,
+                2524
+            ]
+        },
+        "30694": {
+            "collection": 6968,
+            "precursor": [
+                2534,
+                2503,
+                2280
+            ]
+        },
+        "30695": {
+            "collection": 7190,
+            "precursor": [
+                2441,
+                2391,
+                2449
+            ]
+        },
+        "30696": {
+            "collection": 7069,
+            "precursor": [
+                2479,
+                2390,
+                2536
+            ]
+        },
+        "30697": {
+            "collection": 7226,
+            "precursor": [
+                2637,
+                2232,
+                2409
+            ]
+        },
+        "30698": {
+            "collection": 7101,
+            "precursor": [
+                2530,
+                2500,
+                2187
+            ]
+        },
+        "30699": {
+            "collection": 7233,
+            "precursor": [
+                2355,
+                2356,
+                2480
+            ]
+        },
+        "30700": {
+            "collection": 7071,
+            "precursor": [
+                2180,
+                2596,
+                2388
+            ]
+        },
+        "30701": {
+            "collection": 7198,
+            "precursor": [
+                2483,
+                2522,
+                2296
+            ]
+        },
+        "30702": {
+            "collection": 7189,
+            "precursor": [
+                2270,
+                2588,
+                2260
+            ]
+        },
+        "30703": {
+            "collection": 7084,
+            "precursor": [
+                2253,
+                2278,
+                2630
+            ]
+        },
+        "30704": {
+            "collection": 7183,
+            "precursor": [
+                2420,
+                2184,
+                2183
+            ]
+        }
+    }
+}

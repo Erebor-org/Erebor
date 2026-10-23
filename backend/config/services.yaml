@@ -28,6 +28,14 @@ services:
     autowire: true
     autoconfigure: true
 
+  App\Service\Gw2\Gw2RecipeBook:
+    arguments:
+      $dataDir: "%kernel.project_dir%/data/gw2"
+
+  App\Command\Gw2ImportLegendaryRecipesCommand:
+    arguments:
+      $projectDir: "%kernel.project_dir%"
+
   App\Service\Gw2\Gw2ApiClient:
     arguments:
       $gw2Cache: "@gw2.cache"

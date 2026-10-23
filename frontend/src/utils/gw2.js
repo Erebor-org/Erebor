@@ -112,6 +112,34 @@ export const ADVICE_ACTIONS = {
   keep: { label: 'Garder', short: 'Garder', color: 'var(--text-muted)' },
 };
 
+export const GENERATIONS = {
+  1: { label: 'Gén. 1', title: 'Première génération (jeu de base)' },
+  2: { label: 'Gén. 2', title: 'Deuxième génération (Heart of Thorns)' },
+  3: { label: 'Gén. 3', title: "Troisième génération (End of Dragons, armes d'Aurène)" },
+};
+
+// How a legendary tree node gets done (Gw2LegendaryPlanner decisions and recipe sources)
+export const PLAN_DECISIONS = {
+  owned: { label: 'Possédé', color: 'var(--success)' },
+  buy: { label: 'Acheter', color: '#E0B800' },
+  craft: { label: 'Fabriquer', color: '#62A4DA' },
+  objective: { label: 'Objectif', color: '#B679D5' },
+};
+
+export const RECIPE_SOURCES = {
+  mystic_forge: 'Forge mystique',
+  crafting: 'Artisanat',
+  vendor: 'Marchand',
+};
+
+export const STOCK_LOCATIONS = {
+  bank: 'Banque',
+  materials: 'Stockage',
+  inventory: 'Sacs',
+  shared: 'Partagé',
+  wallet: 'Portefeuille',
+};
+
 export const SLOTS = {
   Helm: 'Casque',
   Shoulders: 'Épaulières',

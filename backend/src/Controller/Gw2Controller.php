@@ -19,15 +19,7 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 #[IsGranted('ROLE_DAMS')]
 class Gw2Controller extends AbstractController
 {
-    // GW2 failures are never answered with 401/403: the frontend treats a 401 as an expired session
-    private const ERROR_STATUS = [
-        Gw2ApiException::NOT_CONFIGURED => 503,
-        Gw2ApiException::INVALID_KEY => 502,
-        Gw2ApiException::MISSING_PERMISSION => 502,
-        Gw2ApiException::NOT_FOUND => 404,
-        Gw2ApiException::RATE_LIMITED => 429,
-        Gw2ApiException::UNAVAILABLE => 503,
-    ];
+    use Gw2ErrorResponses;
 
     public function __construct(
         private Gw2ApiClient $gw2,
@@ -155,17 +147,5 @@ class Gw2Controller extends AbstractController
                 'used' => $usedSlots,
             ],
         ];
-    }
-
-    private function handle(callable $build): JsonResponse
-    {
-        try {
-            return $this->json($build());
-        } catch (Gw2ApiException $e) {
-            return $this->json(
-                ['error' => $e->getMessage(), 'code' => $e->getReason()],
-                self::ERROR_STATUS[$e->getReason()] ?? 503,
-            );
-        }
     }
 }
