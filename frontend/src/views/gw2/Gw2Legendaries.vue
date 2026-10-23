@@ -81,24 +81,31 @@
 
       <!-- Catalogue -->
       <template v-else-if="tab === 'catalogue' && current">
-        <div class="glass-card rounded-2xl p-4 mb-6 flex flex-col md:flex-row md:items-center gap-3">
-          <input
-            v-model="search"
-            placeholder="Rechercher une arme..."
-            class="flex-1 md:max-w-xs bg-theme-bg-muted border border-theme-border text-theme-text rounded-xl py-2 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-theme-primary"
-          />
-          <div class="flex flex-wrap gap-2">
-            <button v-for="g in generationFilters" :key="g.key" @click="generation = g.key" class="gw-filter" :class="{ 'gw-filter--active': generation === g.key }">{{ g.label }}</button>
+        <!-- Two rows: what to look for (search, type, sort), then the narrowing toggles -->
+        <div class="glass-card rounded-2xl p-4 mb-6 flex flex-col gap-3">
+          <div class="flex flex-col sm:flex-row gap-3">
+            <input
+              v-model="search"
+              placeholder="Rechercher une arme..."
+              class="flex-1 min-w-0 bg-theme-bg-muted border border-theme-border text-theme-text rounded-xl py-2 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-theme-primary"
+            />
+            <select v-model="equipmentType" class="bg-theme-bg-muted border border-theme-border text-theme-text rounded-xl py-2 px-3 text-sm" aria-label="Type d'équipement">
+              <option value="all">Tous les types</option>
+              <option v-for="t in equipmentTypes" :key="t.key" :value="t.key">{{ t.label }} ({{ t.count }})</option>
+            </select>
+            <select v-model="sortKey" class="bg-theme-bg-muted border border-theme-border text-theme-text rounded-xl py-2 px-3 text-sm" aria-label="Tri">
+              <option value="progress">Les plus avancés</option>
+              <option value="cost">Les moins chers à finir</option>
+              <option value="name">Par nom</option>
+            </select>
           </div>
-          <label class="inline-flex items-center gap-2 text-sm text-theme-text cursor-pointer">
-            <input type="checkbox" v-model="hideUnlocked" class="accent-[var(--primary)]" />
-            Masquer les débloqués
-          </label>
-          <select v-model="sortKey" class="md:ml-auto bg-theme-bg-muted border border-theme-border text-theme-text rounded-xl py-2 px-3 text-sm">
-            <option value="progress">Les plus avancés</option>
-            <option value="cost">Les moins chers à finir</option>
-            <option value="name">Par nom</option>
-          </select>
+          <div class="flex flex-wrap items-center gap-2">
+            <button v-for="g in generationFilters" :key="g.key" @click="generation = g.key" class="gw-filter" :class="{ 'gw-filter--active': generation === g.key }">{{ g.label }}</button>
+            <label class="inline-flex items-center gap-2 text-sm text-theme-text cursor-pointer whitespace-nowrap sm:ml-auto">
+              <input type="checkbox" v-model="hideUnlocked" class="accent-[var(--primary)]" />
+              Masquer les débloqués
+            </label>
+          </div>
         </div>
 
         <div v-if="catalogRows.length" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -156,7 +163,7 @@ import {
   fetchGw2TrackedLegendaries, fetchGw2LegendaryCatalog, fetchGw2LegendaryCombined,
   trackGw2Legendary, untrackGw2Legendary, gw2ErrorMessage,
 } from '@/services/gw2Api';
-import { GENERATIONS } from '@/utils/gw2';
+import { GENERATIONS, WEAPON_TYPES, ITEM_TYPES } from '@/utils/gw2';
 
 const TABS = [
   { key: 'suivis', label: 'Mes suivis' },
@@ -224,11 +231,30 @@ const toggleTrack = async (legendary) => {
 const search = ref('');
 const generation = ref('all');
 const hideUnlocked = ref(false);
+const equipmentType = ref('all');
 const sortKey = ref('progress');
 const generationFilters = [
   { key: 'all', label: 'Toutes' },
   ...Object.entries(GENERATIONS).filter(([g]) => g !== '2').map(([g, v]) => ({ key: Number(g), label: v.label })),
 ];
+
+// Equipment type of a legendary: its weapon type (Espadon, Arc court...), or the item type otherwise
+const equipmentTypeOf = (l) => {
+  const meta = data.value.catalogue?.items[l.id];
+  return meta?.type === 'Weapon' ? meta.subType : meta?.type;
+};
+const equipmentTypes = computed(() => {
+  const catalog = data.value.catalogue;
+  if (!catalog) return [];
+  const counts = {};
+  catalog.legendaries.forEach(l => {
+    const key = equipmentTypeOf(l);
+    if (key) counts[key] = (counts[key] || 0) + 1;
+  });
+  return Object.entries(counts)
+    .map(([key, count]) => ({ key, count, label: WEAPON_TYPES[key] || ITEM_TYPES[key] || key }))
+    .sort((a, b) => a.label.localeCompare(b.label, 'fr'));
+});
 
 const catalogRows = computed(() => {
   const catalog = data.value.catalogue;
@@ -238,6 +264,7 @@ const catalogRows = computed(() => {
   return catalog.legendaries
     .filter(l => generation.value === 'all' || l.generation === generation.value)
     .filter(l => !hideUnlocked.value || !l.unlocked)
+    .filter(l => equipmentType.value === 'all' || equipmentTypeOf(l) === equipmentType.value)
     .filter(l => !query || nameOf(l).toLowerCase().includes(query))
     .sort((a, b) => {
       if (sortKey.value === 'name') return nameOf(a).localeCompare(nameOf(b));
