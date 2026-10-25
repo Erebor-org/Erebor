@@ -81,8 +81,19 @@ class Gw2LegendaryService
         $achievements = $this->achievementsOf($legendaryId, $context);
 
         $objectives = array_values(array_filter($rows, fn (array $r) => Gw2LegendaryPlanner::OBJECTIVE === $r['decision'] && $r['missing'] > 0));
+        $howTo = $this->howToGet($plan, $achievements, $context);
+        // Recipes shown in "how to get" may list ingredients the plan didn't expand (owned branch)
+        $recipeIngredients = [];
+        foreach ($howTo as $entry) {
+            foreach ($entry['recipe']['ingredients'] ?? [] as $ingredient) {
+                if ('item' === $ingredient['type']) {
+                    $recipeIngredients[] = $ingredient['id'];
+                }
+            }
+        }
         $meta = $this->meta($context, array_merge(
             $this->idsIn($plan),
+            $recipeIngredients,
             array_merge(...array_map(fn (array $a) => array_column(array_filter($a['bits'], fn ($b) => null !== $b['item']), 'item'), $achievements ?: [['bits' => []]])),
         ));
         // How to get each objective: hand-written or Le Bus Magique hint, else the item's own description
@@ -100,7 +111,89 @@ class Gw2LegendaryService
             'shoppingList' => array_values(array_filter($rows, fn (array $r) => Gw2LegendaryPlanner::OBJECTIVE !== $r['decision'] || 0 === $r['missing'])),
             'objectives' => $objectives,
             'achievements' => $achievements,
+            'howTo' => $howTo,
         ] + $meta;
+    }
+
+    /**
+     * Every way to get each item or currency of a tree, keyed "item:ID" / "currency:ID":
+     * trading post prices, recipe (crafting, Mystic Forge or merchant), achievements rewarding
+     * it, step of the legendary's collection, hint, and where the account already keeps some.
+     */
+    private function howToGet(array $plan, array $achievements, array $context): array
+    {
+        $nodes = [];
+        $walk = function (array $node) use (&$walk, &$nodes) {
+            $nodes[$node['type'].':'.$node['id']] = ['type' => $node['type'], 'id' => $node['id']];
+            foreach ($node['children'] as $child) {
+                $walk($child);
+            }
+        };
+        $walk($plan);
+
+        $itemIds = array_column(array_filter($nodes, fn ($n) => 'item' === $n['type']), 'id');
+        $items = $this->gw2->getItems($itemIds);
+        $storable = array_flip($this->gw2->getStorableMaterialIds());
+
+        // Steps of this legendary's collections that are items: "validated" per item
+        $steps = [];
+        foreach ($achievements as $achievement) {
+            foreach ($achievement['bits'] as $bit) {
+                if (null !== $bit['item']) {
+                    $steps[$bit['item']][] = ['id' => $achievement['id'], 'name' => $achievement['name'], 'done' => $bit['done']];
+                }
+            }
+        }
+
+        $howTo = [];
+        foreach ($nodes as $key => $node) {
+            $id = $node['id'];
+            if ('currency' === $node['type']) {
+                $howTo[$key] = [
+                    'hint' => $this->recipes->currencyHint($id),
+                    'wallet' => $context['stock']['currencies'][$id] ?? 0,
+                ];
+                continue;
+            }
+
+            $price = $context['prices'][$id] ?? null;
+            $recipe = $this->recipes->recipe($id);
+            $flags = $items[$id]['flags'] ?? [];
+            $howTo[$key] = [
+                'tradingPost' => $price && (($price['sells']['unit_price'] ?? 0) > 0 || ($price['buys']['unit_price'] ?? 0) > 0) ? [
+                    'buy' => ($price['sells']['unit_price'] ?? 0) ?: null,
+                    'sell' => ($price['buys']['unit_price'] ?? 0) ?: null,
+                ] : null,
+                'recipe' => $recipe ? [
+                    'source' => $recipe['source'],
+                    'output' => $recipe['output'] ?? 1,
+                    'disciplines' => $recipe['disciplines'] ?? [],
+                    'ingredients' => $recipe['ingredients'],
+                ] : null,
+                'achievements' => array_values(array_filter(array_map(function (int $achievementId) use ($context) {
+                    $def = $context['achievementDefs'][$achievementId] ?? null;
+                    $account = $context['accountAchievements'][$achievementId] ?? [];
+
+                    return $def ? [
+                        'id' => $achievementId,
+                        'name' => $def['name'],
+                        'requirement' => $this->plainText($def['requirement'] ?? ''),
+                        'done' => $account['done'] ?? false,
+                        'current' => $account['current'] ?? 0,
+                        'max' => $account['max'] ?? count($def['bits'] ?? []),
+                    ] : null;
+                }, $this->recipes->rewardingAchievements($id)))),
+                'collectionSteps' => $steps[$id] ?? [],
+                'hint' => $this->recipes->hint($id),
+                'hintSource' => $this->recipes->hintSource($id),
+                'description' => $this->plainText($items[$id]['description'] ?? '') ?: null,
+                'bound' => (bool) array_intersect($flags, ['AccountBound', 'SoulbindOnAcquire']),
+                'storable' => isset($storable[$id]),
+                'locations' => $context['stock']['items'][$id] ?? [],
+            ];
+        }
+
+        return $howTo;
     }
 
     /** The followed legendaries sharing one stock, in the order they were followed */
@@ -208,8 +301,9 @@ class Gw2LegendaryService
         }
 
         // Buying instantly = taking the lowest sell listing
+        $prices = $this->gw2->getPrices($ids);
         $buyPrices = [];
-        foreach ($this->gw2->getPrices($ids) as $id => $price) {
+        foreach ($prices as $id => $price) {
             if (($price['sells']['unit_price'] ?? 0) > 0) {
                 $buyPrices[$id] = $price['sells']['unit_price'];
             }
@@ -223,6 +317,7 @@ class Gw2LegendaryService
         return [
             'stock' => $stock,
             'buyPrices' => $buyPrices,
+            'prices' => $prices,
             'planner' => new Gw2LegendaryPlanner($this->recipes, $buyPrices, $this->gw2->getStorableMaterialIds()),
             'achievementDefs' => $this->gw2->getAchievements($achievementIds),
             'accountAchievements' => $this->gw2->getAccountAchievements($achievementIds),

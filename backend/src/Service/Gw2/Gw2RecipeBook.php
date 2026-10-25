@@ -16,6 +16,7 @@ class Gw2RecipeBook
     private ?array $sources = null;
     private array $hints = [];
     private array $achievements = [];
+    private array $itemRewards = [];
 
     public function __construct(private string $dataDir)
     {
@@ -91,8 +92,27 @@ class Gw2RecipeBook
         foreach ($this->achievements as $links) {
             $ids = array_merge($ids, array_filter([$links['collection'] ?? null]), $links['precursor'] ?? [], $links['related'] ?? []);
         }
+        foreach ($this->itemRewards as $achievementIds) {
+            $ids = array_merge($ids, $achievementIds);
+        }
 
         return array_values(array_unique($ids));
+    }
+
+    /** @return int[] achievements giving this item as a reward (one-time ones, collections first) */
+    public function rewardingAchievements(int $itemId): array
+    {
+        $this->load();
+
+        return $this->itemRewards[$itemId] ?? [];
+    }
+
+    /** The hand-written "leaf" flag: obtained as is in game, not crafted */
+    public function isLeaf(int $itemId): bool
+    {
+        $this->load();
+
+        return !empty($this->sources['items'][$itemId]['leaf']);
     }
 
     public function all(): array
@@ -138,8 +158,12 @@ class Gw2RecipeBook
         foreach ($this->readJson('legendary_hints.json')['items'] ?? [] as $id => $hint) {
             $this->hints[(int) $id] = $hint;
         }
-        foreach ($this->readJson('legendary_achievements.json')['legendaries'] ?? [] as $id => $links) {
+        $achievements = $this->readJson('legendary_achievements.json');
+        foreach ($achievements['legendaries'] ?? [] as $id => $links) {
             $this->achievements[(int) $id] = $links;
+        }
+        foreach ($achievements['itemRewards'] ?? [] as $id => $achievementIds) {
+            $this->itemRewards[(int) $id] = $achievementIds;
         }
     }
 

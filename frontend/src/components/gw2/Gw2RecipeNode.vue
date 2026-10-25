@@ -16,9 +16,14 @@
       <img v-if="meta?.icon" :src="meta.icon" :alt="name" class="gw-node-icon" :style="{ '--rarity': rarityColor(meta?.rarity) }" loading="lazy" />
 
       <span class="flex-1 min-w-0">
-        <span class="block truncate font-medium" :style="{ color: node.type === 'item' ? rarityColor(meta?.rarity) : 'var(--text)' }">
+        <button
+          @click="howTo?.open(node.type, node.id)"
+          class="block max-w-full truncate font-medium text-left hover:underline"
+          :style="{ color: node.type === 'item' ? rarityColor(meta?.rarity) : 'var(--text)' }"
+          title="Comment l'obtenir"
+        >
           <template v-if="node.count > 1">{{ node.count.toLocaleString('fr-FR') }} × </template>{{ name }}
-        </span>
+        </button>
         <span class="flex items-center gap-2 text-xs text-theme-text-muted">
           <span v-if="node.count > 1 || node.owned" class="gw-node-bar" :title="`${node.owned} possédé(s) sur ${node.count}`"><span :style="{ width: `${(node.owned / node.count) * 100}%` }"></span></span>
           <span>{{ node.owned.toLocaleString('fr-FR') }} / {{ node.count.toLocaleString('fr-FR') }}</span>
@@ -54,11 +59,14 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, inject } from 'vue';
 import Gw2Coins from '@/components/gw2/Gw2Coins.vue';
 import { PLAN_DECISIONS, RECIPE_SOURCES, rarityColor } from '@/utils/gw2';
 
 defineOptions({ name: 'Gw2RecipeNode' });
+
+// Provided by the legendary page: opens the "how to get" side panel
+const howTo = inject('gw2HowTo', null);
 
 const props = defineProps({
   node: { type: Object, required: true },

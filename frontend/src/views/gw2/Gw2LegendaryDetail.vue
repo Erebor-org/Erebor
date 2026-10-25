@@ -122,7 +122,13 @@
             Aucun objectif en attente : tout le reste s'achète ou se fabrique
           </div>
           <div v-else class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div v-for="o in data.objectives" :key="`${o.type}:${o.id}`" class="glass-card rounded-2xl p-5 flex gap-4">
+            <div
+              v-for="o in data.objectives"
+              :key="`${o.type}:${o.id}`"
+              class="glass-card rounded-2xl p-5 flex gap-4 cursor-pointer hover:border-theme-primary transition-colors"
+              @click="openHowTo(o.type, o.id)"
+              title="Comment l'obtenir"
+            >
               <img v-if="objectiveMeta(o)?.icon" :src="objectiveMeta(o).icon" :alt="objectiveMeta(o)?.name" class="w-12 h-12 rounded-lg border border-theme-border flex-shrink-0" />
               <div class="min-w-0 flex-1">
                 <p class="font-semibold text-theme-text">{{ objectiveMeta(o)?.name || `#${o.id}` }}</p>
@@ -140,19 +146,49 @@
         </template>
       </template>
     </div>
+
+    <Gw2HowToGet
+      v-if="data"
+      ref="howToPanel"
+      :how-to="data.howTo"
+      :items="data.items"
+      :currencies="data.currencies"
+      :usage="usage"
+    />
   </div>
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted } from 'vue';
+import { ref, computed, watch, onMounted, provide } from 'vue';
 import { useRoute } from 'vue-router';
 import Gw2RecipeNode from '@/components/gw2/Gw2RecipeNode.vue';
 import Gw2ShoppingList from '@/components/gw2/Gw2ShoppingList.vue';
+import Gw2HowToGet from '@/components/gw2/Gw2HowToGet.vue';
 import Gw2Coins from '@/components/gw2/Gw2Coins.vue';
 import { fetchGw2Legendary, trackGw2Legendary, untrackGw2Legendary, gw2ErrorMessage } from '@/services/gw2Api';
 import { GENERATIONS, equipmentLabel, splitCoins } from '@/utils/gw2';
 
 const route = useRoute();
+
+// "How to get" side panel, opened from the tree, the shopping list and the objectives
+const howToPanel = ref(null);
+const openHowTo = (type, id) => howToPanel.value?.open(type, id, { reset: true });
+provide('gw2HowTo', { open: openHowTo, data: computed(() => data.value?.howTo) });
+
+// What this legendary needs of each resource, all tree nodes together
+const usage = computed(() => {
+  const totals = {};
+  const walk = (node) => {
+    const key = `${node.type}:${node.id}`;
+    const t = totals[key] || (totals[key] = { needed: 0, owned: 0, missing: 0 });
+    t.needed += node.count;
+    t.owned += node.owned;
+    t.missing += node.missing;
+    node.children.forEach(walk);
+  };
+  if (data.value?.tree) walk(data.value.tree);
+  return totals;
+});
 
 const data = ref(null);
 const isLoading = ref(false);

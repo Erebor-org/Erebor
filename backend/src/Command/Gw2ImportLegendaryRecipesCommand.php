@@ -187,6 +187,8 @@ class Gw2ImportLegendaryRecipesCommand extends Command
      *               category, "... : Discorde infinie", and the achievements rewarding an item found
      *               in this trinket's tree only, followed through their steps and prerequisites
      *               ("Aurora II" needs the "Maître du Lac Doric"... rewards).
+     *
+     * Also lists, for every item of a tree, the achievements rewarding it (itemRewards).
      */
     private function importAchievements(SymfonyStyle $io): void
     {
@@ -291,9 +293,26 @@ class Gw2ImportLegendaryRecipesCommand extends Command
             $io->writeln(sprintf('  %-45s collection %-6s precursor %-20s related %d', $name, $collection ?? '-', implode(', ', $precursor) ?: '-', count($related)));
         }
 
+        // For any item of a tree: the achievements giving it as a reward (one way to get it).
+        // One-time achievements only (dailies and repeatables would flood common materials), at
+        // most 6, collections (with steps) first
+        $itemRewards = [];
+        foreach (array_keys($treeCount) as $itemId) {
+            $givers = array_filter($rewardedBy[$itemId] ?? [], fn ($a) => !array_intersect(
+                $achievements[$a]['flags'] ?? [],
+                ['Daily', 'Weekly', 'Monthly', 'Repeatable'],
+            ));
+            usort($givers, fn ($a, $b) => (count($achievements[$b]['bits'] ?? []) > 0) <=> (count($achievements[$a]['bits'] ?? []) > 0) ?: $a <=> $b);
+            if ($givers) {
+                $itemRewards[$itemId] = array_slice(array_values($givers), 0, 6);
+            }
+        }
+        ksort($itemRewards);
+
         $file = $this->writeData('legendary_achievements.json', [
             'sources' => ['official API /v2/achievements'],
             'legendaries' => $links,
+            'itemRewards' => $itemRewards,
         ]);
         $io->success(sprintf('Collections of %d legendaries written to %s', count($links), $file));
     }

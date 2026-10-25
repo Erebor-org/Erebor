@@ -137,5 +137,16 @@ class Gw2LegendaryServiceTest extends TestCase
         $this->assertSame(Gw2LegendaryPlanner::CRAFT, $result['tree']['decision']); // never "buy the legendary"
         $this->assertSame([self::ECTO, self::EXPLORATION], array_column($result['shoppingList'], 'id')); // gift owned: listed, not an objective
         $this->assertSame([], $result['objectives']);
+
+        // How to get each resource of the tree
+        $ecto = $result['howTo']['item:'.self::ECTO];
+        $this->assertSame(['buy' => 1600, 'sell' => 1500], $ecto['tradingPost']);
+        $this->assertNull($ecto['recipe']);
+        $this->assertTrue($ecto['storable']);
+        $this->assertSame(['bank' => 100, 'materials' => 200], $ecto['locations']);
+        $exploration = $result['howTo']['item:'.self::EXPLORATION];
+        $this->assertNull($exploration['tradingPost']);
+        $this->assertSame('Exploration complète du monde', $exploration['hint']);
+        $this->assertSame('mystic_forge', $result['howTo']['item:'.self::SUNRISE]['recipe']['source']);
     }
 }
