@@ -75,12 +75,12 @@ class Gw2RecipeBook
         return isset($this->sources['items'][$itemId]['hint']) ? null : ($this->hints[$itemId]['source'] ?? null);
     }
 
-    /** @return array{collection: ?int, precursor: int[]} in-game collections of a legendary */
+    /** @return array{collection: ?int, precursor: int[], related: int[]} in-game collections of a legendary */
     public function achievements(int $legendaryId): array
     {
         $this->load();
 
-        return $this->achievements[$legendaryId] ?? ['collection' => null, 'precursor' => []];
+        return ($this->achievements[$legendaryId] ?? []) + ['collection' => null, 'precursor' => [], 'related' => []];
     }
 
     /** @return int[] every achievement linked to a legendary of the catalogue */
@@ -89,7 +89,7 @@ class Gw2RecipeBook
         $this->load();
         $ids = [];
         foreach ($this->achievements as $links) {
-            $ids = array_merge($ids, array_filter([$links['collection']]), $links['precursor']);
+            $ids = array_merge($ids, array_filter([$links['collection'] ?? null]), $links['precursor'] ?? [], $links['related'] ?? []);
         }
 
         return array_values(array_unique($ids));

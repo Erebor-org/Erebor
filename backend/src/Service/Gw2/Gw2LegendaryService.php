@@ -176,6 +176,12 @@ class Gw2LegendaryService
                 'done' => count(array_filter($links['precursor'], fn ($id) => $context['accountAchievements'][$id]['done'] ?? false)),
                 'total' => count($links['precursor']),
             ],
+            // Trinkets: the collections leading to them (Aurora II, Maître du Lac Doric...)
+            'relatedCollections' => [
+                'done' => count(array_filter($links['related'], fn ($id) => $context['accountAchievements'][$id]['done'] ?? false)),
+                'total' => count($links['related']),
+            ],
+            'category' => Gw2LegendaryCatalog::category($legendaryId),
             'components' => array_map(fn (array $c) => [
                 'type' => $c['type'], 'id' => $c['id'], 'missing' => $c['missing'],
                 'cost' => $c['cost'], 'objectives' => $c['objectives'], 'decision' => $c['decision'],
@@ -228,7 +234,7 @@ class Gw2LegendaryService
     {
         $links = $this->recipes->achievements($legendaryId);
         $list = [];
-        foreach (array_filter(array_merge([$links['collection']], $links['precursor'])) as $id) {
+        foreach (array_filter(array_merge([$links['collection']], $links['precursor'], $links['related'])) as $id) {
             $def = $context['achievementDefs'][$id] ?? null;
             if (!$def) {
                 continue;
@@ -238,7 +244,11 @@ class Gw2LegendaryService
             $done = $account['done'] ?? false;
             $list[] = [
                 'id' => $id,
-                'kind' => $id === $links['collection'] ? 'collection' : 'precursor',
+                'kind' => match (true) {
+                    $id === $links['collection'] => 'collection',
+                    in_array($id, $links['precursor'], true) => 'precursor',
+                    default => 'related',
+                },
                 'name' => $def['name'],
                 'requirement' => $this->plainText($def['requirement'] ?? ''),
                 'done' => $done,

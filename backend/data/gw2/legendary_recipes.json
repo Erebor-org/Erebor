@@ -1,5 +1,5 @@
 {
-    "generatedAt": "2026-10-23T14:26:22+02:00",
+    "generatedAt": "2026-10-24T16:32:10+02:00",
     "sources": [
         "official API /v2/recipes",
         "gw2treasures.com (Mystic Forge recipes)"
@@ -2004,6 +2004,25 @@
                     "type": "item",
                     "id": 24275,
                     "count": 1
+                }
+            ]
+        },
+        "24510": {
+            "source": "crafting",
+            "output": 1,
+            "disciplines": [
+                "Jeweler"
+            ],
+            "ingredients": [
+                {
+                    "type": "item",
+                    "id": 24509,
+                    "count": 2
+                },
+                {
+                    "type": "item",
+                    "id": 24276,
+                    "count": 5
                 }
             ]
         },
@@ -5199,6 +5218,32 @@
                 }
             ]
         },
+        "71820": {
+            "source": "mystic_forge",
+            "output": 1,
+            "ingredients": [
+                {
+                    "type": "item",
+                    "id": 76530,
+                    "count": 2
+                },
+                {
+                    "type": "item",
+                    "id": 70867,
+                    "count": 2
+                },
+                {
+                    "type": "item",
+                    "id": 19675,
+                    "count": 77
+                },
+                {
+                    "type": "item",
+                    "id": 19976,
+                    "count": 250
+                }
+            ]
+        },
         "71890": {
             "source": "crafting",
             "output": 1,
@@ -5423,6 +5468,30 @@
                     "type": "item",
                     "id": 49782,
                     "count": 1
+                }
+            ]
+        },
+        "73137": {
+            "source": "crafting",
+            "output": 1,
+            "disciplines": [
+                "Leatherworker",
+                "Armorsmith",
+                "Tailor",
+                "Artificer",
+                "Weaponsmith",
+                "Huntsman"
+            ],
+            "ingredients": [
+                {
+                    "type": "item",
+                    "id": 71994,
+                    "count": 1
+                },
+                {
+                    "type": "item",
+                    "id": 73248,
+                    "count": 75
                 }
             ]
         },
@@ -6391,6 +6460,32 @@
                 }
             ]
         },
+        "76427": {
+            "source": "mystic_forge",
+            "output": 1,
+            "ingredients": [
+                {
+                    "type": "item",
+                    "id": 70528,
+                    "count": 1
+                },
+                {
+                    "type": "item",
+                    "id": 19678,
+                    "count": 1
+                },
+                {
+                    "type": "item",
+                    "id": 71008,
+                    "count": 1
+                },
+                {
+                    "type": "item",
+                    "id": 73137,
+                    "count": 1
+                }
+            ]
+        },
         "76530": {
             "source": "mystic_forge",
             "output": 1,
@@ -6518,6 +6613,143 @@
                 }
             ]
         },
+        "81319": {
+            "source": "mystic_forge",
+            "output": 1,
+            "ingredients": [
+                {
+                    "type": "item",
+                    "id": 24295,
+                    "count": 20
+                },
+                {
+                    "type": "item",
+                    "id": 24294,
+                    "count": 50
+                }
+            ]
+        },
+        "81478": {
+            "source": "mystic_forge",
+            "output": 1,
+            "ingredients": [
+                {
+                    "type": "item",
+                    "id": 81319,
+                    "count": 1
+                },
+                {
+                    "type": "item",
+                    "id": 81494,
+                    "count": 1
+                }
+            ]
+        },
+        "81494": {
+            "source": "mystic_forge",
+            "output": 1,
+            "ingredients": [
+                {
+                    "type": "item",
+                    "id": 24358,
+                    "count": 20
+                },
+                {
+                    "type": "item",
+                    "id": 24341,
+                    "count": 50
+                },
+                {
+                    "type": "item",
+                    "id": 46735,
+                    "count": 250
+                }
+            ]
+        },
+        "81796": {
+            "source": "mystic_forge",
+            "output": 1,
+            "ingredients": [
+                {
+                    "type": "item",
+                    "id": 19623,
+                    "count": 1
+                },
+                {
+                    "type": "item",
+                    "id": 76427,
+                    "count": 1
+                },
+                {
+                    "type": "item",
+                    "id": 19676,
+                    "count": 100
+                }
+            ]
+        },
+        "81908": {
+            "source": "mystic_forge",
+            "output": 1,
+            "ingredients": [
+                {
+                    "type": "item",
+                    "id": 81729,
+                    "count": 1
+                },
+                {
+                    "type": "item",
+                    "id": 71820,
+                    "count": 1
+                },
+                {
+                    "type": "item",
+                    "id": 81796,
+                    "count": 1
+                }
+            ]
+        },
+        "83259": {
+            "source": "mystic_forge",
+            "output": 1,
+            "ingredients": [
+                {
+                    "type": "item",
+                    "id": 83620,
+                    "count": 1
+                },
+                {
+                    "type": "item",
+                    "id": 84099,
+                    "count": 1
+                },
+                {
+                    "type": "item",
+                    "id": 83082,
+                    "count": 1
+                },
+                {
+                    "type": "item",
+                    "id": 71581,
+                    "count": 250
+                }
+            ]
+        },
+        "84203": {
+            "source": "mystic_forge",
+            "output": 1,
+            "ingredients": [
+                {
+                    "type": "item",
+                    "id": 82471,
+                    "count": 1
+                },
+                {
+                    "type": "item",
+                    "id": 83872,
+                    "count": 1
+                }
+            ]
+        },
         "89271": {
             "source": "crafting",
             "output": 1,
@@ -6535,6 +6767,69 @@
                     "type": "item",
                     "id": 89140,
                     "count": 10
+                }
+            ]
+        },
+        "90985": {
+            "source": "mystic_forge",
+            "output": 1,
+            "ingredients": [
+                {
+                    "type": "item",
+                    "id": 19623,
+                    "count": 1
+                },
+                {
+                    "type": "item",
+                    "id": 76427,
+                    "count": 1
+                },
+                {
+                    "type": "item",
+                    "id": 19676,
+                    "count": 100
+                }
+            ]
+        },
+        "91048": {
+            "source": "mystic_forge",
+            "output": 1,
+            "ingredients": [
+                {
+                    "type": "item",
+                    "id": 91035,
+                    "count": 1
+                },
+                {
+                    "type": "item",
+                    "id": 71820,
+                    "count": 1
+                },
+                {
+                    "type": "item",
+                    "id": 90985,
+                    "count": 1
+                }
+            ]
+        },
+        "91234": {
+            "source": "mystic_forge",
+            "output": 1,
+            "ingredients": [
+                {
+                    "type": "item",
+                    "id": 86104,
+                    "count": 1
+                },
+                {
+                    "type": "item",
+                    "id": 91193,
+                    "count": 1
+                },
+                {
+                    "type": "item",
+                    "id": 71820,
+                    "count": 1
                 }
             ]
         },
@@ -6570,6 +6865,111 @@
                     "type": "item",
                     "id": 70842,
                     "count": 10
+                }
+            ]
+        },
+        "92991": {
+            "source": "mystic_forge",
+            "output": 1,
+            "ingredients": [
+                {
+                    "type": "item",
+                    "id": 93036,
+                    "count": 1
+                },
+                {
+                    "type": "item",
+                    "id": 79980,
+                    "count": 1
+                },
+                {
+                    "type": "item",
+                    "id": 71820,
+                    "count": 1
+                }
+            ]
+        },
+        "93036": {
+            "source": "mystic_forge",
+            "output": 1,
+            "ingredients": [
+                {
+                    "type": "item",
+                    "id": 76427,
+                    "count": 1
+                },
+                {
+                    "type": "item",
+                    "id": 84203,
+                    "count": 1
+                },
+                {
+                    "type": "item",
+                    "id": 93284,
+                    "count": 1
+                }
+            ]
+        },
+        "93101": {
+            "source": "mystic_forge",
+            "output": 1,
+            "ingredients": [
+                {
+                    "type": "item",
+                    "id": 81478,
+                    "count": 1
+                },
+                {
+                    "type": "item",
+                    "id": 93146,
+                    "count": 1
+                },
+                {
+                    "type": "item",
+                    "id": 93147,
+                    "count": 1
+                }
+            ]
+        },
+        "93105": {
+            "source": "mystic_forge",
+            "output": 1,
+            "ingredients": [
+                {
+                    "type": "item",
+                    "id": 93190,
+                    "count": 1
+                },
+                {
+                    "type": "item",
+                    "id": 80058,
+                    "count": 1
+                },
+                {
+                    "type": "item",
+                    "id": 71820,
+                    "count": 1
+                }
+            ]
+        },
+        "93190": {
+            "source": "mystic_forge",
+            "output": 1,
+            "ingredients": [
+                {
+                    "type": "item",
+                    "id": 93101,
+                    "count": 1
+                },
+                {
+                    "type": "item",
+                    "id": 76427,
+                    "count": 1
+                },
+                {
+                    "type": "item",
+                    "id": 83259,
+                    "count": 1
                 }
             ]
         },
@@ -8544,6 +8944,111 @@
                     "type": "item",
                     "id": 97655,
                     "count": 1
+                }
+            ]
+        },
+        "106975": {
+            "source": "mystic_forge",
+            "output": 1,
+            "ingredients": [
+                {
+                    "type": "item",
+                    "id": 19925,
+                    "count": 250
+                },
+                {
+                    "type": "item",
+                    "id": 24520,
+                    "count": 250
+                },
+                {
+                    "type": "item",
+                    "id": 20797,
+                    "count": 1
+                }
+            ]
+        },
+        "107022": {
+            "source": "mystic_forge",
+            "output": 1,
+            "ingredients": [
+                {
+                    "type": "item",
+                    "id": 107040,
+                    "count": 1
+                },
+                {
+                    "type": "item",
+                    "id": 106712,
+                    "count": 1
+                },
+                {
+                    "type": "item",
+                    "id": 105804,
+                    "count": 1
+                }
+            ]
+        },
+        "107040": {
+            "source": "mystic_forge",
+            "output": 1,
+            "ingredients": [
+                {
+                    "type": "item",
+                    "id": 107136,
+                    "count": 1
+                },
+                {
+                    "type": "item",
+                    "id": 107201,
+                    "count": 1
+                },
+                {
+                    "type": "item",
+                    "id": 106975,
+                    "count": 1
+                }
+            ]
+        },
+        "107136": {
+            "source": "mystic_forge",
+            "output": 1,
+            "ingredients": [
+                {
+                    "type": "item",
+                    "id": 19632,
+                    "count": 2
+                },
+                {
+                    "type": "item",
+                    "id": 76530,
+                    "count": 2
+                },
+                {
+                    "type": "item",
+                    "id": 70867,
+                    "count": 2
+                }
+            ]
+        },
+        "107201": {
+            "source": "mystic_forge",
+            "output": 1,
+            "ingredients": [
+                {
+                    "type": "item",
+                    "id": 71641,
+                    "count": 250
+                },
+                {
+                    "type": "item",
+                    "id": 83284,
+                    "count": 100
+                },
+                {
+                    "type": "item",
+                    "id": 24510,
+                    "count": 250
                 }
             ]
         }

@@ -6,20 +6,24 @@
       <span class="min-w-0">
         <span class="block font-bold text-theme-text truncate group-hover:text-theme-primary transition-colors">{{ meta?.name || `#${legendary.id}` }}</span>
         <span class="block text-xs text-theme-text-muted">
-          {{ WEAPON_TYPES[meta?.subType] || meta?.subType }}
+          {{ equipmentLabel(meta) }}
           <template v-if="GENERATIONS[legendary.generation]"> · <span :title="GENERATIONS[legendary.generation].title">{{ GENERATIONS[legendary.generation].label }}</span></template>
+          <template v-else-if="meta?.type === 'Trinket'"> · Bijou</template>
         </span>
       </span>
     </RouterLink>
 
     <div class="flex flex-wrap gap-1.5 mt-3 min-h-[1.25rem]">
       <span v-if="legendary.unlocked" class="gw-badge gw-badge--success" title="Déjà dans ton armurerie légendaire">Débloqué</span>
-      <span v-if="!legendary.hasRecipe" class="gw-badge gw-badge--muted">Recette inconnue</span>
+      <span v-if="!legendary.hasRecipe" class="gw-badge gw-badge--muted" title="Ne se fabrique pas : s'obtient en récompense en jeu">Récompense en jeu</span>
       <span v-if="legendary.collection" class="gw-badge" :class="{ 'gw-badge--success': legendary.collection.done }" title="Collection « Arme légendaire » du jeu : composants déjà obtenus">
         Collection {{ legendary.collection.current }}/{{ legendary.collection.max }}
       </span>
       <span v-if="legendary.precursorCollections?.total" class="gw-badge" :class="{ 'gw-badge--success': legendary.precursorCollections.done === legendary.precursorCollections.total }" title="Collections du précurseur terminées">
         Précurseur {{ legendary.precursorCollections.done }}/{{ legendary.precursorCollections.total }}
+      </span>
+      <span v-if="legendary.relatedCollections?.total" class="gw-badge" :class="{ 'gw-badge--success': legendary.relatedCollections.done === legendary.relatedCollections.total }" title="Collections du jeu menant à ce légendaire, terminées">
+        Collections {{ legendary.relatedCollections.done }}/{{ legendary.relatedCollections.total }}
       </span>
       <span v-if="legendary.sharesWith?.length" class="gw-badge gw-badge--warning" :title="`Ressources en commun avec : ${sharesWithNames}`">
         Ressources partagées
@@ -37,6 +41,7 @@
       <p class="text-xs text-theme-text-muted mt-2">
         <template v-if="legendary.cost > 0">Reste à acheter ≈ <Gw2Coins :value="legendary.cost" /></template>
         <template v-else-if="legendary.progress >= 1">Terminé</template>
+        <template v-else-if="!legendary.hasRecipe">Rien à acheter : à obtenir en jeu</template>
         <template v-else>Plus rien à acheter</template>
       </p>
       <p v-if="nextStepName && legendary.progress < 1" class="text-xs text-theme-text-muted mt-0.5 truncate">
@@ -62,7 +67,7 @@
 <script setup>
 import { computed } from 'vue';
 import Gw2Coins from '@/components/gw2/Gw2Coins.vue';
-import { GENERATIONS, WEAPON_TYPES } from '@/utils/gw2';
+import { GENERATIONS, equipmentLabel } from '@/utils/gw2';
 
 const props = defineProps({
   legendary: { type: Object, required: true },

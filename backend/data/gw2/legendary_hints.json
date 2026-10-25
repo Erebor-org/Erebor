@@ -1,8 +1,10 @@
 {
-    "generatedAt": "2026-10-23T14:33:02+02:00",
+    "generatedAt": "2026-10-24T16:39:52+02:00",
     "sources": [
         "https://www.lebusmagique.fr/pages/guides/armurerie-legendaire/armes-legendaires/les-armes-legendaires.html",
-        "https://www.lebusmagique.fr/pages/guides/armurerie-legendaire/armes-legendaires/armes-legendaires-end-of-dragons.html"
+        "https://www.lebusmagique.fr/pages/guides/armurerie-legendaire/armes-legendaires/armes-legendaires-end-of-dragons.html",
+        "https://www.lebusmagique.fr/pages/guides/armurerie-legendaire/colifichets-legendaires/",
+        "https://www.lebusmagique.fr/pages/guides/armurerie-legendaire/colifichets-legendaires/ete-infini.html"
     ],
     "items": {
         "19638": {
@@ -37,21 +39,77 @@
             "hint": "Sources principales : A la Cathédrale de la Glorieuse Victoire , lorsque décontesté, pour 1 : 2 100 karma ; pour 10 : 21 000 karma En Fractale auprès du golem ACH-4373 pour 15 reliques fractales +24 pa le fragment Au marchand de Lauriers, 3 fragments pour 3 Aux Contrées Sauvages d'Argent, pour 1 : 96 pc +50 ; pour 5 : 4 pa 80 pc +250 ou dans les coffres de bandits perdus. Aux marchands de maîtrise des cartes d'HoT, 1 fragment pour 1 050 karma + 25 , ou en fonction de la carte ; 5 fragments pour 5 fois plus Parcours de récompenses JcJ ou McM Coffre de récompense de connexion quotidienne",
             "source": "https://www.lebusmagique.fr/pages/guides/armurerie-legendaire/armes-legendaires/les-armes-legendaires.html"
         },
+        "19976": {
+            "hint": "Récompense de connexion, quotidienne Forge Mystique",
+            "source": "https://www.lebusmagique.fr/pages/guides/armurerie-legendaire/colifichets-legendaires/"
+        },
         "20797": {
             "hint": "Auprès de Miyani pour 200 , à l'Arche du Lion, près de la Forge Mystique",
             "source": "https://www.lebusmagique.fr/pages/guides/armurerie-legendaire/armes-legendaires/les-armes-legendaires.html"
+        },
+        "24277": {
+            "hint": "et un mélange de 3 orbes, 3 doublons et 3 écus",
+            "source": "https://www.lebusmagique.fr/pages/guides/armurerie-legendaire/colifichets-legendaires/"
         },
         "45178": {
             "hint": "S'obtient en recyclant de l'équipement, des boules d'ectoplasme et en complétant des événements dans Cantha.",
             "source": "https://www.lebusmagique.fr/pages/guides/armurerie-legendaire/armes-legendaires/armes-legendaires-end-of-dragons.html"
         },
+        "68063": {
+            "hint": "Mélangez à la Forge Mystique : Pour 1 Pierre précieuse amalgamée (avec une chance d'en avoir 5) : 1 Tas de poussière cristalline et 3x3 orbes ou 1 Tas de poussière cristalline et 3x3 doublons ou 1 Tas de poussière cristalline et 3x3 écus ou 1 Tas de poussière cristalline et un mélange de 3 orbes, 3 doublons et 3 écus Pour 10 Pierres précieuses amalgamées (avec une chance d'en avoir 25) : 5 Boule d'ectoplasme et 3x25 orbes et/ou doubons et/ou écus (de la même manière qu'au dessus). La Pierre précieuse amalgamée est également l'une des récompenses au choix dans le coffre coffre au choix du Héros des méta événements des cartes de Heart of Thorns et Path of Fire. Plus d'infos : Guide.",
+            "source": "https://www.lebusmagique.fr/pages/guides/armurerie-legendaire/colifichets-legendaires/"
+        },
+        "70867": {
+            "hint": "1/2 Don de griffes Recette : 10 po à Miyani Fabrication : 400 100/200 Griffes sauvages 250/500 Grandes griffes 50/100 Griffes acérées 50/100 Griffes",
+            "source": "https://www.lebusmagique.fr/pages/guides/armurerie-legendaire/colifichets-legendaires/ete-infini.html"
+        },
+        "71008": {
+            "hint": "250 souvenirs de bataille , obtention en McM",
+            "source": "https://www.lebusmagique.fr/pages/guides/armurerie-legendaire/armes-legendaires/armes-legendaires-end-of-dragons.html"
+        },
+        "71123": {
+            "hint": "100/200 Os anciens 250/500 Os longs 50/100 Os lourds 50/100 Os",
+            "source": "https://www.lebusmagique.fr/pages/guides/armurerie-legendaire/colifichets-legendaires/ete-infini.html"
+        },
         "71148": {
             "hint": "Fabrication 400 : 1 Pulpe de bois ancien 1 Cruche d'eau 1 Rouleau de tulle Ou achat à la CCLN pour ....",
             "source": "https://www.lebusmagique.fr/pages/guides/armurerie-legendaire/armes-legendaires/armes-legendaires-end-of-dragons.html"
         },
+        "71787": {
+            "hint": "100/200 Sacs à venin puissant 250/500 Sacs à venin absolu 50/100 Sacs à venin pleins 50/100 Sacs à venin",
+            "source": "https://www.lebusmagique.fr/pages/guides/armurerie-legendaire/colifichets-legendaires/ete-infini.html"
+        },
+        "71820": {
+            "hint": "commun à tous les colifichets",
+            "source": "https://www.lebusmagique.fr/pages/guides/armurerie-legendaire/colifichets-legendaires/"
+        },
+        "73196": {
+            "hint": "100/200 Tas de poussière cristalline 250/500 Tas de poussière incandescente 50/100 Tas de poussière lumineuse 50/100 Tas de poussière rayonnante",
+            "source": "https://www.lebusmagique.fr/pages/guides/armurerie-legendaire/colifichets-legendaires/ete-infini.html"
+        },
+        "73236": {
+            "hint": "100/200 Totems ouvragés 250/500 Totems travaillés 50/100 Totems gravés 50/100 Totems",
+            "source": "https://www.lebusmagique.fr/pages/guides/armurerie-legendaire/colifichets-legendaires/ete-infini.html"
+        },
+        "75299": {
+            "hint": "100/200 Ecailles renforcées 250/500 Grandes écailles 50/100 Ecailles lisses 50/100 Ecailles",
+            "source": "https://www.lebusmagique.fr/pages/guides/armurerie-legendaire/colifichets-legendaires/ete-infini.html"
+        },
+        "75744": {
+            "hint": "100/200 Crocs sauvages 250/500 Grands crocs 50/100 Crocs acérés 50/100 Crocs",
+            "source": "https://www.lebusmagique.fr/pages/guides/armurerie-legendaire/colifichets-legendaires/ete-infini.html"
+        },
+        "76530": {
+            "hint": "1/2 Don de sang Recette : 10 po à Miyani Fabrication : 400 100/200 Fioles de sang puissant 250/500 Fioles de sang absolu 50/100 Fioles de sang épais 50/100 Fioles de sang",
+            "source": "https://www.lebusmagique.fr/pages/guides/armurerie-legendaire/colifichets-legendaires/ete-infini.html"
+        },
         "79418": {
             "hint": "Auprès de Miyani de la Forge Mystique à 1 po la pierre (Requiert la maitrise \"Erudit des secrets\" d'artisanat légendaire de Tyrie centrale).",
             "source": "https://www.lebusmagique.fr/pages/guides/armurerie-legendaire/armes-legendaires/armes-legendaires-end-of-dragons.html"
+        },
+        "81729": {
+            "hint": "Pour obtenir le précurseur, complétez les collections suivantes : Aurora : éveil Aurora II : renforcement",
+            "source": "https://www.lebusmagique.fr/pages/guides/armurerie-legendaire/colifichets-legendaires/"
         },
         "92687": {
             "hint": "Disponible au comptoir pour ... (soit ... les 5) Peut être acheté pendant les festivals en quantité limité hebdomadairement. Fabrication 400 (Recettes disponibles au tier 1 ou 2 de récompenses du succès Maîtrise des tempêtes) ou sans recette à la .​​​​​​ Pour 1 ou 25 Magnétite draconique amalgamée 10 ou 250 Magnétite de cristal 10 ou 250 Magnétite de destructeur 10 ou 250 Magnétite corrompue 10 ou 250 Magnétite mordrem ou 10 ou 250 Tas d'essence putride",

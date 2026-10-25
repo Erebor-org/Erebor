@@ -54,10 +54,14 @@ class Gw2LegendaryPlanner
         $objectivesTotal = $fromScratch['objectives'];
         $objectivesDone = max(0, $objectivesTotal - $plan['objectives']);
 
-        // Objectives weigh like the resources in the overall progress, each the same
-        $progress = $objectivesTotal > 0
-            ? ($resources + $objectivesDone / $objectivesTotal) / 2
-            : $resources;
+        // Objectives weigh like the resources in the overall progress, each the same. Nothing to
+        // buy at all (a legendary only earned in game): the objectives alone make the progress
+        $objectivesProgress = $objectivesTotal > 0 ? $objectivesDone / $objectivesTotal : 1.0;
+        $progress = match (true) {
+            0 === $baseline => $objectivesProgress,
+            $objectivesTotal > 0 => ($resources + $objectivesProgress) / 2,
+            default => $resources,
+        };
 
         return [
             'cost' => $plan['cost'],

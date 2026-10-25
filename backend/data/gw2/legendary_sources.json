@@ -212,6 +212,22 @@
       "name": "Essence de chance exotique",
       "leaf": true,
       "hint": "Recyclage d'équipement et de boules d'ectoplasme, événements de Cantha. Pas besoin de la fabriquer à partir d'essences inférieures."
+    },
+    "109012": {
+      "name": "Discorde infinie",
+      "hint": "Ne se fabrique pas : récompense de la collection « Recherche des Brumes : Discorde infinie » (aider Dugan dans ses recherches sur les Brumes)."
+    },
+    "95380": {
+      "name": "Tenue du champion prismatique",
+      "hint": "Ne se fabrique pas à la Forge mystique : cette amulette s'obtient directement en récompense en jeu."
+    },
+    "109070": {
+      "name": "Stella Radians",
+      "hint": "Ne se fabrique pas à la Forge mystique : cet accessoire s'obtient directement en récompense en jeu."
+    },
+    "70528": {
+      "name": "Don de gloire",
+      "hint": "Miyani (Forge mystique) contre 250 éclats de gloire, obtenus en JcJ (ou à la CCLN)."
     }
   },
   "currencies": {

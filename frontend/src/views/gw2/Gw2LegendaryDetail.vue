@@ -21,7 +21,7 @@
               <div class="min-w-0">
                 <h1 class="text-3xl font-serif font-bold text-theme-primary truncate">{{ meta?.name }}</h1>
                 <p class="text-sm text-theme-text-muted">
-                  {{ WEAPON_TYPES[meta?.subType] || meta?.subType }} · {{ GENERATIONS[legendary.generation]?.title }}
+                  {{ equipmentLabel(meta) }} · {{ GENERATIONS[legendary.generation]?.title || 'Bijou légendaire' }}
                 </p>
                 <div class="flex flex-wrap gap-2 mt-2">
                   <span v-if="legendary.unlocked" class="gw-badge gw-badge--success">Déjà débloqué</span>
@@ -95,7 +95,7 @@
                   <svg class="w-4 h-4 text-theme-text-muted transition-transform flex-shrink-0" :class="{ 'rotate-90': openAchievements.includes(a.id) }" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
                   <span class="flex-1 min-w-0 text-left">
                     <span class="block font-semibold truncate" :class="a.done ? 'text-theme-success' : 'text-theme-text'">{{ a.name }}</span>
-                    <span class="block text-xs text-theme-text-muted">{{ a.kind === 'collection' ? 'Collection de la légendaire' : 'Collection du précurseur' }}</span>
+                    <span class="block text-xs text-theme-text-muted">{{ COLLECTION_KINDS[a.kind] }}</span>
                   </span>
                   <span class="w-28 h-1.5 rounded-full bg-theme-border overflow-hidden flex-shrink-0"><span class="block h-full rounded-full bg-[#B679D5]" :style="{ width: `${a.max ? (Math.min(a.current, a.max) / a.max) * 100 : 0}%` }"></span></span>
                   <span class="w-14 text-right text-sm tabular-nums text-theme-text-muted">{{ a.done ? '✓' : `${a.current}/${a.max}` }}</span>
@@ -150,7 +150,7 @@ import Gw2RecipeNode from '@/components/gw2/Gw2RecipeNode.vue';
 import Gw2ShoppingList from '@/components/gw2/Gw2ShoppingList.vue';
 import Gw2Coins from '@/components/gw2/Gw2Coins.vue';
 import { fetchGw2Legendary, trackGw2Legendary, untrackGw2Legendary, gw2ErrorMessage } from '@/services/gw2Api';
-import { GENERATIONS, WEAPON_TYPES, splitCoins } from '@/utils/gw2';
+import { GENERATIONS, equipmentLabel, splitCoins } from '@/utils/gw2';
 
 const route = useRoute();
 
@@ -161,6 +161,11 @@ const loadedAt = ref('');
 const busy = ref(false);
 const view = ref('tree');
 const openAchievements = ref([]);
+const COLLECTION_KINDS = {
+  collection: 'Collection de la légendaire',
+  precursor: 'Collection du précurseur',
+  related: 'Collection liée',
+};
 const toggleAchievement = (id) => {
   openAchievements.value = openAchievements.value.includes(id)
     ? openAchievements.value.filter(a => a !== id)

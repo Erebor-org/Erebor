@@ -255,6 +255,22 @@ class Gw2LegendaryPlannerTest extends TestCase
         return $method->invokeArgs($planner, ['item', $id, 1, &$items, &$currencies, 1]);
     }
 
+    public function testLegendaryOnlyEarnedInGameProgressesWithItsObjectives(): void
+    {
+        // EXPLORATION has no recipe and isn't tradable: like a legendary only given as a reward
+        $planner = $this->planner();
+        $none = [];
+        $noCurrencies = [];
+        $fromScratch = $planner->plan(self::EXPLORATION, $none, $noCurrencies);
+        $items = [];
+        $currencies = [];
+
+        $summary = $planner->summarize($planner->plan(self::EXPLORATION, $items, $currencies), $fromScratch);
+
+        $this->assertSame(0.0, $summary['progress']); // not 50 %
+        $this->assertSame(['done' => 0, 'total' => 1], $summary['objectives']);
+    }
+
     public function testFullyOwnedLegendaryIsComplete(): void
     {
         $planner = $this->planner();

@@ -83,6 +83,8 @@ export const WEAPON_TYPES = {
   Trident: 'Trident',
 };
 
+export const TRINKET_TYPES = { Accessory: 'Accessoire', Ring: 'Anneau', Amulet: 'Amulette' };
+
 export const WEIGHT_CLASSES = { Heavy: 'Lourde', Medium: 'Intermédiaire', Light: 'Légère', Clothing: 'Vêtement' };
 
 export const BINDINGS = { Character: "Lié à l'âme", Account: 'Lié au compte' };
@@ -185,6 +187,10 @@ export function splitCoins(copper) {
   const value = Math.max(0, Math.round(copper || 0));
   return { gold: Math.floor(value / 10000), silver: Math.floor((value % 10000) / 100), copper: value % 100 };
 }
+
+// "Espadon", "Anneau"... from an item's meta ({type, subType})
+export const equipmentLabel = (meta) =>
+  WEAPON_TYPES[meta?.subType] || TRINKET_TYPES[meta?.subType] || ITEM_TYPES[meta?.type] || meta?.subType || '';
 
 export const attributeLabel = (attribute) => ATTRIBUTES[attribute] || attribute;
 export const rarityColor = (rarity) => RARITY_COLORS[rarity] || 'var(--border)';

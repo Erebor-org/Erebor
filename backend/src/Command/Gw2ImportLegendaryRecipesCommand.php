@@ -35,10 +35,12 @@ class Gw2ImportLegendaryRecipesCommand extends Command
     private const TREASURES = 'https://en.gw2treasures.com/item/';
     private const USER_AGENT = 'Erebor guild site - private legendary tracker recipe import';
     private const CRAWL_DELAY = 5;
-    private const LEGENDARY_WEAPONS_CATEGORY = 114; // achievement category "Armes légendaires"
+    private const LEGENDARY_TRINKETS_CATEGORY = 173; // achievement category "Colifichets légendaires"
     private const GUIDES = [
         'https://www.lebusmagique.fr/pages/guides/armurerie-legendaire/armes-legendaires/les-armes-legendaires.html',
         'https://www.lebusmagique.fr/pages/guides/armurerie-legendaire/armes-legendaires/armes-legendaires-end-of-dragons.html',
+        'https://www.lebusmagique.fr/pages/guides/armurerie-legendaire/colifichets-legendaires/',
+        'https://www.lebusmagique.fr/pages/guides/armurerie-legendaire/colifichets-legendaires/ete-infini.html',
     ];
     private const STEPS = ['recipes', 'achievements', 'hints'];
     // Le Bus Magique shows prices with icons: their alt text, in words
@@ -178,27 +180,51 @@ class Gw2ImportLegendaryRecipesCommand extends Command
     }
 
     /**
-     * Matches the "Armes légendaires" achievements to the catalogue by French name:
-     * "Arme légendaire : Crépuscule" and the precursor collections "Crépuscule I/II/III : ...".
+     * Links every legendary to its in-game collections, from all achievements (French names):
+     * - collection: "Arme légendaire : Crépuscule"
+     * - precursor:  "Crépuscule I/II/III : ..." (weapons)
+     * - related:    for trinkets "Aurora II : ...", "Vision..." in the "Colifichets légendaires"
+     *               category, "... : Discorde infinie", and the achievements rewarding an item found
+     *               in this trinket's tree only, followed through their steps and prerequisites
+     *               ("Aurora II" needs the "Maître du Lac Doric"... rewards).
      */
     private function importAchievements(SymfonyStyle $io): void
     {
-        // Recent schemas list the category's achievements as {id, ...} objects
-        $ids = array_map(
-            fn ($a) => is_array($a) ? $a['id'] : $a,
-            $this->api('/achievements/categories/'.self::LEGENDARY_WEAPONS_CATEGORY)['achievements'] ?? [],
-        );
         $achievements = [];
-        foreach (array_chunk($ids, 200) as $chunk) {
+        foreach (array_chunk($this->api('/achievements') ?? [], 200) as $chunk) {
             foreach ($this->api('/achievements', ['ids' => implode(',', $chunk), 'lang' => 'fr']) ?? [] as $achievement) {
-                $achievements[] = $achievement;
+                $achievements[$achievement['id']] = $achievement;
             }
         }
+        // Recent schemas list a category's achievements as {id, ...} objects
+        $trinketCategory = array_flip(array_map(
+            fn ($a) => is_array($a) ? $a['id'] : $a,
+            $this->api('/achievements/categories/'.self::LEGENDARY_TRINKETS_CATEGORY)['achievements'] ?? [],
+        ));
 
         $catalogIds = array_column(Gw2LegendaryCatalog::ITEMS, 'id');
         $names = [];
         foreach ($this->api('/items', ['ids' => implode(',', $catalogIds), 'lang' => 'fr']) ?? [] as $item) {
             $names[$item['id']] = $item['name'];
+        }
+
+        // Items in a single legendary's tree: an achievement rewarding one belongs to that legendary
+        $recipes = json_decode(@file_get_contents($this->projectDir.'/data/gw2/legendary_recipes.json'), true)['recipes'] ?? [];
+        $treeCount = [];
+        $trees = [];
+        foreach ($catalogIds as $id) {
+            $trees[$id] = $this->treeItems($id, $recipes);
+            foreach ($trees[$id] as $itemId) {
+                $treeCount[$itemId] = ($treeCount[$itemId] ?? 0) + 1;
+            }
+        }
+        $rewardedBy = [];
+        foreach ($achievements as $achievement) {
+            foreach ($achievement['rewards'] ?? [] as $reward) {
+                if ('Item' === ($reward['type'] ?? null)) {
+                    $rewardedBy[$reward['id']][] = $achievement['id'];
+                }
+            }
         }
 
         // The game isn't consistent: item "Eternité" but achievement "Éternité", "La Herse" but "Herse III"
@@ -208,28 +234,89 @@ class Gw2ImportLegendaryRecipesCommand extends Command
         );
         $links = [];
         foreach ($names as $id => $name) {
+            $isTrinket = 'trinket' === Gw2LegendaryCatalog::category($id);
+            $key = $normalize($name);
             $collection = null;
             $precursor = [];
+            $related = [];
             foreach ($achievements as $achievement) {
                 $title = str_replace("\u{a0}", ' ', $achievement['name']);
-                if (preg_match('/^Arme légendaire\s*:\s*(.+)$/u', $title, $m) && $normalize($m[1]) === $normalize($name)) {
+                if (preg_match('/^Arme légendaire\s*:\s*(.+)$/u', $title, $m) && $normalize($m[1]) === $key) {
                     $collection = $achievement['id'];
-                } elseif (preg_match('/^(.+?)\s+(I{1,3}|IV)\s*:/u', $title, $m) && $normalize($m[1]) === $normalize($name)) {
-                    $precursor[$m[2]] = $achievement['id'];
+                } elseif (preg_match('/^(.+?)\s+(I{1,3}|IV)\s*:/u', $title, $m) && $normalize($m[1]) === $key) {
+                    if ($isTrinket) {
+                        $related[] = $achievement['id'];
+                    } else {
+                        $precursor[$m[2]] = $achievement['id'];
+                    }
+                } elseif (preg_match('/:\s*(.+)$/u', $title, $m) && $normalize($m[1]) === $key) {
+                    $related[] = $achievement['id'];
+                } elseif (isset($trinketCategory[$achievement['id']]) && str_starts_with($normalize($title), $key)) {
+                    $related[] = $achievement['id'];
                 }
             }
-            uksort($precursor, fn ($a, $b) => strlen($a) <=> strlen($b) ?: strcmp($a, $b));
-            if ($collection || $precursor) {
-                $links[$id] = ['collection' => $collection, 'precursor' => array_values($precursor)];
+
+            // Trinkets: achievements rewarding an item of this tree only, then those feeding them.
+            // Not for weapons: their collections are named, and this would add unrelated rewards
+            $linked = [];
+            foreach ($isTrinket ? $trees[$id] : [] as $itemId) {
+                if (1 === ($treeCount[$itemId] ?? 0) && $itemId !== $id) {
+                    $linked = array_merge($linked, $rewardedBy[$itemId] ?? []);
+                }
             }
-            $io->writeln(sprintf('  %-45s collection %-6s precursor %s', $name, $collection ?? '-', implode(', ', $precursor) ?: '-'));
+            for ($round = 0; $round < 3 && $linked; ++$round) {
+                $next = [];
+                foreach (array_unique($linked) as $achievementId) {
+                    $next = array_merge($next, $achievements[$achievementId]['prerequisites'] ?? []);
+                    foreach ($achievements[$achievementId]['bits'] ?? [] as $bit) {
+                        if ('Item' === ($bit['type'] ?? null)) {
+                            $next = array_merge($next, $rewardedBy[$bit['id']] ?? []);
+                        }
+                    }
+                }
+                $next = array_diff(array_unique($next), $linked);
+                $linked = array_merge($linked, $next);
+            }
+
+            uksort($precursor, fn ($a, $b) => strlen($a) <=> strlen($b) ?: strcmp($a, $b));
+            $related = array_values(array_diff(
+                array_unique(array_merge($related, $linked)),
+                array_filter([$collection]),
+                $precursor,
+            ));
+            usort($related, fn ($a, $b) => strnatcasecmp($achievements[$a]['name'], $achievements[$b]['name']));
+            if ($collection || $precursor || $related) {
+                $links[$id] = ['collection' => $collection, 'precursor' => array_values($precursor), 'related' => $related];
+            }
+            $io->writeln(sprintf('  %-45s collection %-6s precursor %-20s related %d', $name, $collection ?? '-', implode(', ', $precursor) ?: '-', count($related)));
         }
 
         $file = $this->writeData('legendary_achievements.json', [
-            'sources' => ['official API /v2/achievements (category "Armes légendaires")'],
+            'sources' => ['official API /v2/achievements'],
             'legendaries' => $links,
         ]);
         $io->success(sprintf('Collections of %d legendaries written to %s', count($links), $file));
+    }
+
+    /** @return int[] every item of a legendary's recipe tree, itself included */
+    private function treeItems(int $rootId, array $recipes): array
+    {
+        $seen = [];
+        $queue = [$rootId];
+        while ($queue) {
+            $itemId = array_pop($queue);
+            if (isset($seen[$itemId])) {
+                continue;
+            }
+            $seen[$itemId] = true;
+            foreach ($recipes[$itemId]['ingredients'] ?? [] as $ingredient) {
+                if ('item' === $ingredient['type']) {
+                    $queue[] = $ingredient['id'];
+                }
+            }
+        }
+
+        return array_keys($seen);
     }
 
     /**

@@ -86,7 +86,7 @@
           <div class="flex flex-col sm:flex-row gap-3">
             <input
               v-model="search"
-              placeholder="Rechercher une arme..."
+              placeholder="Rechercher un légendaire..."
               class="flex-1 min-w-0 bg-theme-bg-muted border border-theme-border text-theme-text rounded-xl py-2 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-theme-primary"
             />
             <select v-model="equipmentType" class="bg-theme-bg-muted border border-theme-border text-theme-text rounded-xl py-2 px-3 text-sm" aria-label="Type d'équipement">
@@ -100,7 +100,7 @@
             </select>
           </div>
           <div class="flex flex-wrap items-center gap-2">
-            <button v-for="g in generationFilters" :key="g.key" @click="generation = g.key" class="gw-filter" :class="{ 'gw-filter--active': generation === g.key }">{{ g.label }}</button>
+            <button v-for="g in groupFilters" :key="g.key" @click="group = g.key" class="gw-filter" :class="{ 'gw-filter--active': group === g.key }">{{ g.label }}</button>
             <label class="inline-flex items-center gap-2 text-sm text-theme-text cursor-pointer whitespace-nowrap sm:ml-auto">
               <input type="checkbox" v-model="hideUnlocked" class="accent-[var(--primary)]" />
               Masquer les débloqués
@@ -163,7 +163,7 @@ import {
   fetchGw2TrackedLegendaries, fetchGw2LegendaryCatalog, fetchGw2LegendaryCombined,
   trackGw2Legendary, untrackGw2Legendary, gw2ErrorMessage,
 } from '@/services/gw2Api';
-import { GENERATIONS, WEAPON_TYPES, ITEM_TYPES } from '@/utils/gw2';
+import { GENERATIONS, WEAPON_TYPES, TRINKET_TYPES, ITEM_TYPES } from '@/utils/gw2';
 
 const TABS = [
   { key: 'suivis', label: 'Mes suivis' },
@@ -229,19 +229,24 @@ const toggleTrack = async (legendary) => {
 
 // Catalogue filters
 const search = ref('');
-const generation = ref('all');
+const group = ref('all');
 const hideUnlocked = ref(false);
 const equipmentType = ref('all');
 const sortKey = ref('progress');
-const generationFilters = [
-  { key: 'all', label: 'Toutes' },
-  ...Object.entries(GENERATIONS).filter(([g]) => g !== '2').map(([g, v]) => ({ key: Number(g), label: v.label })),
+// Weapons by generation, and trinkets
+const isTrinket = (l) => data.value.catalogue?.items[l.id]?.type === 'Trinket';
+const groupFilters = [
+  { key: 'all', label: 'Toutes', match: () => true },
+  ...Object.entries(GENERATIONS).filter(([g]) => g !== '2').map(([g, v]) => ({
+    key: `gen${g}`, label: `Armes ${v.label.toLowerCase()}`, match: (l) => !isTrinket(l) && l.generation === Number(g),
+  })),
+  { key: 'trinkets', label: 'Bijoux', match: isTrinket },
 ];
 
-// Equipment type of a legendary: its weapon type (Espadon, Arc court...), or the item type otherwise
+// Equipment type of a legendary: weapon or trinket type (Espadon, Anneau...), or the item type otherwise
 const equipmentTypeOf = (l) => {
   const meta = data.value.catalogue?.items[l.id];
-  return meta?.type === 'Weapon' ? meta.subType : meta?.type;
+  return ['Weapon', 'Trinket'].includes(meta?.type) ? meta.subType : meta?.type;
 };
 const equipmentTypes = computed(() => {
   const catalog = data.value.catalogue;
@@ -252,7 +257,7 @@ const equipmentTypes = computed(() => {
     if (key) counts[key] = (counts[key] || 0) + 1;
   });
   return Object.entries(counts)
-    .map(([key, count]) => ({ key, count, label: WEAPON_TYPES[key] || ITEM_TYPES[key] || key }))
+    .map(([key, count]) => ({ key, count, label: WEAPON_TYPES[key] || TRINKET_TYPES[key] || ITEM_TYPES[key] || key }))
     .sort((a, b) => a.label.localeCompare(b.label, 'fr'));
 });
 
@@ -262,7 +267,7 @@ const catalogRows = computed(() => {
   const query = search.value.trim().toLowerCase();
   const nameOf = (l) => catalog.items[l.id]?.name || '';
   return catalog.legendaries
-    .filter(l => generation.value === 'all' || l.generation === generation.value)
+    .filter(l => groupFilters.find(g => g.key === group.value).match(l))
     .filter(l => !hideUnlocked.value || !l.unlocked)
     .filter(l => equipmentType.value === 'all' || equipmentTypeOf(l) === equipmentType.value)
     .filter(l => !query || nameOf(l).toLowerCase().includes(query))
