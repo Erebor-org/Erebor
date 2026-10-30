@@ -17,3 +17,9 @@ framework:
         # Namespaced pools use the above "app" backend by default
         #pools:
             #my.dedicated.cache: null
+
+        pools:
+            # Guild Wars 2 API responses. TTLs are set per entry by App\Service\Gw2\Gw2ApiClient
+            # (account data and prices ~5 min, static item data for a day)
+            gw2.cache:
+                adapter: cache.app

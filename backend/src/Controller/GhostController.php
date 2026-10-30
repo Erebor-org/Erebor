@@ -349,7 +349,7 @@ class GhostController extends AbstractController
 
     private function requireOwner(?User $user): ?JsonResponse
     {
-        if (!$user || !in_array('ROLE_OWNERS', $user->getRoles())) {
+        if (!$user || !$this->isGranted('ROLE_OWNERS')) {
             return $this->json(['error' => 'Access denied. Only Owners can perform this action.'], 403);
         }
         return null;

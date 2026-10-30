@@ -1,0 +1,293 @@
+{
+    "generatedAt": "2026-10-25T10:02:46+01:00",
+    "sources": [
+        "official API /v2/achievements"
+    ],
+    "legendaries": {
+        "30684": {
+            "collection": 6980,
+            "precursor": [
+                2478,
+                2606,
+                2393
+            ],
+            "related": []
+        },
+        "30685": {
+            "collection": 7186,
+            "precursor": [
+                2193,
+                2311,
+                2383
+            ],
+            "related": []
+        },
+        "30686": {
+            "collection": 7063,
+            "precursor": [
+                2481,
+                2610,
+                2428
+            ],
+            "related": []
+        },
+        "30687": {
+            "collection": 7056,
+            "precursor": [
+                2564,
+                2458,
+                2502
+            ],
+            "related": []
+        },
+        "30688": {
+            "collection": 7174,
+            "precursor": [
+                2313,
+                2213,
+                2242
+            ],
+            "related": []
+        },
+        "30689": {
+            "collection": 7250,
+            "precursor": [],
+            "related": []
+        },
+        "30690": {
+            "collection": 7113,
+            "precursor": [
+                2438,
+                2241,
+                2468
+            ],
+            "related": []
+        },
+        "30691": {
+            "collection": 7149,
+            "precursor": [
+                2642,
+                2306,
+                2535
+            ],
+            "related": []
+        },
+        "30692": {
+            "collection": 6967,
+            "precursor": [
+                2177,
+                2291,
+                2374
+            ],
+            "related": []
+        },
+        "30693": {
+            "collection": 7161,
+            "precursor": [
+                2389,
+                2498,
+                2524
+            ],
+            "related": []
+        },
+        "30694": {
+            "collection": 6968,
+            "precursor": [
+                2534,
+                2503,
+                2280
+            ],
+            "related": []
+        },
+        "30695": {
+            "collection": 7190,
+            "precursor": [
+                2441,
+                2391,
+                2449
+            ],
+            "related": []
+        },
+        "30696": {
+            "collection": 7069,
+            "precursor": [
+                2479,
+                2390,
+                2536
+            ],
+            "related": []
+        },
+        "30697": {
+            "collection": 7226,
+            "precursor": [
+                2637,
+                2232,
+                2409
+            ],
+            "related": []
+        },
+        "30698": {
+            "collection": 7101,
+            "precursor": [
+                2530,
+                2500,
+                2187
+            ],
+            "related": []
+        },
+        "30699": {
+            "collection": 7233,
+            "precursor": [
+                2355,
+                2356,
+                2480
+            ],
+            "related": []
+        },
+        "30700": {
+            "collection": 7071,
+            "precursor": [
+                2180,
+                2596,
+                2388
+            ],
+            "related": []
+        },
+        "30701": {
+            "collection": 7198,
+            "precursor": [
+                2483,
+                2522,
+                2296
+            ],
+            "related": []
+        },
+        "30702": {
+            "collection": 7189,
+            "precursor": [
+                2270,
+                2588,
+                2260
+            ],
+            "related": []
+        },
+        "30703": {
+            "collection": 7084,
+            "precursor": [
+                2253,
+                2278,
+                2630
+            ],
+            "related": []
+        },
+        "30704": {
+            "collection": 7183,
+            "precursor": [
+                2420,
+                2184,
+                2183
+            ],
+            "related": []
+        },
+        "81908": {
+            "collection": null,
+            "precursor": [],
+            "related": [
+                3522,
+                3489,
+                3529,
+                3495,
+                3499,
+                3491,
+                3500,
+                3547
+            ]
+        },
+        "91048": {
+            "collection": null,
+            "precursor": [],
+            "related": [
+                4765,
+                4770,
+                4760,
+                4757,
+                4764,
+                4774,
+                4771,
+                4762
+            ]
+        },
+        "91234": {
+            "collection": null,
+            "precursor": [],
+            "related": [
+                4805,
+                4412,
+                4035
+            ]
+        },
+        "93105": {
+            "collection": null,
+            "precursor": [],
+            "related": [
+                5220
+            ]
+        },
+        "109012": {
+            "collection": null,
+            "precursor": [],
+            "related": [
+                9244
+            ]
+        }
+    },
+    "itemRewards": {
+        "19721": [
+            1750
+        ],
+        "20323": [
+            5807,
+            5721,
+            5738,
+            5741,
+            5764,
+            5777
+        ],
+        "24325": [
+            3093
+        ],
+        "43772": [
+            1817
+        ],
+        "76491": [
+            2195
+        ],
+        "81729": [
+            3489
+        ],
+        "86104": [
+            4035
+        ],
+        "91035": [
+            4771
+        ],
+        "91193": [
+            4805
+        ],
+        "96347": [
+            6068,
+            6106,
+            6179,
+            6224,
+            6258,
+            6317
+        ],
+        "96722": [
+            6186,
+            6274,
+            6299,
+            6314,
+            6423
+        ]
+    }
+}

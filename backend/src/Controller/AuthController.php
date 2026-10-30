@@ -4,6 +4,7 @@ namespace App\Controller;
 use App\Entity\User;
 use App\Repository\UserRepository;
 use App\Repository\CharactersRepository;
+use App\Security\EffectiveRoles;
 use Doctrine\ORM\EntityManagerInterface;
 use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -22,7 +23,8 @@ class AuthController extends AbstractController
     public function __construct(
         EntityManagerInterface $entityManager,
         UserPasswordHasherInterface $passwordHasher,
-        CharactersRepository $charactersRepository
+        CharactersRepository $charactersRepository,
+        private EffectiveRoles $effectiveRoles
     ) {
         $this->entityManager = $entityManager;
         $this->passwordHasher = $passwordHasher;
@@ -107,7 +109,7 @@ class AuthController extends AbstractController
         $userData = [
             'id' => $user->getId(),
             'username' => $user->getUsername(),
-            'roles' => $user->getRoles(),
+            'roles' => $this->effectiveRoles->of($user),
             'characterId' => $user->getCharacterId(),
             'character' => $character ? [
                 'id' => $character->getId(),
@@ -166,7 +168,7 @@ class AuthController extends AbstractController
         $userData = [
             'id' => $user->getId(),
             'username' => $user->getUsername(),
-            'roles' => $user->getRoles(),
+            'roles' => $this->effectiveRoles->of($user),
             'characterId' => $user->getCharacterId(),
             'character' => $character ? [
                 'id' => $character->getId(),

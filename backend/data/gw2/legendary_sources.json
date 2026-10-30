@@ -1,0 +1,283 @@
+{
+  "_comment": "Hand-written, wins over the generated legendary_hints.json. How to get legendary components that have no recipe in legendary_recipes.json. 'vendor' becomes a recipe paid in currencies (ids from /v2/currencies; 1 = coin, in copper, counted as gold to spend), 'hint' is shown on the Objectifs tab, 'leaf' stops the expansion of a crafting recipe for items obtained as is in game. Prices checked against the Le Bus Magique legendary guides. 'currencies' gives how to earn each currency.",
+  "items": {
+    "19664": {
+      "name": "Don d'Ascalon",
+      "vendor": {
+        "ingredients": [
+          {
+            "type": "currency",
+            "id": 5,
+            "count": 500
+          }
+        ]
+      },
+      "hint": "Marchand de donjon de l'Arche du Lion : 500 larmes ascaloniennes (Catacombes d'Ascalon)."
+    },
+    "19665": {
+      "name": "Don du noble",
+      "vendor": {
+        "ingredients": [
+          {
+            "type": "currency",
+            "id": 9,
+            "count": 500
+          }
+        ]
+      },
+      "hint": "Marchand de donjon de l'Arche du Lion : 500 sceaux de Beetletun (Manoir de Caudecus)."
+    },
+    "19666": {
+      "name": "Don du forgeron",
+      "vendor": {
+        "ingredients": [
+          {
+            "type": "currency",
+            "id": 10,
+            "count": 500
+          }
+        ]
+      },
+      "hint": "Marchand de donjon de l'Arche du Lion : 500 manifestes du taupinariat (Creuset de l'éternité)."
+    },
+    "19667": {
+      "name": "Don des épines",
+      "vendor": {
+        "ingredients": [
+          {
+            "type": "currency",
+            "id": 11,
+            "count": 500
+          }
+        ]
+      },
+      "hint": "Marchand de donjon de l'Arche du Lion : 500 pousses mortelles (Tonnelle du Crépuscule)."
+    },
+    "19668": {
+      "name": "Don du Feu-de-Bael",
+      "vendor": {
+        "ingredients": [
+          {
+            "type": "currency",
+            "id": 13,
+            "count": 500
+          }
+        ]
+      },
+      "hint": "Marchand de donjon de l'Arche du Lion : 500 gravures de Charr de la Légion de la Flamme (Citadelle de la Flamme)."
+    },
+    "19669": {
+      "name": "Don de Zhaïtan",
+      "vendor": {
+        "ingredients": [
+          {
+            "type": "currency",
+            "id": 6,
+            "count": 500
+          }
+        ]
+      },
+      "hint": "Marchand de donjon de l'Arche du Lion : 500 éclats de Zhaïtan (Arah)."
+    },
+    "19670": {
+      "name": "Don du sanctuaire",
+      "vendor": {
+        "ingredients": [
+          {
+            "type": "currency",
+            "id": 12,
+            "count": 500
+          }
+        ]
+      },
+      "hint": "Marchand de donjon de l'Arche du Lion : 500 symboles de Koda (Honneur des vagues)."
+    },
+    "19671": {
+      "name": "Don de savoir",
+      "vendor": {
+        "ingredients": [
+          {
+            "type": "currency",
+            "id": 14,
+            "count": 500
+          }
+        ]
+      },
+      "hint": "Marchand de donjon de l'Arche du Lion : 500 cristaux de connaissance (Étreinte des Lamentations)."
+    },
+    "19676": {
+      "name": "Pierre de rune gelée",
+      "vendor": {
+        "ingredients": [
+          {
+            "type": "currency",
+            "id": 1,
+            "count": 10000
+          }
+        ]
+      },
+      "hint": "Rojan le pénitent, à 1 po la pierre."
+    },
+    "79418": {
+      "name": "Pierre de rune mystique",
+      "vendor": {
+        "ingredients": [
+          {
+            "type": "currency",
+            "id": 1,
+            "count": 10000
+          }
+        ]
+      },
+      "hint": "Miyani (Forge mystique), à 1 po la pierre. Demande la maîtrise « Érudit des secrets » de l'artisanat légendaire de Tyrie centrale."
+    },
+    "19925": {
+      "name": "Éclat d'obsidienne",
+      "vendor": {
+        "ingredients": [
+          {
+            "type": "currency",
+            "id": 2,
+            "count": 2100
+          }
+        ]
+      },
+      "hint": "Cathédrale de la Glorieuse Victoire (Orr, quand elle n'est pas contestée) : 2 100 karma l'éclat. Aussi contre des reliques fractales, des lauriers ou dans les pistes de récompenses JcJ et McM."
+    },
+    "20797": {
+      "name": "Fragment de pierre de sang",
+      "vendor": {
+        "ingredients": [
+          {
+            "type": "currency",
+            "id": 23,
+            "count": 200
+          }
+        ]
+      },
+      "hint": "Miyani (Forge mystique de l'Arche du Lion), contre 200 éclats d'esprit."
+    },
+    "97829": {
+      "name": "Bénédiction de l'impératrice de jade",
+      "vendor": {
+        "ingredients": [
+          {
+            "type": "currency",
+            "id": 68,
+            "count": 500
+          }
+        ]
+      },
+      "hint": "Myung-Hee (Cour royale), 500 faveurs impériales l'unité. Le marchand n'est accessible que la semaine où tu lui remets les 4 statuettes des méta-événements hebdomadaires d'End of Dragons."
+    },
+    "95813": {
+      "name": "Réactif hydrocatalytique",
+      "vendor": {
+        "output": 10,
+        "ingredients": [
+          {
+            "type": "currency",
+            "id": 61,
+            "count": 50
+          }
+        ]
+      },
+      "hint": "Marchands de recherche près des établis à drone de jade : 50 notes de recherche les 10."
+    },
+    "19677": {
+      "name": "Don d'exploration",
+      "hint": "Explorer à 100 % la Tyrie centrale (hors extensions, contrées sauvages de Maguuma et Crique de Sud-Soleil) : 2 dons à chaque fois."
+    },
+    "19678": {
+      "name": "Don de combat",
+      "hint": "Terminer la piste de récompenses McM « Don de combat »."
+    },
+    "19675": {
+      "name": "Trèfle mystique",
+      "hint": "Forge mystique (résultat aléatoire) : 1 pièce mystique, 1 boule d'ectoplasme, 1 éclat d'obsidienne et 6 éclats d'esprit. Aussi dans certaines pistes de récompenses JcJ et McM, et la connexion quotidienne."
+    },
+    "96993": {
+      "name": "Don de la Province de Seitung",
+      "hint": "Explorer à 100 % la Province de Seitung, ou la réexplorer avec le succès répétable des lanternes."
+    },
+    "95621": {
+      "name": "Don de Néo-Kaineng",
+      "hint": "Explorer à 100 % Néo-Kaineng, ou la réexplorer avec le succès répétable des lanternes."
+    },
+    "97232": {
+      "name": "Don de la Forêt d'Echovald",
+      "hint": "Explorer à 100 % les Terres sauvages d'Echovald, ou les réexplorer avec le succès répétable des lanternes."
+    },
+    "45178": {
+      "name": "Essence de chance exotique",
+      "leaf": true,
+      "hint": "Recyclage d'équipement et de boules d'ectoplasme, événements de Cantha. Pas besoin de la fabriquer à partir d'essences inférieures."
+    },
+    "109012": {
+      "name": "Discorde infinie",
+      "hint": "Ne se fabrique pas : récompense de la collection « Recherche des Brumes : Discorde infinie » (aider Dugan dans ses recherches sur les Brumes)."
+    },
+    "95380": {
+      "name": "Tenue du champion prismatique",
+      "hint": "Ne se fabrique pas à la Forge mystique : cette amulette s'obtient directement en récompense en jeu."
+    },
+    "109070": {
+      "name": "Stella Radians",
+      "hint": "Ne se fabrique pas à la Forge mystique : cet accessoire s'obtient directement en récompense en jeu."
+    },
+    "70528": {
+      "name": "Don de gloire",
+      "hint": "Miyani (Forge mystique) contre 250 éclats de gloire, obtenus en JcJ (ou à la CCLN)."
+    }
+  },
+  "currencies": {
+    "2": {
+      "name": "Karma",
+      "hint": "Événements dynamiques, cœurs de renommée et consommables de karma (bonbons, jarres...)."
+    },
+    "5": {
+      "name": "Larme ascalonienne",
+      "hint": "Catacombes d'Ascalon, en mode exploration (récompense de fin de chemin)."
+    },
+    "6": {
+      "name": "Éclat de Zhaïtan",
+      "hint": "Arah, en mode exploration (récompense de fin de chemin)."
+    },
+    "9": {
+      "name": "Sceau de Beetletun",
+      "hint": "Manoir de Caudecus, en mode exploration (récompense de fin de chemin)."
+    },
+    "10": {
+      "name": "Manifeste du taupinariat",
+      "hint": "Creuset de l'éternité, en mode exploration (récompense de fin de chemin)."
+    },
+    "11": {
+      "name": "Pousse mortelle",
+      "hint": "Tonnelle du Crépuscule, en mode exploration (récompense de fin de chemin)."
+    },
+    "12": {
+      "name": "Symbole de Koda",
+      "hint": "Honneur des vagues, en mode exploration (récompense de fin de chemin)."
+    },
+    "13": {
+      "name": "Gravure de Charr de la Légion de la Flamme",
+      "hint": "Citadelle de la Flamme, en mode exploration (récompense de fin de chemin)."
+    },
+    "14": {
+      "name": "Cristal de connaissance",
+      "hint": "Étreinte des Lamentations, en mode exploration (récompense de fin de chemin)."
+    },
+    "23": {
+      "name": "Éclat d'esprit",
+      "hint": "Chaque niveau d'expérience gagné au-delà du niveau 80, et diverses récompenses (succès quotidiens, coffres)."
+    },
+    "61": {
+      "name": "Note de recherche",
+      "hint": "Recycler des objets fabriqués (nourriture, équipement, outils...) avec un nécessaire de notes de recherche."
+    },
+    "68": {
+      "name": "Faveur impériale",
+      "hint": "Événements et méta-événements de Cantha (End of Dragons)."
+    }
+  }
+}

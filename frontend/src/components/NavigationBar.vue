@@ -38,6 +38,7 @@
   const showWheelDropdown = ref(false);
   const showProfileDropdown = ref(false);
   const showManageDropdown = ref(false);
+  const showGw2Dropdown = ref(false);
   let wheelDropdownTimeout = null;
 
   function toggleWheelDropdown() {
@@ -64,6 +65,21 @@
     showManageDropdown.value = false;
   }
 
+  function toggleGw2Dropdown() {
+    showGw2Dropdown.value = !showGw2Dropdown.value;
+  }
+
+  function closeGw2Dropdown() {
+    showGw2Dropdown.value = false;
+  }
+
+  // Pages of the private Guild Wars 2 section (ROLE_DAMS), shown in the "GW2" menu
+  const gw2Pages = [
+    { to: '/gw2/personnages', label: 'Personnages' },
+    { to: '/gw2/inventaire', label: 'Inventaire & banque' },
+    { to: '/gw2/legendaires', label: 'Légendaires' },
+  ];
+
   // Fermer le menu si on clique ailleurs
   function handleClickOutside(event) {
     const wheelDropdown = document.getElementById('wheel-dropdown-menu');
@@ -82,6 +98,12 @@
     const manageButton = document.getElementById('manage-dropdown-btn');
     if (manageDropdown && !manageDropdown.contains(event.target) && manageButton && !manageButton.contains(event.target)) {
       closeManageDropdown();
+    }
+
+    const gw2Dropdown = document.getElementById('gw2-dropdown-menu');
+    const gw2Button = document.getElementById('gw2-dropdown-btn');
+    if (gw2Dropdown && !gw2Dropdown.contains(event.target) && gw2Button && !gw2Button.contains(event.target)) {
+      closeGw2Dropdown();
     }
   }
   onMounted(() => {
@@ -107,6 +129,9 @@
   });
 
   const isOwner = computed(() => authStore.isOwner);
+
+  // Private Guild Wars 2 section, not part of the role hierarchy
+  const isDams = computed(() => (user.value?.roles || []).includes('ROLE_DAMS'));
 
   const canManageWarnings = computed(() => {
     const roles = user.value?.roles || [];
@@ -179,7 +204,8 @@
         </div>
 
         <!-- Center Section - Navigation Links (Desktop) -->
-        <div class="hidden lg:flex items-center space-x-6">
+        <!-- The GW2 menu (ROLE_DAMS only) adds an entry: tighter spacing so the bar still fits at 1024px -->
+        <div class="hidden lg:flex items-center" :class="isDams ? 'space-x-3 xl:space-x-6' : 'space-x-6'">
 
           <RouterLink
             to="/home"
@@ -217,6 +243,38 @@
           >
             Statistiques
           </RouterLink>
+
+          <div v-if="isLoggedIn && isDams" class="relative">
+            <button
+              id="gw2-dropdown-btn"
+              class="nav-link flex items-center gap-1 whitespace-nowrap"
+              :class="{ 'nav-link-active': route.path.startsWith('/gw2') }"
+              @click="toggleGw2Dropdown"
+              :aria-expanded="showGw2Dropdown"
+              aria-haspopup="true"
+              title="Guild Wars 2"
+              type="button"
+            >
+              GW2
+              <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+            </button>
+            <div
+              v-if="showGw2Dropdown"
+              id="gw2-dropdown-menu"
+              class="dropdown-glass absolute left-0 mt-2 w-52 z-50"
+            >
+              <RouterLink
+                v-for="page in gw2Pages"
+                :key="page.to"
+                :to="page.to"
+                class="block px-4 py-3 nav-link"
+                :class="{ 'nav-link-active': route.path === page.to }"
+                @click="closeGw2Dropdown"
+              >
+                {{ page.label }}
+              </RouterLink>
+            </div>
+          </div>
 
           <div v-if="isLoggedIn" class="relative">
             <button
@@ -362,10 +420,10 @@
                 />
                 <span class="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-theme-success rounded-full border-2 border-theme-card"></span>
               </span>
-              <span class="hidden md:block text-sm font-medium text-theme-text pr-1">
+              <span class="hidden md:block text-sm font-medium text-theme-text pr-1" :class="{ 'lg:hidden xl:block': isDams }">
                 {{ user?.character?.pseudo || user?.username }}
               </span>
-              <svg class="hidden md:block w-4 h-4 text-theme-text-muted mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+              <svg class="hidden md:block w-4 h-4 text-theme-text-muted mr-1" :class="{ 'lg:hidden xl:block': isDams }" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
             </button>
             <div
               v-if="showProfileDropdown"
@@ -532,6 +590,20 @@
             @click="isMobileMenuOpen = false"
           >
             Roue des Nombres
+          </RouterLink>
+        </div>
+
+        <div v-if="isLoggedIn && isDams" class="">
+          <div class="font-semibold text-theme-primary mb-1">Guild Wars 2</div>
+          <RouterLink
+            v-for="page in gw2Pages"
+            :key="page.to"
+            :to="page.to"
+            class="mobile-nav-link"
+            active-class="mobile-nav-link-active"
+            @click="isMobileMenuOpen = false"
+          >
+            {{ page.label }}
           </RouterLink>
         </div>
 

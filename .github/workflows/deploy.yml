@@ -38,6 +38,7 @@ jobs:
             --set "deployments.app.containers.symfony.config.MAILER_DSN=${{ secrets.MAILER_DSN }}" \
             --set "deployments.app.containers.symfony.config.CORS_ALLOW_ORIGIN=${{ vars.CORS_ALLOW_ORIGIN }}" \
             --set "deployments.app.containers.symfony.config.FRONTEND_URL=${{ vars.FRONTEND_URL }}" \
+            --set "deployments.app.containers.symfony.config.GW2_API_KEY=${{ secrets.GW2_API_KEY }}" \
             --set "deployments.app.containers.symfony.config.JWT_SECRET_KEY=${{ vars.JWT_SECRET_KEY }}" \
             --set "deployments.app.containers.symfony.config.JWT_PUBLIC_KEY=${{ vars.JWT_PUBLIC_KEY }}" \
             --set "deployments.app.containers.symfony.config.JWT_PASSPHRASE=${{ secrets.JWT_PASSPHRASE }}" \

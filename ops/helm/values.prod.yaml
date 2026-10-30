@@ -50,6 +50,7 @@ deployments:
           JWT_PASSPHRASE:
           JWT_TOKEN_TTL:
           FRONTEND_URL:
+          GW2_API_KEY:
         jwt_keys:
           JWT_PUBLIC_KEY_BASE64: 
           JWT_SECRET_KEY_BASE64: 

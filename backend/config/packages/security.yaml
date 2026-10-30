@@ -4,6 +4,9 @@ security:
     Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface: "auto"
 
   role_hierarchy:
+    # ROLE_DAMS has access to every page of the site, plus the private Guild Wars 2 section.
+    # The reverse is not true: no other role inherits ROLE_DAMS.
+    ROLE_DAMS: [ROLE_OWNERS, ROLE_SUPER_ADMIN, ROLE_ADMIN, ROLE_USER]
     ROLE_OWNERS: [ROLE_SUPER_ADMIN, ROLE_ADMIN, ROLE_USER]
     ROLE_SUPER_ADMIN: [ROLE_ADMIN, ROLE_USER]
     ROLE_ADMIN: ROLE_USER
@@ -96,6 +99,10 @@ security:
 
     # Special (function) ranks management: leads, enroleur, troubadour... - OWNERS only
     - { path: ^/admin/special-ranks, roles: ROLE_OWNERS }
+
+    # Guild Wars 2 private section - ROLE_DAMS only. No role inherits ROLE_DAMS, so OWNERS
+    # do NOT get it (also enforced by #[IsGranted] on Gw2Controller)
+    - { path: ^/gw2, roles: ROLE_DAMS }
 
     # ROLE_OWNERS has unlimited access to all routes via role hierarchy
     # They inherit ROLE_SUPER_ADMIN, ROLE_ADMIN, and ROLE_USER permissions

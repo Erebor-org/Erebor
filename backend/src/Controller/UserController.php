@@ -11,6 +11,7 @@ use Symfony\Component\Security\Http\Attribute\CurrentUser;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use App\Repository\UserRepository;
+use App\Security\EffectiveRoles;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 class UserController extends AbstractController
@@ -26,6 +27,7 @@ class UserController extends AbstractController
         Request $request,
         EntityManagerInterface $em,
         CharactersRepository $charactersRepository,
+        EffectiveRoles $effectiveRoles,
         #[CurrentUser] \App\Entity\User $user
     ): JsonResponse {
         $data = json_decode($request->getContent(), true);
@@ -44,7 +46,7 @@ class UserController extends AbstractController
                 'user' => [
                     'id' => $user->getId(),
                     'username' => $user->getUsername(),
-                    'roles' => $user->getRoles(),
+                    'roles' => $effectiveRoles->of($user),
                     'characterId' => null,
                     'character' => null
                 ]
@@ -65,7 +67,7 @@ class UserController extends AbstractController
             'user' => [
                 'id' => $user->getId(),
                 'username' => $user->getUsername(),
-                'roles' => $user->getRoles(),
+                'roles' => $effectiveRoles->of($user),
                 'characterId' => $user->getCharacterId(),
                 'character' => [
                     'id' => $character->getId(),
@@ -90,6 +92,7 @@ class UserController extends AbstractController
     #[Route('/user/profile', name: 'get_user_profile', methods: ['GET'])]
     public function getProfile(
         CharactersRepository $charactersRepository,
+        EffectiveRoles $effectiveRoles,
         #[CurrentUser] \App\Entity\User $user
     ): JsonResponse {
         $character = null;
@@ -124,7 +127,7 @@ class UserController extends AbstractController
         $userData = [
             'id' => $user->getId(),
             'username' => $user->getUsername(),
-            'roles' => $user->getRoles(),
+            'roles' => $effectiveRoles->of($user),
             'characterId' => $user->getCharacterId(),
             'character' => $character ? [
                 'id' => $character->getId(),
@@ -202,7 +205,12 @@ class UserController extends AbstractController
 
         // Update roles if provided
         if (isset($data['roles']) && is_array($data['roles'])) {
-            $user->setRoles($data['roles']);
+            // ROLE_DAMS is managed in the database only: never granted nor removed from this screen
+            $roles = array_values(array_diff($data['roles'], ['ROLE_DAMS']));
+            if (in_array('ROLE_DAMS', $user->getRoles(), true)) {
+                $roles[] = 'ROLE_DAMS';
+            }
+            $user->setRoles($roles);
             // Force disconnect when roles are changed
             $user->setForceDisconnectAt(new \DateTime());
         }
