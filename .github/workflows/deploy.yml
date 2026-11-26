@@ -59,4 +59,12 @@ jobs:
             --set "pgbackup.config.S3_SECRET_KEY=${{ secrets.S3_SECRET_KEY }}" \
             --set "pgbackup.config.S3_REGION=${{ vars.S3_REGION }}"
 
+      # Applique les migrations Doctrine en attente dans le nouveau pod symfony
+      # (voir backend/bin/deploy-migrate.sh). Si elles échouent, le job CD passe en rouge.
+      - name: Run database migrations
+        run: |
+          DEPLOY=$(kubectl -n erebor get deploy -l app.kubernetes.io/name=app -o jsonpath='{.items[0].metadata.name}')
+          kubectl -n erebor rollout status "deploy/$DEPLOY" --timeout=300s
+          kubectl -n erebor exec "deploy/$DEPLOY" -c symfony -- sh bin/deploy-migrate.sh
+
 
