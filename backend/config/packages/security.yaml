@@ -68,6 +68,7 @@ security:
 
     # Routes accessible by all authenticated users (ROLE_USER and ROLE_ADMIN)
     - { path: ^/statistics, roles: ROLE_USER }
+    - { path: ^/dashboard, roles: ROLE_USER }
     - { path: ^/api/characters, roles: ROLE_USER }
     - { path: ^/ranks, roles: ROLE_USER }
     - { path: ^/user, roles: ROLE_USER }
