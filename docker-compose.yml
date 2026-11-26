@@ -30,6 +30,19 @@ services:
     env_file:
       - ./backend/.env
 
+  # Base PostgreSQL jetable pour les tests PHPUnit qui exécutent du SQL (rétention, journal…).
+  # Les données vivent en mémoire (tmpfs) : rien ne survit à un redémarrage, c'est voulu.
+  # Lancement : make test-db puis make test
+  postgres-test:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: erebor
+      POSTGRES_PASSWORD: erebor
+      POSTGRES_DB: erebor_test
+    tmpfs:
+      - /var/lib/postgresql/data
+    profiles: ["test"]
+
 volumes:
   frontend_node_modules:
   backend_vendor:

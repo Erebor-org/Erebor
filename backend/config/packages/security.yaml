@@ -68,6 +68,7 @@ security:
 
     # Routes accessible by all authenticated users (ROLE_USER and ROLE_ADMIN)
     - { path: ^/statistics, roles: ROLE_USER }
+    - { path: ^/dashboard, roles: ROLE_USER }
     - { path: ^/api/characters, roles: ROLE_USER }
     - { path: ^/ranks, roles: ROLE_USER }
     - { path: ^/user, roles: ROLE_USER }
@@ -86,6 +87,7 @@ security:
     # Ghost members voting - Accessible to ADMIN and above (OWNERS have full access)
     # Note: threshold/close operations are further restricted to OWNERS in the controller
     - { path: ^/ghost, roles: ROLE_ADMIN }
+    - { path: ^/recruitment, roles: ROLE_ADMIN }
 
     # Archive-from-log (bulk archiving from a pasted Dofus guild log) - ADMIN and above
     - { path: ^/archive-log, roles: ROLE_ADMIN }
@@ -99,6 +101,7 @@ security:
 
     # Special (function) ranks management: leads, enroleur, troubadour... - OWNERS only
     - { path: ^/admin/special-ranks, roles: ROLE_OWNERS }
+    - { path: ^/admin/settings, roles: ROLE_OWNERS }
 
     # Guild Wars 2 private section - ROLE_DAMS only. No role inherits ROLE_DAMS, so OWNERS
     # do NOT get it (also enforced by #[IsGranted] on Gw2Controller)

@@ -28,7 +28,7 @@ class Warning
     private string $description;
 
     #[ORM\ManyToOne(targetEntity: Characters::class)]
-    #[ORM\JoinColumn(nullable: true)]
+    #[ORM\JoinColumn(nullable: true, onDelete: "SET NULL")]
     private ?Characters $authorCharacter = null;
 
     public function __construct()

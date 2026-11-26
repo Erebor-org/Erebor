@@ -339,6 +339,14 @@
               class="dropdown-glass absolute left-0 mt-2 w-52 z-50"
             >
               <RouterLink
+                to="/recrutement"
+                class="block px-4 py-3 nav-link"
+                :class="{ 'nav-link-active': route.path === '/recrutement' }"
+                @click="closeManageDropdown"
+              >
+                Dashboard recrutement
+              </RouterLink>
+              <RouterLink
                 to="/blacklist"
                 class="block px-4 py-3 nav-link"
                 :class="{ 'nav-link-active': route.path === '/blacklist' }"
@@ -520,6 +528,14 @@
 
         <div v-if="isLoggedIn && isAdmin" class="">
           <div class="font-semibold text-theme-primary mb-1">Gestion</div>
+          <RouterLink
+            to="/recrutement"
+            class="mobile-nav-link"
+            active-class="mobile-nav-link-active"
+            @click="isMobileMenuOpen = false"
+          >
+            Dashboard recrutement
+          </RouterLink>
           <RouterLink
             to="/blacklist"
             class="mobile-nav-link"

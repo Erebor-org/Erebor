@@ -3,7 +3,9 @@
 namespace App\Controller;
 
 use App\Entity\Characters;
+use App\Entity\GuildEvent;
 use App\Entity\Mule;
+use App\EventListener\GuildEventListener;
 use App\Repository\CharactersRepository;
 use App\Repository\RanksRepository; // Ensure this is correctly imported
 use App\Repository\MuleRepository; // Added for switchWithMule
@@ -594,6 +596,14 @@ class CharactersController extends AbstractController
         return $this->json(['message' => 'Character unarchived successfully']);
     }
 
+    /**
+     * Une mule devient le personnage principal. Techniquement : création d'un nouveau
+     * personnage depuis la mule, l'ancien main devient une mule, puis suppression des anciennes
+     * lignes. Tout l'historique rattaché à l'ancien main est transféré AVANT la suppression
+     * (sinon les ON DELETE CASCADE / SET NULL l'effacent) : recrues, avertissements (cible et
+     * auteur), votes fantômes, journal, lien utilisateur. Le tout dans une transaction, sans
+     * journalisation automatique (un seul événement main_switched est écrit à la place).
+     */
     #[Route('/characters/{characterId}/switch-with-mule/{muleId}', name: 'character_switch_with_mule', methods: ['POST'])]
     public function switchWithMule(
         Request $request,
@@ -601,7 +611,8 @@ class CharactersController extends AbstractController
         int $muleId,
         CharactersRepository $charactersRepository,
         MuleRepository $muleRepository,
-        EntityManagerInterface $em
+        EntityManagerInterface $em,
+        GuildEventListener $guildEventListener
     ): JsonResponse {
         $character = $charactersRepository->find($characterId);
         $mule = $muleRepository->find($muleId);
@@ -611,106 +622,31 @@ class CharactersController extends AbstractController
         if ($mule->getMainCharacter()->getId() !== $character->getId()) {
             return $this->json(['error' => 'This mule does not belong to the specified main character'], 400);
         }
-        
-        // Check if the old main is a recruiter (has recruiter rank)
-        $isOldMainRecruiter = $character->getRank() && $character->getRank()->getRecruiter();
-        error_log("[SWITCH] Old main (ID={$character->getId()}) is recruiter: " . ($isOldMainRecruiter ? 'YES' : 'NO'));
-        
-        // Backup all mules except the one being promoted
-        // IMPORTANT: Save the IDs before clear(), not the entity objects
-        $allMules = $character->getMules()->toArray();
-        $otherMuleIds = array_map(
-            fn($m) => $m->getId(),
-            array_filter($allMules, fn($m) => $m->getId() !== $mule->getId())
-        );
-        
-        // Create new Character from mule
-        $newCharacter = new Characters();
-        $newCharacter->setUserId($character->getUserId())
-            ->setPseudo($mule->getPseudo())
-            ->setAnkamaPseudo($mule->getAnkamaPseudo())
-            ->setClass($mule->getClass())
-            ->setIsArchived($mule->isArchived())
-            ->setRecruitedAt($character->getRecruitedAt())
-            ->setRank($character->getRank())
-            ->setNotes($character->getNotes())
-            ->setRecruiter($character->getRecruiter());
-        $em->persist($newCharacter);
-        $em->flush(); // Pour que $newCharacter ait un ID
-        
-        // If the old main is a recruiter, transfer all recruited characters to the new main
-        if ($isOldMainRecruiter) {
-            $connection = $em->getConnection();
-            
-            // Get all characters that have the old main as recruiter
-            $recruitedCharacters = $charactersRepository->createQueryBuilder('c')
-                ->where('c.recruiter = :recruiterId')
-                ->setParameter('recruiterId', $character->getId())
-                ->getQuery()
-                ->getResult();
-            
-            error_log("[SWITCH] Found " . count($recruitedCharacters) . " characters with old main (ID={$character->getId()}) as recruiter");
-            
-            // Transfer all recruited characters to the new main
-            $transferredCount = $connection->executeStatement(
-                'UPDATE characters SET recruiter_id = :newRecruiterId WHERE recruiter_id = :oldRecruiterId',
-                ['newRecruiterId' => $newCharacter->getId(), 'oldRecruiterId' => $character->getId()]
-            );
-            
-            error_log("[SWITCH] Transferred $transferredCount characters from old main (ID={$character->getId()}) to new main (ID={$newCharacter->getId()}) as recruiter");
-        }
-        
-        // Réassigner les warnings de l'ancien main vers le nouveau main
+
         $connection = $em->getConnection();
-        // Logguer le nombre de warnings réassignés
-        $updatedWarnings = $connection->executeStatement(
-            'UPDATE warnings SET character_id = :newId WHERE character_id = :oldId',
-            ['newId' => $newCharacter->getId(), 'oldId' => $character->getId()]
-        );
-        error_log("[SWITCH] Nombre de warnings réassignés de l'ancien main (ID={$character->getId()}) vers le nouveau main (ID={$newCharacter->getId()}): $updatedWarnings");
-        // Vérifier combien de warnings pointent encore vers l'ancien main
-        $remainingWarnings = $connection->fetchOne(
-            'SELECT COUNT(*) FROM warnings WHERE character_id = :oldId',
-            ['oldId' => $character->getId()]
-        );
-        error_log("[SWITCH] Nombre de warnings qui pointent ENCORE vers l'ancien main (ID={$character->getId()}) : $remainingWarnings");
-        if ($remainingWarnings > 0) {
-            throw new \RuntimeException("Il reste $remainingWarnings warning(s) liés à l'ancien main (ID=" . $character->getId() . "). Switch annulé pour éviter la suppression de l'historique.");
+        $connection->beginTransaction();
+        try {
+            [$character, $newCharacter, $newMule] = $guildEventListener->withoutRecording(
+                fn () => $this->performSwitch($character, $mule, $charactersRepository, $muleRepository, $em)
+            );
+
+            // Événement unique, écrit hors du mode muet.
+            $event = (new GuildEvent(GuildEvent::MAIN_SWITCHED, $newCharacter))
+                ->setMule($newMule)
+                ->setPayload([
+                    'oldMain' => $character->getPseudo(),
+                    'newMain' => $newCharacter->getPseudo(),
+                    'class' => $newCharacter->getClass(),
+                ])
+                ->setActor($guildEventListener->resolveActor($em));
+            $em->persist($event);
+            $em->flush();
+
+            $connection->commit();
+        } catch (\Throwable $e) {
+            $connection->rollBack();
+            throw $e;
         }
-        // IMPORTANT : vider le UnitOfWork pour éviter que Doctrine ne tente de réécrire l'ancien état
-        $em->clear();
-        // Recharger les entités nécessaires
-        $newCharacter = $charactersRepository->find($newCharacter->getId());
-        $mule = $muleRepository->find($mule->getId());
-        $character = $charactersRepository->find($character->getId());
-        // Créer la nouvelle mule et réassigner les autres mules
-        $newMule = new \App\Entity\Mule();
-        $newMule->setPseudo($character->getPseudo())
-            ->setAnkamaPseudo($character->getAnkamaPseudo())
-            ->setClass($character->getClass())
-            ->setIsArchived($character->isArchived())
-            ->setMainCharacter($newCharacter);
-        $em->persist($newMule);
-        
-        // IMPORTANT: Reassign other mules to the new character BEFORE deleting the old one
-        // This prevents the CASCADE DELETE from removing them when the old character is deleted
-        foreach ($otherMuleIds as $otherMuleId) {
-            $otherMuleEntity = $em->getRepository(\App\Entity\Mule::class)->find($otherMuleId);
-            if ($otherMuleEntity) {
-                $otherMuleEntity->setMainCharacter($newCharacter);
-                // Explicitly persist to ensure the change is tracked
-                $em->persist($otherMuleEntity);
-            }
-        }
-        
-        // Flush the reassignments BEFORE deleting the old character
-        // This ensures the foreign keys are updated before CASCADE DELETE can trigger
-        $em->flush();
-        
-        // Now it's safe to remove the old main and the mule being promoted
-        $em->remove($character);
-        $em->remove($mule);
-        $em->flush();
 
         // Notification Discord via NotificationService avec switchedBy (robuste)
         // DEBUG : log le body brut reçu
@@ -753,6 +689,79 @@ class CharactersController extends AbstractController
                 'class' => $newMule->getClass(),
             ]
         ]);
+    }
+
+    /**
+     * @return array{0: Characters, 1: Characters, 2: Mule} ancien main (détaché, pour son pseudo),
+     *         nouveau main, nouvelle mule (l'ancien main)
+     */
+    private function performSwitch(
+        Characters $character,
+        Mule $mule,
+        CharactersRepository $charactersRepository,
+        MuleRepository $muleRepository,
+        EntityManagerInterface $em
+    ): array {
+        $oldId = $character->getId();
+        $otherMuleIds = array_values(array_map(
+            fn (Mule $m) => $m->getId(),
+            array_filter($character->getMules()->toArray(), fn (Mule $m) => $m->getId() !== $mule->getId())
+        ));
+
+        $newCharacter = new Characters();
+        $newCharacter->setUserId($character->getUserId())
+            ->setPseudo($mule->getPseudo())
+            ->setAnkamaPseudo($mule->getAnkamaPseudo())
+            ->setClass($mule->getClass())
+            ->setIsArchived($mule->isArchived())
+            ->setRecruitedAt($character->getRecruitedAt())
+            ->setRank($character->getRank())
+            ->setNotes($character->getNotes())
+            ->setRecruiter($character->getRecruiter());
+        // Le membre est le même : on garde sa date de départ éventuelle, pas « maintenant ».
+        $newCharacter->setArchivedAt($mule->isArchived() ? ($mule->getArchivedAt() ?? $character->getArchivedAt()) : null);
+        $em->persist($newCharacter);
+        $em->flush(); // pour obtenir l'ID du nouveau main
+
+        $newId = $newCharacter->getId();
+        $connection = $em->getConnection();
+        $ids = ['newId' => $newId, 'oldId' => $oldId];
+        // Toutes les recrues, que l'ancien main ait encore un rang recruteur ou non.
+        $connection->executeStatement('UPDATE characters SET recruiter_id = :newId WHERE recruiter_id = :oldId', $ids);
+        $connection->executeStatement('UPDATE warnings SET character_id = :newId WHERE character_id = :oldId', $ids);
+        $connection->executeStatement('UPDATE warnings SET author_character_id = :newId WHERE author_character_id = :oldId', $ids);
+        $connection->executeStatement('UPDATE ghost_vote SET character_id = :newId WHERE character_id = :oldId', $ids);
+        $connection->executeStatement('UPDATE guild_event SET character_id = :newId WHERE character_id = :oldId', $ids);
+        $connection->executeStatement('UPDATE "user" SET character_id = :newId WHERE character_id = :oldId', $ids);
+
+        // Vider le UnitOfWork : les UPDATE ci-dessus ont rendu les entités en mémoire obsolètes.
+        $em->clear();
+        $newCharacter = $charactersRepository->find($newId);
+        $mule = $muleRepository->find($mule->getId());
+        $character = $charactersRepository->find($oldId);
+
+        $newMule = new Mule();
+        $newMule->setPseudo($character->getPseudo())
+            ->setAnkamaPseudo($character->getAnkamaPseudo())
+            ->setClass($character->getClass())
+            ->setIsArchived($character->isArchived())
+            ->setMainCharacter($newCharacter);
+        $newMule->setArchivedAt($character->getArchivedAt());
+        // L'ancien main n'est pas une « nouvelle mule » : il existe depuis l'arrivée du membre.
+        $newMule->setCreatedAt($character->getRecruitedAt());
+        $em->persist($newMule);
+
+        // Réassigner les autres mules AVANT de supprimer l'ancien main (ON DELETE CASCADE).
+        foreach ($otherMuleIds as $otherMuleId) {
+            $muleRepository->find($otherMuleId)?->setMainCharacter($newCharacter);
+        }
+        $em->flush();
+
+        $em->remove($character);
+        $em->remove($mule);
+        $em->flush();
+
+        return [$character, $newCharacter, $newMule];
     }
 
     #[Route('/api/characters', name: 'api_characters', methods: ['GET'])]

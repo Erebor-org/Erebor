@@ -1,8 +1,8 @@
 <template>
   <div class="min-h-screen bg-theme-bg home-glow">
     <div class="container mx-auto px-4 py-12">
-      <!-- Bienvenue + aperçu rapide -->
-      <div class="bento-top" :class="{ 'bento-top--solo': !isAdmin }">
+      <!-- 1. Bienvenue + ma progression -->
+      <div class="bento-top">
         <div class="hero-tile">
           <div class="hero-tile-copy">
             <p class="hero-eyebrow">Erebor</p>
@@ -15,31 +15,92 @@
             <img :src="characterIcon" alt="Portrait du personnage" />
           </div>
         </div>
-
-        <div v-if="isAdmin" class="stat-stack">
-          <div class="stat-pill">
-            <span class="stat-pill-value">
-              <span v-if="statsLoading" class="stat-skeleton"></span>
-              <span v-else>{{ stats.activeMembers }}</span>
-            </span>
-            <span class="stat-pill-label">Membres actifs</span>
-          </div>
-          <div class="stat-pill">
-            <span class="stat-pill-value">
-              <span v-if="statsLoading" class="stat-skeleton"></span>
-              <span v-else>{{ stats.archivedMembers }}</span>
-            </span>
-            <span class="stat-pill-label">Membres archivés</span>
-          </div>
-          <div class="stat-pill">
-            <span class="stat-pill-value">
-              <span v-if="statsLoading" class="stat-skeleton"></span>
-              <span v-else>{{ stats.recruitedByMe }}</span>
-            </span>
-            <span class="stat-pill-label">Recrutés par vous</span>
-          </div>
-        </div>
+        <RankProgressCard :progress="dashboard?.myProgress" :loading="loading" />
       </div>
+
+      <p v-if="loadError" class="dash-error" role="alert">
+        Impossible de charger l'état de la guilde.
+        <button type="button" class="dash-retry" @click="loadDashboard">Réessayer</button>
+      </p>
+
+      <!-- 2. État de la guilde -->
+      <section class="dash-section" aria-label="État de la guilde">
+        <div class="counter-row" :class="{ 'counter-row--two': !showRecruitedByMe && !mySeniority }">
+          <StatCounter
+            label="Membres"
+            :value="counters.active?.value"
+            :sentence="compareCount(counters.active?.delta30, 'il y a un mois')"
+            :tone="toneOf(counters.active?.delta30)"
+            :loading="loading"
+          />
+          <StatCounter
+            label="Restent plus de 2 mois"
+            :value="retention?.n ? outOfTen(retention.retained, retention.n) : null"
+            :unit="retention?.n ? ' sur 10' : ''"
+            :sentence="trendLabel(retention?.deltaPoints)"
+            :tone="toneOf(retention?.deltaPoints, 3)"
+            :note="retention?.n ? `${retention.retained} des ${retention.n} dernières recrues` : 'Pas encore assez de recrues'"
+            :title="retentionTitle"
+            :loading="loading"
+          >
+            <PeopleDots v-if="retention?.n" :kept="retention.retained" :total="retention.n" />
+          </StatCounter>
+          <StatCounter
+            v-if="showRecruitedByMe"
+            label="Recrutés par vous"
+            :value="counters.recruitedByMe?.value"
+            :sentence="counters.recruitedByMe?.delta30 ? `dont ${counters.recruitedByMe.delta30} ce mois-ci` : 'aucun ce mois-ci'"
+            :tone="counters.recruitedByMe?.delta30 ? 'good' : 'flat'"
+            :loading="loading"
+          />
+          <StatCounter
+            v-else-if="mySeniority"
+            label="Votre ancienneté"
+            :value="ordinalFr(mySeniority.position)"
+            :unit="` sur ${mySeniority.total}`"
+            :sentence="mySeniority.placesGained > 0 ? `${mySeniority.placesGained} place${mySeniority.placesGained > 1 ? 's' : ''} gagnée${mySeniority.placesGained > 1 ? 's' : ''} ce mois-ci` : ''"
+            tone="good"
+            :note="mySeniority.total - mySeniority.position > 0 ? `plus ancien que ${mySeniority.total - mySeniority.position} membres` : 'le plus récent de la guilde'"
+            title="Votre place parmi les membres actuels, du plus ancien au plus récent"
+            :loading="loading"
+          />
+        </div>
+
+        <div class="dash-grid dash-grid--flow">
+          <FlowCard
+            :flow="counters.flow30"
+            :monthly="dashboard?.monthly || []"
+            :undated-departures="counters.undatedDepartures || 0"
+            :loading="loading"
+          />
+          <ActivityFeed
+            title="Entrées & sorties"
+            :items="feeds.movements.items"
+            :has-more="feeds.movements.hasMore"
+            :loading="loading"
+            :loading-more="feeds.movements.loadingMore"
+            empty-text="Aucune arrivée ni départ récent."
+            max-height="27rem"
+            @load-more="loadMore('movements')"
+          />
+        </div>
+
+        <RankUpsCard
+          :promotions="dashboard?.upcomingPromotions || []"
+          :recent="feeds.promotions.items"
+          :recruits="isAdmin ? (dashboard?.admin?.freshRecruits || []) : null"
+          :has-more="feeds.promotions.hasMore"
+          :loading="loading"
+          :loading-more="feeds.promotions.loadingMore"
+          @load-more="loadMore('promotions')"
+        />
+
+        <!-- Blocs de gestion : renvoyés par le serveur aux seuls ROLE_ADMIN et plus -->
+        <GhostVoteStatus v-if="isAdmin" :ghost="dashboard?.admin?.ghost" :loading="loading" />
+      </section>
+
+      <!-- 3. Outils (blocs historiques, inchangés) -->
+      <h2 class="tools-divider"><span>Outils</span></h2>
 
       <!-- Admin Dashboard -->
       <div v-if="isAdmin">
@@ -315,9 +376,17 @@
 </template>
 
 <script setup>
-import { computed, ref, onMounted } from 'vue';
+import { computed, reactive, ref, onMounted } from 'vue';
 import { useAuthStore } from '@/stores/authStore';
-import axios from 'axios';
+import { fetchHomeDashboard, fetchActivity } from '@/services/dashboardApi';
+import { compareCount, ordinalFr, outOfTen, trendLabel } from '@/utils/plainLanguage';
+import PeopleDots from '@/components/home/PeopleDots.vue';
+import RankProgressCard from '@/components/home/RankProgressCard.vue';
+import StatCounter from '@/components/home/StatCounter.vue';
+import FlowCard from '@/components/home/FlowCard.vue';
+import ActivityFeed from '@/components/home/ActivityFeed.vue';
+import RankUpsCard from '@/components/home/RankUpsCard.vue';
+import GhostVoteStatus from '@/components/home/GhostVoteStatus.vue';
 import profile_icon from '@/assets/profile_icon.png';
 
 // Import class icons (portrait mis en avant sur la tuile de bienvenue)
@@ -347,7 +416,6 @@ const classes = {
 const authStore = useAuthStore();
 const user = computed(() => authStore.user);
 
-const API_URL = import.meta.env.VITE_API_URL;
 
 const isAdmin = computed(() => {
   const roles = user.value?.roles || [];
@@ -368,28 +436,66 @@ const characterSubtitle = computed(() => {
   return parts.length ? parts.join(' · ') : 'Gestion de la guilde Erebor';
 });
 
-// Aperçu rapide de la guilde (admins uniquement) — purement informatif,
-// basé sur le même endpoint déjà utilisé par la page Membres.
-const statsLoading = ref(true);
-const stats = ref({ activeMembers: 0, archivedMembers: 0, recruitedByMe: 0 });
-
-onMounted(async () => {
-  if (!isAdmin.value) return;
-  try {
-    const charactersRes = await axios.get(`${API_URL}/characters/`);
-    const characters = charactersRes.data || [];
-    const myCharacterId = user.value?.character?.id;
-    stats.value = {
-      activeMembers: characters.filter(c => !c.isArchived).length,
-      archivedMembers: characters.filter(c => c.isArchived).length,
-      recruitedByMe: myCharacterId ? characters.filter(c => c.recruiter?.id === myCharacterId).length : 0,
-    };
-  } catch (error) {
-    console.error('Erreur lors du chargement des statistiques rapides:', error);
-  } finally {
-    statsLoading.value = false;
-  }
+// État de la guilde : un seul appel, agrégé en SQL côté serveur.
+const loading = ref(true);
+const loadError = ref(false);
+const dashboard = ref(null);
+// Deux fils paginés : entrées / sorties et montées de rang.
+const feeds = reactive({
+  movements: { items: [], hasMore: false, loadingMore: false, pageSize: 20 },
+  promotions: { items: [], hasMore: false, loadingMore: false, pageSize: 30 },
 });
+
+const counters = computed(() => dashboard.value?.counters || {});
+const retention = computed(() => dashboard.value?.retention61 || null);
+const mySeniority = computed(() => dashboard.value?.mySeniority || null);
+const retentionTitle = computed(() => {
+  const r = retention.value;
+  if (!r?.n) return '';
+  let text = `Parmi les ${r.n} recrues arrivées il y a 2 à ${r.cohortMonths + 2} mois, ${r.retained} sont restées au moins 2 mois.`;
+  if (r.excluded) text += ` ${r.excluded} départ(s) sans date ne sont pas comptés.`;
+  return text;
+});
+
+// Couleur d'une évolution : verte si ça monte, rouge si ça baisse (au-delà d'un seuil).
+const toneOf = (delta, threshold = 1) => (delta == null || Math.abs(delta) < threshold ? 'flat' : delta > 0 ? 'good' : 'bad');
+// « Recrutés par vous » n'a de sens que pour qui recrute.
+const showRecruitedByMe = computed(() => isAdmin.value || (counters.value.recruitedByMe?.value || 0) > 0);
+
+async function loadDashboard() {
+  loading.value = true;
+  loadError.value = false;
+  try {
+    dashboard.value = await fetchHomeDashboard();
+    feeds.movements.items = dashboard.value.movements || [];
+    feeds.promotions.items = dashboard.value.recentPromotions || [];
+    for (const feed of Object.values(feeds)) {
+      feed.hasMore = feed.items.length === feed.pageSize;
+    }
+  } catch (error) {
+    console.error("Erreur lors du chargement du tableau de bord :", error);
+    loadError.value = true;
+  } finally {
+    loading.value = false;
+  }
+}
+
+async function loadMore(kind) {
+  const feed = feeds[kind];
+  feed.loadingMore = true;
+  try {
+    const page = await fetchActivity(kind, feed.items.length, 20);
+    feed.items = [...feed.items, ...page.items];
+    feed.hasMore = page.hasMore;
+  } catch (error) {
+    console.error("Erreur lors du chargement du fil :", error);
+  } finally {
+    feed.loadingMore = false;
+  }
+}
+
+onMounted(loadDashboard);
+
 </script>
 
 <style scoped>
@@ -405,29 +511,39 @@ onMounted(async () => {
   @apply text-xl font-serif font-bold text-theme-text mb-4 flex items-center;
 }
 
-/* ---------- Bento du haut : bienvenue + aperçu ---------- */
+/* ---------- Haut de page : bienvenue + ma progression ---------- */
 .bento-top {
   display: grid;
   grid-template-columns: 1.6fr 1fr;
   gap: 1rem;
-  margin-bottom: 2.5rem;
+  margin-bottom: 1rem;
   align-items: stretch;
 }
 
-.bento-top--solo {
-  grid-template-columns: 1fr;
-}
-
 .hero-tile {
+  position: relative;
   overflow: hidden;
-  border-radius: 1.5rem;
+  border-radius: 0.9rem;
   padding: 2rem;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 1.5rem;
-  background-image: linear-gradient(155deg, rgba(var(--primary-rgb), 0.16), rgba(var(--accent-rgb), 0.05));
-  border: 1px solid rgba(var(--accent-rgb), 0.18);
+  background-image: linear-gradient(155deg, rgba(var(--primary-rgb), 0.18), rgba(var(--accent-rgb), 0.05));
+  border: 1px solid rgba(var(--accent-rgb), 0.38);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 18px 40px -26px rgba(0, 0, 0, 0.65);
+}
+
+/* Même liseré rouge → or que les cartes du tableau de bord */
+.hero-tile::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 1.5rem;
+  right: 1.5rem;
+  height: 2px;
+  border-radius: 2px;
+  background-image: linear-gradient(90deg, transparent, var(--primary) 20%, var(--accent) 50%, var(--primary) 80%, transparent);
 }
 
 .hero-eyebrow {
@@ -471,51 +587,77 @@ onMounted(async () => {
   background-color: var(--card);
 }
 
-/* ---------- Pile de statistiques compacte ---------- */
-.stat-stack {
+/* ---------- État de la guilde ---------- */
+.dash-section {
   display: flex;
   flex-direction: column;
-  gap: 0.6rem;
-  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 2.5rem;
 }
 
-.stat-pill {
+.counter-row {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.counter-row--two {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.dash-grid {
+  display: grid;
+  gap: 1rem;
+  align-items: stretch;
+}
+
+.dash-grid--flow {
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+}
+
+.dash-grid--halves {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.dash-error {
+  margin: 0 0 1rem;
+  padding: 0.75rem 1rem;
+  border-radius: 0.75rem;
+  font-size: 0.85rem;
+  color: var(--error);
+  background-color: rgba(var(--primary-rgb), 0.08);
+  border: 1px solid rgba(var(--primary-rgb), 0.25);
+}
+
+.dash-retry {
+  margin-left: 0.5rem;
+  text-decoration: underline;
+  background: none;
+  border: 0;
+  color: inherit;
+  cursor: pointer;
+}
+
+/* Séparateur avant les outils historiques */
+.tools-divider {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 0.75rem;
-  padding: 0.85rem 1.1rem;
-  border-radius: 1rem;
-  background-color: var(--card);
-  border: 1px solid var(--border);
-}
-
-.stat-pill-value {
+  gap: 1rem;
+  margin: 0 0 1.5rem;
   font-family: ui-monospace, "SF Mono", Menlo, monospace;
-  font-variant-numeric: tabular-nums;
-  font-weight: 700;
-  font-size: 1.35rem;
-  color: var(--text);
-}
-
-.stat-pill-label {
-  font-size: 0.78rem;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
   color: var(--text-muted);
-  text-align: right;
 }
 
-.stat-skeleton {
-  display: inline-block;
-  width: 2.25rem;
-  height: 1.1rem;
-  border-radius: 0.35rem;
-  background-color: var(--bg-muted);
-  animation: pulse 1.5s ease-in-out infinite;
-}
-
-@keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.4; }
+.tools-divider::before,
+.tools-divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background-image: linear-gradient(90deg, transparent, rgba(var(--accent-rgb), 0.45), transparent);
 }
 
 /* ---------- Tuiles "Roue" : verre + anneau dégradé ---------- */
@@ -591,9 +733,19 @@ onMounted(async () => {
   box-shadow: 0 12px 32px -18px rgba(var(--primary-rgb), 0.5);
 }
 
+@media (max-width: 1024px) {
+  .dash-grid--flow,
+  .dash-grid--halves {
+    grid-template-columns: 1fr;
+  }
+}
+
 @media (max-width: 640px) {
   .bento-top {
     grid-template-columns: 1fr;
+  }
+  .counter-row {
+    gap: 0.5rem;
   }
   .hero-tile {
     flex-direction: column;

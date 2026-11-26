@@ -43,3 +43,12 @@ services:
 
   # add more service definitions when explicit configuration is needed
   # please note that last definitions always *replace* previous ones
+
+when@test:
+  services:
+    # NotificationService poste sur les webhooks n8n de prod (URLs en dur) : jamais en test.
+    test.null_http_client:
+      class: Symfony\Component\HttpClient\MockHttpClient
+    App\Service\NotificationService:
+      arguments:
+        $httpClient: "@test.null_http_client"
