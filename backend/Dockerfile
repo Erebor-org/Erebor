@@ -13,7 +13,7 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 # Install Symfony CLI
 RUN curl -sS https://get.symfony.com/cli/installer | bash \
-    && mv /root/.symfony*/bin/symfony /usr/local/bin/symfony
+    && mv /root/.config/symfony-cli/bin/symfony /usr/local/bin/symfony
 
 # Set working directory
 WORKDIR /app
