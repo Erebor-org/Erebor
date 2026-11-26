@@ -45,6 +45,26 @@ spec:
         deployment.kubernetes.io/symfony-image: "{{ include "erebor.symfonyImage.url" . }}"
         deployment.kubernetes.io/deployed-at: "{{ now | date "2006-01-02T15:04:05Z07:00" }}"
     spec:
+      # Applique les migrations Doctrine en attente avant de démarrer l'appli (voir
+      # backend/bin/deploy-migrate.sh). S'il échoue, le nouveau pod ne démarre pas, l'ancien
+      # continue de servir (maxUnavailable: 0) et `helm upgrade --wait` fait échouer la CD.
+      initContainers:
+        - name: db-migrate
+          image: {{ include "erebor.symfonyImage.url" . }}
+          imagePullPolicy: {{ default "Always" .Values.deployments.app.containers.symfony.imagePullPolicy }}
+          command: ["sh", "bin/deploy-migrate.sh"]
+          envFrom:
+            - secretRef:
+                name: {{ include "erebor.fullname" . }}-symfony-config
+          volumeMounts:
+            - name: pem-volume
+              readOnly: true
+              mountPath: /var/www/html/config/jwt/private.pem
+              subPath: private.pem
+            - name: pem-volume
+              readOnly: true
+              mountPath: /var/www/html/config/jwt/public.pem
+              subPath: public.pem
       containers:
         - name: nginx
           image: {{ include "erebor.nginxImage.url" . }}
