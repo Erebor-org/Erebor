@@ -1,5 +1,5 @@
 
-.PHONY: up down restart clean migrate migrate-local logs ps test-db test
+.PHONY: up down restart clean migrate migrate-local migrate-status logs ps test-db test
 
 up: ## Start the application
 	docker-compose -f ./docker-compose.yml up -d
@@ -22,16 +22,20 @@ logs: ## View logs from all services
 ps: ## Show running containers
 	docker-compose -f ./docker-compose.yml ps
 
-migrate-local: ## Run database migrations locally in Docker
-	@echo "Running database migrations..."
-	docker-compose -f ./docker-compose.yml exec backend bin/console doctrine:schema:update --force
-	@echo "Migrations completed!"
+# Migrations : backend/bin/deploy-migrate.sh (baseline des anciennes migrations non
+# rejouables + doctrine:migrations:migrate). La CD le lance automatiquement à chaque déploiement.
+# Jamais de doctrine:schema:update --force : il supprimerait les tables non mappées qui
+# contiennent des données (events, event_participants, skin_submissions, skin_votes).
+PROD_POD = $$(kubectl -n erebor get pods -l app.kubernetes.io/name=app --field-selector=status.phase=Running -o jsonpath='{.items[0].metadata.name}')
 
-migrate: ## Run database migrations in the Symfony container inside the erebor pod (production)
-	@echo "Running database migrations..."
-	@POD_NAME=$$(kubectl get pods -l app.kubernetes.io/name=app -o jsonpath='{.items[0].metadata.name}'); \
-	kubectl exec -it $$POD_NAME -c symfony -- bin/console d:s:u --force
-	@echo "Migrations completed!"
+migrate-status: ## Show which migrations are recorded as executed in production
+	@kubectl -n erebor exec $(PROD_POD) -c symfony -- bin/console doctrine:migrations:status
+
+migrate-local: ## Apply pending Doctrine migrations locally in Docker
+	docker-compose -f ./docker-compose.yml exec backend sh bin/deploy-migrate.sh
+
+migrate: ## Apply pending Doctrine migrations in production (normally done by the CD)
+	kubectl -n erebor exec $(PROD_POD) -c symfony -- sh bin/deploy-migrate.sh
 
 TEST_DB_URL = postgresql://erebor:erebor@postgres-test:5432/erebor?serverVersion=16&charset=utf8
 
