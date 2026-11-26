@@ -32,17 +32,17 @@
 
       <!-- Réservé aux ROLE_ADMIN et plus : le serveur n'envoie pas les recrues aux autres -->
       <section v-if="recruits" class="rankups-col">
-        <h3 class="upcoming-heading">Recrues de moins de 15 jours · {{ recruits.length }}</h3>
-        <p v-if="!recruits.length" class="dash-empty">Aucune recrue ces 15 derniers jours.</p>
+        <h3 class="upcoming-heading">Recrues du dernier mois · {{ recruits.length }}</h3>
+        <p v-if="!recruits.length" class="dash-empty">Aucune recrue ces 30 derniers jours.</p>
         <ul v-else class="fresh-list col-scroll">
           <li v-for="r in recruits" :key="r.characterId" class="fresh-row">
             <img :src="getClassIcon(r.class)" alt="" class="fresh-icon" />
             <div class="fresh-who">
               <span class="fresh-name">{{ r.pseudo }}</span>
-              <span class="fresh-meta">J{{ Math.max(r.days, 1) }}<template v-if="r.recruiter"> · recruté par {{ r.recruiter }}</template></span>
+              <span class="fresh-meta">{{ arrivedLabel(r.days) }}<template v-if="r.recruiter"> · par {{ r.recruiter }}</template></span>
             </div>
-            <span v-if="r.warnings" class="fresh-flag fresh-flag--warn" :title="`${r.warnings} avertissement(s)`">⚠ {{ r.warnings }}</span>
-            <span v-if="r.ghostVotes" class="fresh-flag fresh-flag--ghost" :title="`${r.ghostVotes} vote(s) fantôme cette manche`">👻 {{ r.ghostVotes }}</span>
+            <span v-if="r.warnings" class="fresh-flag fresh-flag--warn">⚠ {{ r.warnings }} avertissement{{ r.warnings > 1 ? 's' : '' }}</span>
+            <span v-if="r.ghostVotes" class="fresh-flag fresh-flag--ghost">👻 signalé{{ r.ghostVotes > 1 ? ` ${r.ghostVotes} fois` : '' }} inactif</span>
           </li>
         </ul>
       </section>
@@ -55,13 +55,14 @@ import DashCard from './DashCard.vue';
 import FeedList from './FeedList.vue';
 import { getClassIcon } from '@/config/classIcons';
 import { upcomingDay } from '@/utils/dashboardFormat';
+import { arrivedLabel } from '@/utils/plainLanguage';
 
 defineProps({
   // Montées d'ancienneté qui tombent dans les 7 prochains jours.
   promotions: { type: Array, default: () => [] },
   // Montées passées (ancienneté et changements faits sur le site), du plus récent au plus ancien.
   recent: { type: Array, default: () => [] },
-  // Recrues de moins de 15 jours ; null pour les non-admins (colonne masquée).
+  // Recrues des 30 derniers jours ; null pour les non-admins (colonne masquée).
   recruits: { type: Array, default: null },
   hasMore: { type: Boolean, default: false },
   loading: { type: Boolean, default: false },

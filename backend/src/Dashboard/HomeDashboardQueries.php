@@ -444,7 +444,7 @@ class HomeDashboardQueries
     }
 
     /** Recrues actives arrivées il y a moins de $days jours, avec leurs signaux d'alerte. */
-    public function freshRecruits(\DateTimeImmutable $now, int $days = 15): array
+    public function freshRecruits(\DateTimeImmutable $now, int $days = 30): array
     {
         $rows = $this->connection->fetchAllAssociative(<<<'SQL'
             SELECT c.id, c.pseudo, c.class, c.recruited_at::date AS recruited_on,

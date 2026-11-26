@@ -27,42 +27,41 @@
       <section class="dash-section" aria-label="État de la guilde">
         <div class="counter-row" :class="{ 'counter-row--two': !showRecruitedByMe && !mySeniority }">
           <StatCounter
-            label="Membres actifs"
+            label="Membres"
             :value="counters.active?.value"
-            :delta="counters.active?.delta30"
-            good-when="up"
+            :sentence="compareCount(counters.active?.delta30, 'il y a un mois')"
+            :tone="toneOf(counters.active?.delta30)"
             :loading="loading"
           />
           <StatCounter
-            label="Fidélité à J+61"
-            :value="retention?.rate"
-            unit="%"
-            :delta="retention?.deltaPoints"
-            :delta-label="pointsLabel(retention?.deltaPoints)"
-            :note="retention ? `n = ${retention.n}` : ''"
+            label="Restent plus de 2 mois"
+            :value="retention?.n ? outOfTen(retention.retained, retention.n) : null"
+            :unit="retention?.n ? ' sur 10' : ''"
+            :sentence="trendLabel(retention?.deltaPoints)"
+            :tone="toneOf(retention?.deltaPoints, 3)"
+            :note="retention?.n ? `${retention.retained} des ${retention.n} dernières recrues` : 'Pas encore assez de recrues'"
             :title="retentionTitle"
-            good-when="up"
             :loading="loading"
-          />
+          >
+            <PeopleDots v-if="retention?.n" :kept="retention.retained" :total="retention.n" />
+          </StatCounter>
           <StatCounter
             v-if="showRecruitedByMe"
             label="Recrutés par vous"
             :value="counters.recruitedByMe?.value"
-            :delta="counters.recruitedByMe?.delta30"
-            title="Recrues ajoutées ces 30 derniers jours"
-            good-when="up"
+            :sentence="counters.recruitedByMe?.delta30 ? `dont ${counters.recruitedByMe.delta30} ce mois-ci` : 'aucun ce mois-ci'"
+            :tone="counters.recruitedByMe?.delta30 ? 'good' : 'flat'"
             :loading="loading"
           />
           <StatCounter
             v-else-if="mySeniority"
             label="Votre ancienneté"
-            :value="ordinal(mySeniority.position)"
-            :unit="` / ${mySeniority.total}`"
-            :delta="mySeniority.placesGained"
-            :delta-label="placesLabel(mySeniority.placesGained)"
-            :note="`top ${mySeniority.topPercent} %`"
-            title="Votre position parmi les membres actifs, du plus ancien au plus récent"
-            good-when="up"
+            :value="ordinalFr(mySeniority.position)"
+            :unit="` sur ${mySeniority.total}`"
+            :sentence="mySeniority.placesGained > 0 ? `${mySeniority.placesGained} place${mySeniority.placesGained > 1 ? 's' : ''} gagnée${mySeniority.placesGained > 1 ? 's' : ''} ce mois-ci` : ''"
+            tone="good"
+            :note="mySeniority.total - mySeniority.position > 0 ? `plus ancien que ${mySeniority.total - mySeniority.position} membres` : 'le plus récent de la guilde'"
+            title="Votre place parmi les membres actuels, du plus ancien au plus récent"
             :loading="loading"
           />
         </div>
@@ -380,7 +379,8 @@
 import { computed, reactive, ref, onMounted } from 'vue';
 import { useAuthStore } from '@/stores/authStore';
 import { fetchHomeDashboard, fetchActivity } from '@/services/dashboardApi';
-import { signed } from '@/utils/dashboardFormat';
+import { compareCount, ordinalFr, outOfTen, trendLabel } from '@/utils/plainLanguage';
+import PeopleDots from '@/components/home/PeopleDots.vue';
 import RankProgressCard from '@/components/home/RankProgressCard.vue';
 import StatCounter from '@/components/home/StatCounter.vue';
 import FlowCard from '@/components/home/FlowCard.vue';
@@ -451,20 +451,14 @@ const retention = computed(() => dashboard.value?.retention61 || null);
 const mySeniority = computed(() => dashboard.value?.mySeniority || null);
 const retentionTitle = computed(() => {
   const r = retention.value;
-  if (!r) return '';
-  let text = `Recrues des ${r.cohortMonths} derniers mois ayant atteint J+61 : ${r.retained} encore présentes sur ${r.n}.`;
-  if (r.excluded) text += ` ${r.excluded} départ(s) non daté(s) exclu(s).`;
+  if (!r?.n) return '';
+  let text = `Parmi les ${r.n} recrues arrivées il y a 2 à ${r.cohortMonths + 2} mois, ${r.retained} sont restées au moins 2 mois.`;
+  if (r.excluded) text += ` ${r.excluded} départ(s) sans date ne sont pas comptés.`;
   return text;
 });
 
-const ordinal = (n) => (n === 1 ? '1er' : `${n}e`);
-const pointsLabel = (delta) => (delta == null ? '' : delta === 0 ? 'stable' : `${signed(delta)} pts`);
-function placesLabel(gained) {
-  if (gained == null) return '';
-  if (gained === 0) return 'stable';
-  const n = Math.abs(gained);
-  return `${gained > 0 ? '▲' : '▼'} ${n} place${n > 1 ? 's' : ''}`;
-}
+// Couleur d'une évolution : verte si ça monte, rouge si ça baisse (au-delà d'un seuil).
+const toneOf = (delta, threshold = 1) => (delta == null || Math.abs(delta) < threshold ? 'flat' : delta > 0 ? 'good' : 'bad');
 // « Recrutés par vous » n'a de sens que pour qui recrute.
 const showRecruitedByMe = computed(() => isAdmin.value || (counters.value.recruitedByMe?.value || 0) > 0);
 

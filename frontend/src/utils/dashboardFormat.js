@@ -67,3 +67,26 @@ export function cssVar(name, fallback) {
   const value = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
   return value || fallback;
 }
+
+// Semaine ISO ("2026-W48") décalée de `offset` semaines.
+export function shiftIsoWeek(isoWeek, offset) {
+  const [y, w] = isoWeek.split('-W').map(Number);
+  // Le 4 janvier est toujours en semaine 1.
+  const jan4 = new Date(Date.UTC(y, 0, 4));
+  const monday = new Date(jan4);
+  monday.setUTCDate(jan4.getUTCDate() - ((jan4.getUTCDay() + 6) % 7) + (w - 1 + offset) * 7);
+  const thursday = new Date(monday);
+  thursday.setUTCDate(monday.getUTCDate() + 3);
+  const year = thursday.getUTCFullYear();
+  const firstJan = new Date(Date.UTC(year, 0, 1));
+  const week = Math.ceil(((thursday - firstJan) / 86400000 + 1) / 7);
+  return `${year}-W${String(week).padStart(2, '0')}`;
+}
+
+// Classe de couleur d'un taux de rétention (pour les cellules de tableau).
+export function rateTone(rate) {
+  if (rate == null) return 'is-empty';
+  if (rate >= 75) return 'is-high';
+  if (rate >= 50) return 'is-mid';
+  return 'is-low';
+}

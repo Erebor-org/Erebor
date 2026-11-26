@@ -30,16 +30,15 @@
       </div>
 
       <p class="progress-caption">
-        <span class="progress-days">J{{ Math.max(progress.seniorityDays, 1) }}</span>
         <template v-if="progress.nextRank">
-          · encore <strong>{{ progress.nextRank.daysLeft }} j</strong>
-          <span class="progress-muted">({{ shortDate(progress.nextRank.date) }})</span>
+          <strong>{{ progress.nextRank.name }}</strong> le {{ longDate(progress.nextRank.date) }},
+          dans {{ durationLabel(progress.nextRank.daysLeft) }}
         </template>
-        <template v-else> · rang d'ancienneté maximal atteint</template>
+        <template v-else>Vous avez atteint le plus haut rang d'ancienneté</template>
       </p>
-
+      <p class="progress-since">Dans la guilde depuis {{ durationLabel(progress.seniorityDays) }}</p>
       <p v-if="progress.storedRankIsSpecial" class="progress-note">
-        Rang de fonction : <strong>{{ progress.storedRank }}</strong>. L'ancienneté continue de compter.
+        Votre rôle de <strong>{{ progress.storedRank }}</strong> passe avant, mais l'ancienneté continue de compter.
       </p>
     </template>
   </DashCard>
@@ -47,7 +46,10 @@
 
 <script setup>
 import DashCard from './DashCard.vue';
-import { shortDate } from '@/utils/dashboardFormat';
+import { parseLocalDate } from '@/utils/dashboardFormat';
+import { durationLabel } from '@/utils/plainLanguage';
+
+const longDate = (value) => new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month: 'long' }).format(parseLocalDate(value));
 
 defineProps({
   progress: { type: Object, default: null },
@@ -96,9 +98,10 @@ defineProps({
   color: var(--text);
 }
 
-.progress-days {
-  font-family: ui-monospace, "SF Mono", Menlo, monospace;
-  font-weight: 700;
+.progress-since {
+  margin: 0.2rem 0 0;
+  font-size: 0.78rem;
+  color: var(--text-muted);
 }
 
 .progress-muted,

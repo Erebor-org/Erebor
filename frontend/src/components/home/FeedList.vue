@@ -20,7 +20,7 @@
             </template>
             <template v-else-if="item.type === 'left'">
               <strong>{{ item.pseudo }}</strong> quitte la guilde
-              <span v-if="item.details.daysInGuild != null" class="feed-meta">· après {{ item.details.daysInGuild }} j</span>
+              <span v-if="item.details.daysInGuild != null" class="feed-meta">· après {{ durationLabel(item.details.daysInGuild) }}</span>
             </template>
             <template v-else-if="item.type === 'returned'">
               <strong>{{ item.pseudo }}</strong> est de retour
@@ -52,6 +52,7 @@
 <script setup>
 import { computed } from 'vue';
 import { relativeDay } from '@/utils/dashboardFormat';
+import { durationLabel } from '@/utils/plainLanguage';
 
 // Liste d'événements de guilde (arrivées, départs, montées de rang…), partagée par les
 // blocs « Entrées & sorties » et « Montées de rang » de l'accueil.

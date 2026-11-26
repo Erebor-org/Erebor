@@ -376,8 +376,8 @@ class HomeDashboardQueriesTest extends DatabaseTestCase
         $admin = $this->makeUser('admin', ['ROLE_ADMIN']);
         $other = $this->makeUser('autre', ['ROLE_ADMIN']);
         $fresh = $this->member('Frais', '2026-11-20');
-        $border = $this->member('Limite', '2026-11-12');              // 14 jours : inclus (moins de 15)
-        $this->member('TropVieux', '2026-11-11');                     // 15 jours : exclu
+        $border = $this->member('Limite', '2026-10-28');              // 29 jours : inclus (moins de 30)
+        $this->member('TropVieux', '2026-10-27');                     // 30 jours : exclu
         $closed = (new GhostRound())->setOpenedAt(new \DateTime('2026-10-01'))->setThreshold(2)->setClosedAt(new \DateTime('2026-10-31'));
         $open = (new GhostRound())->setOpenedAt(new \DateTime('2026-11-01'))->setThreshold(2);
         $this->em->persist($closed);
@@ -398,7 +398,7 @@ class HomeDashboardQueriesTest extends DatabaseTestCase
 
         $recruits = $this->queries->freshRecruits($this->now);
         $this->assertSame(
-            [['Frais', 6, 0, 2], ['Limite', 14, 1, 1]],
+            [['Frais', 6, 0, 2], ['Limite', 29, 1, 1]],
             array_map(fn ($r) => [$r['pseudo'], $r['days'], $r['warnings'], $r['ghostVotes']], $recruits)
         );
     }

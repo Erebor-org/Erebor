@@ -18,6 +18,7 @@ import ManageSpecialRanks from '../views/ManageSpecialRanks.vue';
 import ProfileView from '../views/ProfileView.vue';
 import GhostMembers from '../views/GhostMembers.vue';
 import ArchiveFromLog from '../views/ArchiveFromLog.vue';
+import RecruitmentDashboard from '../views/RecruitmentDashboard.vue';
 import Gw2Characters from '../views/gw2/Gw2Characters.vue';
 import Gw2Inventory from '../views/gw2/Gw2Inventory.vue';
 import Gw2Legendaries from '../views/gw2/Gw2Legendaries.vue';
@@ -38,6 +39,8 @@ const routes = [
   { path: '/warnings/:id/:pseudo', name: 'ViewWarnings', component: ViewWarnings, meta: { requiresAuth: true } },
   { path: '/warnings-management', name: 'ManageWarnings', component: ManageWarnings, meta: { requiresAuth: true } },
   { path: '/statistiques', name: 'Statistiques', component: Statistiques, meta: { requiresAuth: true } },
+  // Accès réel décidé par le serveur (périmètre selon le rôle et le réglage) ; ici on filtre l'affichage.
+  { path: '/recrutement', name: 'RecruitmentDashboard', component: RecruitmentDashboard, meta: { requiresAuth: true, requiresRoles: ['ROLE_ADMIN', 'ROLE_SUPER_ADMIN', 'ROLE_OWNERS'] } },
   { path: '/theme-demo', name: 'ThemeDemo', component: ThemeDemo },
   { path: '/theme-customizer', name: 'ThemeCustomizer', component: ThemeCustomizer },
   { path: '/theme-customizer-demo', name: 'ThemeCustomizerDemo', component: ThemeCustomizerDemo },

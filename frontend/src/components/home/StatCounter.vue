@@ -5,41 +5,27 @@
       <span v-if="loading" class="stat-counter-skeleton"></span>
       <template v-else>{{ value ?? '—' }}<span v-if="unit && value != null" class="stat-counter-unit">{{ unit }}</span></template>
     </span>
-    <span v-if="!loading" class="stat-counter-foot">
-      <span v-if="delta != null" class="stat-counter-delta" :class="deltaClass">
-        {{ deltaLabel || signed(delta) }} <span class="stat-counter-period">{{ period }}</span>
-      </span>
-      <span v-if="note" class="stat-counter-note">{{ note }}</span>
-    </span>
+    <slot v-if="!loading" />
+    <span v-if="!loading && sentence" class="stat-counter-sentence" :class="`is-${tone}`">{{ sentence }}</span>
+    <span v-if="!loading && note" class="stat-counter-note">{{ note }}</span>
   </div>
 </template>
 
 <script setup>
-import { computed } from 'vue';
-import { signed } from '@/utils/dashboardFormat';
-
-const props = defineProps({
+// Compteur lisible sans explication : une valeur, puis une phrase (« 2 de moins qu'il y a
+// un mois ») colorée selon que c'est une bonne nouvelle ou non.
+defineProps({
   label: { type: String, required: true },
   value: { type: [Number, String], default: null },
-  // Suffixe affiché en plus petit après la valeur (« % », « / 169 »).
+  // Suffixe affiché en plus petit après la valeur (« sur 169 »).
   unit: { type: String, default: '' },
-  // Évolution ; null = pas d'évolution à afficher.
-  delta: { type: Number, default: null },
-  // Libellé de l'évolution s'il ne suffit pas d'un nombre signé (« +5 pts », « ▲ 3 places »).
-  deltaLabel: { type: String, default: '' },
-  period: { type: String, default: 'sur 30 j' },
-  // Précision discrète à droite (effectif pris en compte, centile…).
+  sentence: { type: String, default: '' },
+  // good | bad | flat
+  tone: { type: String, default: 'flat' },
+  // Précision discrète sous la phrase.
   note: { type: String, default: '' },
-  // 'up' : une hausse est une bonne nouvelle ; 'down' : l'inverse ; 'neutral' : pas de jugement.
-  goodWhen: { type: String, default: 'up' },
   title: { type: String, default: '' },
   loading: { type: Boolean, default: false },
-});
-
-const deltaClass = computed(() => {
-  if (!props.delta || props.goodWhen === 'neutral') return 'is-flat';
-  const good = props.goodWhen === 'up' ? props.delta > 0 : props.delta < 0;
-  return good ? 'is-good' : 'is-bad';
 });
 </script>
 
@@ -95,12 +81,6 @@ const deltaClass = computed(() => {
   color: var(--text);
 }
 
-.stat-counter-delta {
-  font-family: ui-monospace, "SF Mono", Menlo, monospace;
-  font-variant-numeric: tabular-nums;
-  font-size: 0.8rem;
-  font-weight: 600;
-}
 
 .stat-counter-unit {
   margin-left: 0.15rem;
@@ -109,22 +89,17 @@ const deltaClass = computed(() => {
   color: var(--text-muted);
 }
 
-.stat-counter-foot {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 0.5rem;
-  flex-wrap: wrap;
+
+
+
+
+.stat-counter-sentence {
+  font-size: 0.8rem;
+  font-weight: 600;
 }
 
 .stat-counter-note {
   font-size: 0.72rem;
-  color: var(--text-muted);
-}
-
-.stat-counter-period {
-  font-family: inherit;
-  font-weight: 400;
   color: var(--text-muted);
 }
 
@@ -161,22 +136,8 @@ const deltaClass = computed(() => {
   color: var(--text-muted);
 }
 
-.stat-counter-foot {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 0.5rem;
-  flex-wrap: wrap;
-}
 
-.stat-counter-note {
-  font-size: 0.72rem;
-  color: var(--text-muted);
-}
 
-.stat-counter-period {
-    display: none;
-  }
 }
 
 @keyframes sc-pulse {

@@ -11,7 +11,7 @@ import { useThemeStore } from '@/stores/themeStore';
 import { cssVar, monthLabel } from '@/utils/dashboardFormat';
 
 /**
- * Entrées et sorties mensuelles en barres groupées, avec le solde net mis en avant :
+ * Arrivées et départs mensuels en barres groupées, avec le bilan du mois mis en avant :
  * ligne pleine au premier plan, point doré (positif) ou rouge (négatif) et valeur écrite
  * au-dessus de chaque mois. Les barres sont légèrement estompées pour laisser le solde ressortir.
  */
@@ -87,7 +87,7 @@ function render() {
       datasets: [
         {
           type: 'line',
-          label: 'Solde net',
+          label: 'Bilan du mois',
           data: net,
           borderColor: text,
           borderWidth: 2.5,
@@ -99,8 +99,8 @@ function render() {
           tension: 0,
           order: 0,
         },
-        { type: 'bar', label: 'Entrées', data: entries, backgroundColor: withAlpha(accent, 0.55), borderRadius: 6, maxBarThickness: 12, categoryPercentage: 0.6, order: 1 },
-        { type: 'bar', label: 'Sorties', data: exits, backgroundColor: withAlpha(primary, 0.55), borderRadius: 6, maxBarThickness: 12, categoryPercentage: 0.6, order: 1 },
+        { type: 'bar', label: 'Arrivées', data: entries, backgroundColor: withAlpha(accent, 0.55), borderRadius: 6, maxBarThickness: 12, categoryPercentage: 0.6, order: 1 },
+        { type: 'bar', label: 'Départs', data: exits, backgroundColor: withAlpha(primary, 0.55), borderRadius: 6, maxBarThickness: 12, categoryPercentage: 0.6, order: 1 },
       ],
     },
     options: {
@@ -115,7 +115,12 @@ function render() {
         },
         tooltip: {
           callbacks: {
-            label: (ctx) => `${ctx.dataset.label} : ${ctx.dataset.type === 'line' ? signed(ctx.parsed.y) : ctx.parsed.y}`,
+            label: (ctx) => {
+              const v = ctx.parsed.y;
+              if (ctx.dataset.type !== 'line') return `${ctx.dataset.label} : ${v}`;
+              if (v === 0) return 'Bilan : autant d\'arrivées que de départs';
+              return `Bilan : ${Math.abs(v)} membre${Math.abs(v) > 1 ? 's' : ''} ${v > 0 ? 'gagné' : 'perdu'}${Math.abs(v) > 1 ? 's' : ''}`;
+            },
           },
         },
         netLabels: { datasetIndex: 0, positive: text, negative: primary, halo: bg },
@@ -146,7 +151,8 @@ onBeforeUnmount(() => chart?.destroy());
 /* Occupe toute la hauteur libre de la carte (alignée sur le bloc voisin), au minimum `height`. */
 .monthly-chart {
   position: relative;
-  flex: 1 1 auto;
-  min-height: 0;
+  /* flex-basis 0 : la hauteur vient de la carte, jamais du canvas (boucle d'agrandissement Chart.js). */
+  flex: 1 1 0;
+  overflow: hidden;
 }
 </style>
