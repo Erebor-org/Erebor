@@ -99,6 +99,7 @@ security:
 
     # Special (function) ranks management: leads, enroleur, troubadour... - OWNERS only
     - { path: ^/admin/special-ranks, roles: ROLE_OWNERS }
+    - { path: ^/admin/settings, roles: ROLE_OWNERS }
 
     # Guild Wars 2 private section - ROLE_DAMS only. No role inherits ROLE_DAMS, so OWNERS
     # do NOT get it (also enforced by #[IsGranted] on Gw2Controller)

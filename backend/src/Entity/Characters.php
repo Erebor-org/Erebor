@@ -10,6 +10,8 @@ use Doctrine\Common\Collections\Collection;
 
 #[ORM\Entity(repositoryClass: CharactersRepository::class)]
 #[ORM\Table(name: "characters")]
+#[ORM\Index(name: "idx_characters_recruited_at", columns: ["recruited_at"])]
+#[ORM\Index(name: "idx_characters_archived_at", columns: ["archived_at"])]
 class Characters
 {
     #[ORM\Id]
@@ -127,9 +129,34 @@ class Characters
         return $this;
     }
 
+    /**
+     * Garde archivedAt cohérent avec le booléen : horodaté au passage actif → archivé, vidé à la
+     * réintégration, inchangé si l'état ne change pas (ré-archiver ne décale pas la date de départ).
+     */
     public function setIsArchived(bool $isArchived): self
     {
+        if ($isArchived && !$this->isArchived) {
+            $this->archivedAt = new \DateTime();
+        } elseif (!$isArchived) {
+            $this->archivedAt = null;
+        }
         $this->isArchived = $isArchived;
+        return $this;
+    }
+
+    /** Date de départ ; NULL si actif ou si archivé avant la mise en place du suivi. */
+    #[ORM\Column(type: 'datetime', nullable: true)]
+    private ?\DateTimeInterface $archivedAt = null;
+
+    public function getArchivedAt(): ?\DateTimeInterface
+    {
+        return $this->archivedAt;
+    }
+
+    /** Réservé aux transferts d'historique (changement de main) : n'altère pas isArchived. */
+    public function setArchivedAt(?\DateTimeInterface $archivedAt): self
+    {
+        $this->archivedAt = $archivedAt;
         return $this;
     }
 

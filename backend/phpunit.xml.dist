@@ -14,6 +14,10 @@
         <server name="APP_ENV" value="test" force="true" />
         <!-- docker-compose exports APP_ENV=dev as a real env var, which would otherwise win in $_ENV -->
         <env name="APP_ENV" value="test" force="true" />
+        <!-- Même raison : docker-compose exporte le DATABASE_URL de dev (base distante). Les tests
+             doivent viser exclusivement le conteneur postgres-test (suffixe _test ajouté par
+             doctrine.yaml => base erebor_test). Voir tests/DatabaseTestCase.php. -->
+        <env name="DATABASE_URL" value="postgresql://erebor:erebor@postgres-test:5432/erebor?serverVersion=16&amp;charset=utf8" force="true" />
         <server name="SHELL_VERBOSITY" value="-1" />
         <server name="SYMFONY_PHPUNIT_REMOVE" value="" />
         <server name="SYMFONY_PHPUNIT_VERSION" value="9.5" />
@@ -36,5 +40,7 @@
     </listeners>
 
     <extensions>
+        <!-- Chaque test tourne dans une transaction annulée à la fin : la base reste vide. -->
+        <extension class="DAMA\DoctrineTestBundle\PHPUnit\PHPUnitExtension" />
     </extensions>
 </phpunit>

@@ -30,6 +30,19 @@ class Mule
     #[ORM\JoinColumn(nullable: false, onDelete: "CASCADE")]
     private ?Characters $mainCharacter = null;
 
+    /** Date de départ ; NULL si active ou archivée avant la mise en place du suivi. */
+    #[ORM\Column(type: 'datetime', nullable: true)]
+    private ?\DateTimeInterface $archivedAt = null;
+
+    /** NULL pour les mules créées avant la mise en place du suivi. */
+    #[ORM\Column(type: 'datetime', nullable: true)]
+    private ?\DateTimeInterface $createdAt = null;
+
+    public function __construct()
+    {
+        $this->createdAt = new \DateTime();
+    }
+
     // Getters and Setters
 
     public function getId(): ?int
@@ -86,9 +99,38 @@ class Mule
         return $this->isArchived;
     }
 
+    /** Même règle que Characters::setIsArchived. */
     public function setIsArchived(bool $isArchived): self
     {
+        if ($isArchived && !$this->isArchived) {
+            $this->archivedAt = new \DateTime();
+        } elseif (!$isArchived) {
+            $this->archivedAt = null;
+        }
         $this->isArchived = $isArchived;
+        return $this;
+    }
+
+    public function getArchivedAt(): ?\DateTimeInterface
+    {
+        return $this->archivedAt;
+    }
+
+    /** Réservé aux transferts d'historique (changement de main) : n'altère pas isArchived. */
+    public function setArchivedAt(?\DateTimeInterface $archivedAt): self
+    {
+        $this->archivedAt = $archivedAt;
+        return $this;
+    }
+
+    public function getCreatedAt(): ?\DateTimeInterface
+    {
+        return $this->createdAt;
+    }
+
+    public function setCreatedAt(?\DateTimeInterface $createdAt): self
+    {
+        $this->createdAt = $createdAt;
         return $this;
     }
 }
